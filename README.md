@@ -10,7 +10,7 @@ como hosting + funciones serverless.
 index.html, equipos.html, plantilla.html, jugadora.html,
 calendario.html, clasificacion.html, partido.html,
 noticias.html, noticia.html, galeria.html, club.html,
-socios.html, patrocinadores.html, contacto.html   → web pública
+patrocinadores.html, contacto.html                → web pública
 
 admin/                                             → panel privado (Supabase Auth)
 assets/css/                                        → variables.css, base.css, components.css, admin.css
@@ -103,7 +103,29 @@ acceso de lectura pública, igual que un visitante anónimo.
 
 Secciones: Resumen (estadísticas + sincronización FFIB manual), Noticias,
 Plantilla (equipos + jugadoras), Partidos (calendario/resultados manuales),
-Galería, Patrocinadores, Socias (solicitudes del formulario público).
+Galería, Patrocinadores.
+
+## Bloque Campus (temporal, solo verano)
+
+`index.html` incluye una sección "Campus Santa Ponsa" justo después del
+próximo partido, marcada en el código con
+`<!-- BLOQUE TEMPORAL CAMPUS — quitar al acabar el verano -->`. Está pensada
+para quitarse (o actualizarse para el año siguiente) cuando acabe el campus
+de verano.
+
+El reproductor de vídeo (`<video controls>`, sin autoplay ni mute forzado)
+apunta a `assets/video/campus-santa-ponsa.mp4`, que **todavía no existe en
+el repo** — hay que subir ahí el vídeo real del club. Mientras tanto se
+muestra `assets/img/campus-poster.jpg`, un fotograma de sustitución
+generado con el escudo del club para que el bloque no se vea roto.
+
+## Escudo del club
+
+El escudo real está en `assets/img/escudo-santa-ponsa.png` (recortado y con
+fondo transparente) y se usa en el header, el hero de portada y el pie de
+página de todas las páginas. Si el club proporciona una versión oficial
+distinta (por ejemplo con más resolución), basta con sustituir ese fichero
+manteniendo el mismo nombre.
 
 ## Aviso legal sobre el scraping
 

@@ -14,7 +14,7 @@
 <div class="admin-shell">
   <aside class="admin-sidebar">
     <div class="brand">
-      <span class="brand__crest">FSP</span>
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Futbol Femenino Santa Ponsa">
       <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
     </div>
     <nav class="admin-nav" data-nav>
@@ -24,7 +24,6 @@
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
       <a href="patrocinadores.html">Patrocinadores</a>
-      <a href="socios.html">Socias</a>
     </nav>
     <div class="admin-sidebar-foot">
       <span data-admin-email>—</span>
@@ -42,7 +41,7 @@
       <div class="admin-stat"><strong>—</strong><span>Noticias</span></div>
       <div class="admin-stat"><strong>—</strong><span>Jugadoras</span></div>
       <div class="admin-stat"><strong>—</strong><span>Partidos</span></div>
-      <div class="admin-stat"><strong>—</strong><span>Socias pendientes</span></div>
+      <div class="admin-stat"><strong>—</strong><span>Patrocinadores</span></div>
     </div>
 
     <div class="admin-card">
@@ -82,14 +81,14 @@
     return count ?? 0;
   }
 
-  const [news, players, matches, members] = await Promise.all([
+  const [news, players, matches, sponsors] = await Promise.all([
     count("news"),
     count("players"),
     count("matches"),
-    count("members", (q) => q.eq("estado", "pendiente")),
+    count("sponsors"),
   ]);
 
-  const stats = [news, players, matches, members];
+  const stats = [news, players, matches, sponsors];
   document.querySelectorAll("#stat-grid strong").forEach((el, i) => (el.textContent = stats[i]));
 
   async function loadLog() {

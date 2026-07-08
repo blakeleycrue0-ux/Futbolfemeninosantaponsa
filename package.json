@@ -1,0 +1,13 @@
+{
+  "name": "futbol-femenino-santa-ponsa",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Web del club Futbol Femenino Santa Ponsa",
+  "scripts": {
+    "build": "node scripts/inject-config.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "cheerio": "^1.0.0"
+  }
+}

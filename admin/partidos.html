@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partidos — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <span class="brand__crest">FSP</span>
+      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="socios.html">Socias</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Partidos</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo partido</button>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Los partidos con fuente <span class="tag-fuente">ffib</span> los crea automáticamente la sincronización
+      de ffib.es. Usa este formulario para programar próximos partidos, corregir un dato o introducir un
+      resultado a mano si el scraping falla.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nuevo partido</h2>
+      <form id="match-form">
+        <input type="hidden" id="m-id">
+        <div class="form-row">
+          <div class="form-field"><label for="m-team">Equipo</label><select id="m-team" required></select></div>
+          <div class="form-field"><label for="m-rival">Rival</label><input type="text" id="m-rival" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="m-fecha">Fecha</label><input type="date" id="m-fecha" required></div>
+          <div class="form-field"><label for="m-hora">Hora</label><input type="time" id="m-hora"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="m-condicion">Condición</label>
+            <select id="m-condicion"><option value="local">Local</option><option value="visitante">Visitante</option></select>
+          </div>
+          <div class="form-field"><label for="m-estado">Estado</label>
+            <select id="m-estado">
+              <option value="programado">Programado</option>
+              <option value="jugado">Jugado</option>
+              <option value="aplazado">Aplazado</option>
+              <option value="suspendido">Suspendido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="m-competicion">Competición</label><input type="text" id="m-competicion" placeholder="Preferente Femenina"></div>
+          <div class="form-field"><label for="m-jornada">Jornada</label><input type="text" id="m-jornada"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="m-goles-equipo">Goles equipo</label><input type="number" id="m-goles-equipo" min="0"></div>
+          <div class="form-field"><label for="m-goles-rival">Goles rival</label><input type="number" id="m-goles-rival" min="0"></div>
+        </div>
+        <div class="form-field"><label for="m-campo">Campo</label><input type="text" id="m-campo" placeholder="Camp Municipal Santa Ponsa"></div>
+        <div class="form-field"><label for="m-video">URL vídeo (YouTube)</label><input type="url" id="m-video" placeholder="https://youtube.com/watch?v=…"></div>
+        <div class="form-field"><label for="m-cronica">Crónica</label><textarea id="m-cronica" rows="6"></textarea></div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th></tr></thead>
+          <tbody id="matches-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let teams = [];
+  let matches = [];
+
+  async function loadTeams() {
+    const { data } = await window.spfc.from("teams").select("*").order("orden");
+    teams = data || [];
+    document.getElementById("m-team").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+  }
+
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("match-form");
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar partido" : "Nuevo partido";
+    document.getElementById("m-id").value = item ? item.id : "";
+    if (item) document.getElementById("m-team").value = item.team_id;
+    document.getElementById("m-rival").value = item ? item.rival : "";
+    document.getElementById("m-fecha").value = item ? item.fecha : "";
+    document.getElementById("m-hora").value = item ? (item.hora || "") : "";
+    document.getElementById("m-condicion").value = item ? item.condicion : "local";
+    document.getElementById("m-estado").value = item ? item.estado : "programado";
+    document.getElementById("m-competicion").value = item ? (item.competicion || "") : "";
+    document.getElementById("m-jornada").value = item ? (item.jornada || "") : "";
+    document.getElementById("m-goles-equipo").value = item && item.goles_equipo != null ? item.goles_equipo : "";
+    document.getElementById("m-goles-rival").value = item && item.goles_rival != null ? item.goles_rival : "";
+    document.getElementById("m-campo").value = item ? (item.campo || "") : "";
+    document.getElementById("m-video").value = item ? (item.video_url || "") : "";
+    document.getElementById("m-cronica").value = item ? (item.cronica || "") : "";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-btn").addEventListener("click", () => {
+    if (!teams.length) { alert("Crea primero un equipo desde Plantilla."); return; }
+    openForm(null);
+  });
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function loadMatches() {
+    const { data, error } = await window.spfc.from("matches").select("*").order("fecha", { ascending: false });
+    const body = document.getElementById("matches-body");
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    matches = data || [];
+    if (!matches.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay partidos.</td></tr>'; return; }
+    body.innerHTML = matches.map((m) => `
+      <tr>
+        <td>${m.fecha}</td>
+        <td>${escapeHtml(m.rival)} <span class="form-note">(${m.condicion === "local" ? "local" : "visitante"})</span></td>
+        <td>${m.estado === "jugado" && m.goles_equipo != null ? `${m.goles_equipo} - ${m.goles_rival}` : "-"}</td>
+        <td>${escapeHtml(m.estado)}</td>
+        <td><span class="tag-fuente">${escapeHtml(m.fuente)}</span></td>
+        <td class="actions">
+          <button class="btn-icon" data-edit="${m.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${m.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(matches.find((m) => m.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este partido?")) return;
+        await window.spfc.from("matches").delete().eq("id", btn.dataset.del);
+        loadMatches();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("m-id").value;
+    const payload = {
+      team_id: document.getElementById("m-team").value,
+      rival: document.getElementById("m-rival").value.trim(),
+      fecha: document.getElementById("m-fecha").value,
+      hora: document.getElementById("m-hora").value || null,
+      condicion: document.getElementById("m-condicion").value,
+      estado: document.getElementById("m-estado").value,
+      competicion: document.getElementById("m-competicion").value.trim(),
+      jornada: document.getElementById("m-jornada").value.trim(),
+      goles_equipo: document.getElementById("m-goles-equipo").value === "" ? null : Number(document.getElementById("m-goles-equipo").value),
+      goles_rival: document.getElementById("m-goles-rival").value === "" ? null : Number(document.getElementById("m-goles-rival").value),
+      campo: document.getElementById("m-campo").value.trim(),
+      video_url: document.getElementById("m-video").value.trim() || null,
+      cronica: document.getElementById("m-cronica").value,
+      fuente: "manual",
+      actualizado_en: new Date().toISOString(),
+    };
+    const { error } = id
+      ? await window.spfc.from("matches").update(payload).eq("id", id)
+      : await window.spfc.from("matches").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    loadMatches();
+  });
+
+  await loadTeams();
+  await loadMatches();
+})();
+</script>
+</body>
+</html>

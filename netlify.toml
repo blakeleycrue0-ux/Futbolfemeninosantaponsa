@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Sincronización FFIB por cron — no en cada visita.
+# Ajusta la frecuencia según cuántas veces por día se juegan/actualizan
+# resultados en la competición (cada 6h es un punto de partida razonable).
+[functions."ffib-sync"]
+  schedule = "0 */6 * * *"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  from = "/api/ffib-sync"
+  to = "/.netlify/functions/ffib-sync"
+  status = 200

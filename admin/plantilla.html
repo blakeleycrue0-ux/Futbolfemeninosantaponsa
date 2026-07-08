@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plantilla — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <span class="brand__crest">FSP</span>
+      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="socios.html">Socias</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Equipos y plantilla</h1>
+      <button class="btn btn-primary btn-sm" id="new-player-btn" type="button">Nueva jugadora</button>
+    </div>
+
+    <div class="admin-card">
+      <h2>Equipos</h2>
+      <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">Crea aquí las categorías del club (Primer equipo, Cadete, Infantil…). Cada jugadora pertenece a un equipo.</p>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Nombre</th><th>Categoría</th><th>Temporada</th><th></th></tr></thead>
+          <tbody id="teams-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+      <form id="team-form" style="display:flex;gap:0.8rem;margin-top:1rem;flex-wrap:wrap;align-items:end;">
+        <div class="form-field" style="margin:0;"><label>Nombre</label><input type="text" id="team-nombre" required placeholder="Cadete Femenino"></div>
+        <div class="form-field" style="margin:0;"><label>Categoría</label><input type="text" id="team-categoria" required placeholder="Cadete"></div>
+        <div class="form-field" style="margin:0;"><label>Temporada</label><input type="text" id="team-temporada" required value="2025/26"></div>
+        <button type="submit" class="btn btn-outline btn-sm">Añadir equipo</button>
+      </form>
+    </div>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nueva jugadora</h2>
+      <form id="player-form">
+        <input type="hidden" id="player-id">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="p-nombre">Nombre completo</label>
+            <input type="text" id="p-nombre" required>
+          </div>
+          <div class="form-field">
+            <label for="p-team">Equipo</label>
+            <select id="p-team" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="p-dorsal">Dorsal</label>
+            <input type="number" id="p-dorsal" min="1" max="99">
+          </div>
+          <div class="form-field">
+            <label for="p-posicion">Posición</label>
+            <select id="p-posicion">
+              <option>Portera</option><option>Defensa</option><option>Centrocampista</option><option>Delantera</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="p-nacimiento">Fecha de nacimiento</label>
+            <input type="date" id="p-nacimiento">
+          </div>
+          <div class="form-field">
+            <label for="p-foto">URL de foto</label>
+            <input type="url" id="p-foto" placeholder="https://…">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="p-goles">Goles (temporada)</label><input type="number" id="p-goles" min="0" value="0"></div>
+          <div class="form-field"><label for="p-pj">Partidos jugados</label><input type="number" id="p-pj" min="0" value="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="p-amarillas">Tarjetas amarillas</label><input type="number" id="p-amarillas" min="0" value="0"></div>
+          <div class="form-field"><label for="p-rojas">Tarjetas rojas</label><input type="number" id="p-rojas" min="0" value="0"></div>
+        </div>
+        <div class="form-field">
+          <label for="p-bio">Biografía breve</label>
+          <textarea id="p-bio" rows="4"></textarea>
+        </div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2>Jugadoras</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th></th></tr></thead>
+          <tbody id="players-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let teams = [];
+  let players = [];
+
+  async function loadTeams() {
+    const { data } = await window.spfc.from("teams").select("*").order("orden");
+    teams = data || [];
+    const body = document.getElementById("teams-body");
+    body.innerHTML = teams.length
+      ? teams.map((t) => `<tr><td>${escapeHtml(t.nombre)}</td><td>${escapeHtml(t.categoria)}</td><td>${escapeHtml(t.temporada)}</td>
+          <td class="actions"><button class="btn-icon danger" data-del-team="${t.id}" type="button">✕</button></td></tr>`).join("")
+      : '<tr><td colspan="4">Todavía no hay equipos creados.</td></tr>';
+
+    const select = document.getElementById("p-team");
+    select.innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)} (${escapeHtml(t.categoria)})</option>`).join("");
+
+    body.querySelectorAll("[data-del-team]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("Esto también eliminará a sus jugadoras. ¿Continuar?")) return;
+      await window.spfc.from("teams").delete().eq("id", btn.dataset.delTeam);
+      loadTeams();
+      loadPlayers();
+    }));
+  }
+
+  document.getElementById("team-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await window.spfc.from("teams").insert({
+      nombre: document.getElementById("team-nombre").value.trim(),
+      categoria: document.getElementById("team-categoria").value.trim(),
+      temporada: document.getElementById("team-temporada").value.trim(),
+    });
+    e.target.reset();
+    document.getElementById("team-temporada").value = "2025/26";
+    loadTeams();
+  });
+
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("player-form");
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar jugadora" : "Nueva jugadora";
+    document.getElementById("player-id").value = item ? item.id : "";
+    document.getElementById("p-nombre").value = item ? item.nombre : "";
+    if (item) document.getElementById("p-team").value = item.team_id;
+    document.getElementById("p-dorsal").value = item ? (item.dorsal || "") : "";
+    document.getElementById("p-posicion").value = item ? item.posicion : "Portera";
+    document.getElementById("p-nacimiento").value = item ? (item.fecha_nacimiento || "") : "";
+    document.getElementById("p-foto").value = item ? (item.foto_url || "") : "";
+    document.getElementById("p-goles").value = item ? item.goles : 0;
+    document.getElementById("p-pj").value = item ? item.partidos_jugados : 0;
+    document.getElementById("p-amarillas").value = item ? item.tarjetas_amarillas : 0;
+    document.getElementById("p-rojas").value = item ? item.tarjetas_rojas : 0;
+    document.getElementById("p-bio").value = item ? (item.bio || "") : "";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-player-btn").addEventListener("click", () => {
+    if (!teams.length) { alert("Crea primero un equipo."); return; }
+    openForm(null);
+  });
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function loadPlayers() {
+    const { data, error } = await window.spfc.from("players").select("*").order("dorsal");
+    const body = document.getElementById("players-body");
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    players = data || [];
+    if (!players.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay jugadoras.</td></tr>'; return; }
+    body.innerHTML = players.map((p) => {
+      const team = teams.find((t) => t.id === p.team_id);
+      return `<tr>
+        <td>${p.dorsal ?? "-"}</td>
+        <td>${escapeHtml(p.nombre)}</td>
+        <td>${team ? escapeHtml(team.nombre) : "-"}</td>
+        <td>${escapeHtml(p.posicion || "")}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit="${p.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(players.find((p) => p.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta jugadora?")) return;
+        await window.spfc.from("players").delete().eq("id", btn.dataset.del);
+        loadPlayers();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("player-id").value;
+    const payload = {
+      nombre: document.getElementById("p-nombre").value.trim(),
+      team_id: document.getElementById("p-team").value,
+      dorsal: Number(document.getElementById("p-dorsal").value) || null,
+      posicion: document.getElementById("p-posicion").value,
+      fecha_nacimiento: document.getElementById("p-nacimiento").value || null,
+      foto_url: document.getElementById("p-foto").value.trim() || null,
+      goles: Number(document.getElementById("p-goles").value) || 0,
+      partidos_jugados: Number(document.getElementById("p-pj").value) || 0,
+      tarjetas_amarillas: Number(document.getElementById("p-amarillas").value) || 0,
+      tarjetas_rojas: Number(document.getElementById("p-rojas").value) || 0,
+      bio: document.getElementById("p-bio").value.trim(),
+    };
+    const { error } = id
+      ? await window.spfc.from("players").update(payload).eq("id", id)
+      : await window.spfc.from("players").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    loadPlayers();
+  });
+
+  await loadTeams();
+  await loadPlayers();
+})();
+</script>
+</body>
+</html>

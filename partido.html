@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partido — Futbol Femenino Santa Ponsa</title>
+<meta name="description" content="Ficha del partido del Futbol Femenino Santa Ponsa: resultado, crónica, vídeo y estadísticas.">
+<link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/partido.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Partido — Futbol Femenino Santa Ponsa">
+<meta property="og:description" content="Resultado, crónica, vídeo y estadísticas del partido.">
+<meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/partido.html">
+<meta property="og:locale" content="es_ES">
+<meta name="theme-color" content="#0c0a12">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23a855f7%22/><text x=%2250%22 y=%2263%22 font-size=%2244%22 font-family=%22sans-serif%22 font-weight=%22800%22 fill=%22white%22 text-anchor=%22middle%22>FSP</text></svg>">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .match-hero { max-width: 660px; margin: 0 auto; padding: 2.4rem 2rem; }
+  .match-hero .match-card__comp { display: block; text-align: center; margin-bottom: 0.6rem; }
+  .match-hero .match-team__crest { width: 84px; height: 84px; font-size: 1.4rem; }
+  .match-hero .match-team__name { font-size: 1rem; }
+  .match-hero .match-card__score { font-size: 2.6rem; }
+  #cronica-content p { color: var(--text-on-cream); line-height: 1.75; }
+  #gallery-grid a.card { display: block; }
+  #gallery-grid .card__media { aspect-ratio: 1; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <span class="brand__crest">FSP</span>
+      <span class="brand__name">Futbol Femenino<small>Santa Ponsa</small></span>
+    </a>
+    <nav class="main-nav" data-nav id="main-nav">
+      <a href="index.html">Inicio</a>
+      <a href="equipos.html">Equipos</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="clasificacion.html">Clasificación</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="galeria.html">Galería</a>
+      <a href="club.html">Club</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="contacto.html">Contacto</a>
+    </nav>
+    <div class="header-actions">
+      <a href="socios.html" class="btn btn-primary btn-sm"><span>Hazte socia</span></a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Abrir menú" aria-expanded="false" aria-controls="main-nav">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="section section-dark" style="padding-top:2.6rem;padding-bottom:2.6rem;">
+    <div class="container">
+      <nav class="breadcrumb" style="margin-bottom:2rem;">
+        <a href="index.html">Inicio</a>
+        <span>/</span>
+        <a href="calendario.html">Calendario</a>
+        <span>/</span>
+        <span id="breadcrumb-current">Partido</span>
+      </nav>
+      <div id="match-header">
+        <p class="empty-state" style="color:var(--text-on-dark-muted);">Cargando partido…</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="match-body" style="display:none;">
+
+    <section class="section" aria-labelledby="cronica-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Después del pitido final</span>
+            <h2 id="cronica-heading">Crónica</h2>
+          </div>
+        </div>
+        <div id="cronica-content"></div>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="video-section" style="display:none;" aria-labelledby="video-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Repite las jugadas</span>
+            <h2 id="video-heading">Vídeo del partido</h2>
+          </div>
+        </div>
+        <div id="video-wrap"></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="stats-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Datos del partido</span>
+            <h2 id="stats-heading">Estadísticas</h2>
+          </div>
+        </div>
+        <div id="stats-strip" class="stat-strip"></div>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="gallery-section" style="display:none;" aria-labelledby="gallery-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Momentos del partido</span>
+            <h2 id="gallery-heading">Galería</h2>
+          </div>
+          <a href="galeria.html" class="back-link" style="margin:0;color:var(--accent-light);">Ver galería completa →</a>
+        </div>
+        <div id="gallery-grid" class="grid grid-4"></div>
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <span class="brand__crest">FSP</span>
+          <span class="brand__name">Futbol Femenino<small>Santa Ponsa</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponsa, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+        <a href="socios.html">Hazte socia</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:secretariaspfc@gmail.com">secretariaspfc@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span data-year></span> Futbol Femenino Santa Ponsa</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const headerEl = document.getElementById("match-header");
+  const bodyEl = document.getElementById("match-body");
+  const breadcrumbCurrent = document.getElementById("breadcrumb-current");
+
+  function crest(name) {
+    return (name || "").trim().slice(0, 2).toUpperCase() || "--";
+  }
+
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([\w-]{6,})/,
+      /(?:youtu\.be\/)([\w-]{6,})/,
+      /(?:youtube\.com\/embed\/)([\w-]{6,})/,
+    ];
+    for (const re of patterns) {
+      const m = url.match(re);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function setMeta(selector, value) {
+    const el = document.querySelector(selector);
+    if (el) el.setAttribute("content", value);
+  }
+
+  function showNotFound(message) {
+    breadcrumbCurrent.textContent = "Partido no encontrado";
+    headerEl.innerHTML = `
+      <div style="text-align:center;padding:2.5rem 0;">
+        <p class="empty-state" style="color:var(--text-on-dark-muted);">${message}</p>
+        <a href="calendario.html" class="btn btn-primary">Volver al calendario</a>
+      </div>`;
+    document.title = "Partido no encontrado — Futbol Femenino Santa Ponsa";
+  }
+
+  const id = new URLSearchParams(location.search).get("id");
+
+  if (!id) {
+    showNotFound("Falta indicar qué partido quieres consultar.");
+    return;
+  }
+
+  let match = null;
+  try {
+    match = await SPFC_DATA.matchById(id);
+  } catch (err) {
+    console.warn("[partido] error cargando partido:", err);
+  }
+
+  if (!match) {
+    showNotFound("No hemos encontrado este partido. Puede que el enlace sea incorrecto o que ya no esté disponible.");
+    return;
+  }
+
+  const esLocal = match.condicion === "local";
+  const jugado = match.estado === "jugado";
+  const res = jugado ? spfcResultLabel(match) : null;
+  const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : res === "D" ? "Empate" : "";
+  const rivalName = match.rival || "Rival";
+
+  breadcrumbCurrent.textContent = `Santa Ponsa vs ${rivalName}`;
+
+  let metaLine1;
+  if (match.estado === "aplazado") {
+    metaLine1 = "Partido aplazado";
+  } else if (match.estado === "suspendido") {
+    metaLine1 = "Partido suspendido";
+  } else if (jugado) {
+    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  } else {
+    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
+  }
+
+  headerEl.innerHTML = `
+    <div class="match-card match-hero">
+      <span class="match-card__comp">${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
+      <div class="match-card__teams">
+        <div class="match-team">
+          <span class="match-team__crest">${esLocal ? "SP" : crest(rivalName)}</span>
+          <span class="match-team__name">${esLocal ? "Santa Ponsa" : rivalName}</span>
+        </div>
+        ${jugado
+          ? `<span class="match-card__score">${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}</span>`
+          : `<span class="match-card__vs">VS</span>`}
+        <div class="match-team">
+          <span class="match-team__crest">${esLocal ? crest(rivalName) : "SP"}</span>
+          <span class="match-team__name">${esLocal ? rivalName : "Santa Ponsa"}</span>
+        </div>
+      </div>
+      <div class="match-card__meta">
+        <span>${metaLine1}</span>
+        <span>${match.campo || ""}</span>
+      </div>
+      ${jugado && res ? `<div style="text-align:center;margin-top:1.2rem;"><span class="match-card__result result-${res}">${resLabel}</span></div>` : ""}
+    </div>
+  `;
+
+  const resultLine = jugado
+    ? `${esLocal ? match.goles_equipo : match.goles_rival}-${esLocal ? match.goles_rival : match.goles_equipo}`
+    : spfcFormatDate(match.fecha);
+  document.title = `Santa Ponsa vs ${rivalName} (${resultLine}) — Futbol Femenino Santa Ponsa`;
+  setMeta('meta[property="og:title"]', `Santa Ponsa vs ${rivalName}`);
+  setMeta('meta[property="og:description"]', jugado
+    ? `Resultado: ${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}. ${match.competicion || ""}`
+    : `Partido programado el ${spfcFormatDate(match.fecha)}. ${match.competicion || ""}`);
+
+  bodyEl.style.display = "";
+
+  const cronicaEl = document.getElementById("cronica-content");
+  if (match.cronica && match.cronica.trim()) {
+    cronicaEl.innerHTML = match.cronica.split(/\n+/).filter(Boolean).map((p) => `<p>${p}</p>`).join("");
+  } else {
+    cronicaEl.innerHTML = `<p class="empty-state">La crónica de este partido se publicará después de disputarse.</p>`;
+  }
+
+  if (match.video_url) {
+    const videoSection = document.getElementById("video-section");
+    const videoWrap = document.getElementById("video-wrap");
+    const ytId = extractYouTubeId(match.video_url);
+    const src = ytId ? `https://www.youtube.com/embed/${ytId}` : match.video_url;
+    videoWrap.innerHTML = `
+      <div style="position:relative;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#000;">
+        <iframe src="${src}" title="Vídeo del partido" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+      </div>`;
+    videoSection.style.display = "";
+  }
+
+  const stats = [];
+  if (jugado) {
+    stats.push({ value: match.goles_equipo != null ? match.goles_equipo : "-", label: "Goles Santa Ponsa" });
+    stats.push({ value: match.goles_rival != null ? match.goles_rival : "-", label: "Goles " + rivalName });
+  }
+  stats.push({ value: esLocal ? "Local" : "Visitante", label: "Condición" });
+  if (match.jornada) stats.push({ value: match.jornada, label: "Jornada" });
+  if (match.campo) stats.push({ value: match.campo, label: "Campo" });
+  if (match.competicion) stats.push({ value: match.competicion, label: "Competición" });
+
+  document.getElementById("stats-strip").innerHTML = stats.slice(0, 4).map((s) => {
+    const long = typeof s.value === "string" && s.value.length > 12;
+    return `<div class="stat-item"><strong${long ? ' style="font-size:1.15rem;"' : ""}>${s.value}</strong><span>${s.label}</span></div>`;
+  }).join("");
+
+  try {
+    const items = await SPFC_DATA.gallery(match.id);
+    if (items && items.length) {
+      const gallerySection = document.getElementById("gallery-section");
+      const galleryGrid = document.getElementById("gallery-grid");
+      galleryGrid.innerHTML = items.slice(0, 8).map((it) => {
+        const isVideo = it.tipo === "video";
+        return `
+        <a href="galeria.html" class="card">
+          <div class="card__media">
+            ${!isVideo && it.url ? `<img src="${it.url}" alt="${it.descripcion || "Foto del partido"}" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--accent-dark);font-size:0.75rem;">${isVideo ? "Vídeo" : "Foto"}</div>`}
+          </div>
+        </a>`;
+      }).join("");
+      gallerySection.style.display = "";
+    }
+  } catch (err) {
+    console.warn("[partido] error cargando galería:", err);
+  }
+})();
+</script>
+</body>
+</html>

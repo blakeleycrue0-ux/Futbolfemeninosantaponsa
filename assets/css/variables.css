@@ -1,0 +1,52 @@
+/*
+  Femenino Santa Ponsa — Design tokens
+  Acento morado de club sobre base crema, hero oscuro con grano.
+*/
+:root {
+  /* Brand */
+  --accent: #a855f7;
+  --accent-dark: #7e22ce;
+  --accent-light: #d8b4fe;
+  --accent-soft: rgba(168, 85, 247, 0.12);
+
+  /* Base */
+  --cream: #f6f2ea;
+  --cream-deep: #eee7d9;
+  --ink: #16121c;
+  --ink-soft: #3a3244;
+  --dark: #0c0a12;
+  --dark-2: #171220;
+  --dark-3: #211a2d;
+  --paper: #ffffff;
+
+  /* Text */
+  --text-on-cream: var(--ink);
+  --text-on-cream-muted: #675f70;
+  --text-on-dark: #f6f2ea;
+  --text-on-dark-muted: #b3a9bd;
+
+  /* Status */
+  --win: #22c55e;
+  --draw: #eab308;
+  --loss: #ef4444;
+
+  /* Type */
+  --font-display: "Unbounded", "Familjen Grotesk", sans-serif;
+  --font-body: "Familjen Grotesk", "Segoe UI", sans-serif;
+
+  /* Scale */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 2px 8px rgba(22, 18, 28, 0.08);
+  --shadow-md: 0 8px 24px rgba(22, 18, 28, 0.12);
+  --shadow-lg: 0 20px 48px rgba(22, 18, 28, 0.22);
+  --shadow-accent: 0 8px 24px rgba(168, 85, 247, 0.35);
+
+  --container: 1240px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}

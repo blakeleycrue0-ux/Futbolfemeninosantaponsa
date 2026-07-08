@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noticias — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <span class="brand__crest">FSP</span>
+      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="socios.html">Socias</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Noticias</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nueva noticia</button>
+    </div>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nueva noticia</h2>
+      <form id="news-form">
+        <input type="hidden" id="news-id">
+        <div class="form-field">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" required>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" required>
+          </div>
+          <div class="form-field">
+            <label for="autor">Autor</label>
+            <input type="text" id="autor" placeholder="Comunicación SPFC">
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="imagen_url">URL de imagen</label>
+          <input type="url" id="imagen_url" placeholder="https://…">
+        </div>
+        <div class="form-field">
+          <label for="resumen">Resumen</label>
+          <input type="text" id="resumen" maxlength="200">
+        </div>
+        <div class="form-field">
+          <label for="contenido">Contenido</label>
+          <textarea id="contenido" rows="8"></textarea>
+        </div>
+        <div class="form-field" style="flex-direction:row;align-items:center;gap:0.6rem;">
+          <input type="checkbox" id="publicado" style="width:auto;" checked>
+          <label for="publicado" style="margin:0;">Publicada</label>
+        </div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Título</th><th>Autor</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="news-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("news-form");
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar noticia" : "Nueva noticia";
+    document.getElementById("news-id").value = item ? item.id : "";
+    document.getElementById("titulo").value = item ? item.titulo : "";
+    document.getElementById("fecha").value = item ? item.fecha : new Date().toISOString().slice(0, 10);
+    document.getElementById("autor").value = item ? (item.autor || "") : "";
+    document.getElementById("imagen_url").value = item ? (item.imagen_url || "") : "";
+    document.getElementById("resumen").value = item ? (item.resumen || "") : "";
+    document.getElementById("contenido").value = item ? (item.contenido || "") : "";
+    document.getElementById("publicado").checked = item ? !!item.publicado : true;
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-btn").addEventListener("click", () => openForm(null));
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function load() {
+    const { data, error } = await window.spfc.from("news").select("*").order("fecha", { ascending: false });
+    const body = document.getElementById("news-body");
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay noticias.</td></tr>'; return; }
+    body.innerHTML = data.map((n) => `
+      <tr>
+        <td>${n.fecha}</td>
+        <td>${escapeHtml(n.titulo)}</td>
+        <td>${escapeHtml(n.autor || "")}</td>
+        <td>${n.publicado ? '<span class="pill">Publicada</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Borrador</span>'}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit="${n.id}" title="Editar" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${n.id}" title="Eliminar" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(data.find((n) => n.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta noticia?")) return;
+        await window.spfc.from("news").delete().eq("id", btn.dataset.del);
+        load();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("news-id").value;
+    const payload = {
+      titulo: document.getElementById("titulo").value.trim(),
+      fecha: document.getElementById("fecha").value,
+      autor: document.getElementById("autor").value.trim(),
+      imagen_url: document.getElementById("imagen_url").value.trim() || null,
+      resumen: document.getElementById("resumen").value.trim(),
+      contenido: document.getElementById("contenido").value,
+      publicado: document.getElementById("publicado").checked,
+    };
+    const { error } = id
+      ? await window.spfc.from("news").update(payload).eq("id", id)
+      : await window.spfc.from("news").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    load();
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

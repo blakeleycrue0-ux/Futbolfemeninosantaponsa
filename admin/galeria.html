@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galería — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <span class="brand__crest">FSP</span>
+      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="socios.html">Socias</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Galería</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo elemento</button>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Sube primero la imagen o vídeo a Supabase Storage (bucket <code>spfc-media</code>) o pega la URL de
+      YouTube, y registra aquí la referencia para que aparezca en la galería pública.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nuevo elemento</h2>
+      <form id="gallery-form">
+        <input type="hidden" id="g-id">
+        <div class="form-row">
+          <div class="form-field"><label for="g-tipo">Tipo</label>
+            <select id="g-tipo"><option value="foto">Foto</option><option value="video">Vídeo</option></select>
+          </div>
+          <div class="form-field"><label for="g-match">Partido relacionado (opcional)</label><select id="g-match"><option value="">—</option></select></div>
+        </div>
+        <div class="form-field"><label for="g-url">URL</label><input type="url" id="g-url" required placeholder="https://…"></div>
+        <div class="form-row">
+          <div class="form-field"><label for="g-fecha">Fecha</label><input type="date" id="g-fecha" required></div>
+          <div class="form-field"><label for="g-desc">Descripción</label><input type="text" id="g-desc"></div>
+        </div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th></th></tr></thead>
+          <tbody id="gallery-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let items = [];
+  let matches = [];
+
+  async function loadMatches() {
+    const { data } = await window.spfc.from("matches").select("id,rival,fecha").order("fecha", { ascending: false }).limit(100);
+    matches = data || [];
+    document.getElementById("g-match").innerHTML = '<option value="">—</option>' +
+      matches.map((m) => `<option value="${m.id}">${m.fecha} · ${escapeHtml(m.rival)}</option>`).join("");
+  }
+
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("gallery-form");
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar elemento" : "Nuevo elemento";
+    document.getElementById("g-id").value = item ? item.id : "";
+    document.getElementById("g-tipo").value = item ? item.tipo : "foto";
+    document.getElementById("g-match").value = item ? (item.match_id || "") : "";
+    document.getElementById("g-url").value = item ? item.url : "";
+    document.getElementById("g-fecha").value = item ? item.fecha : new Date().toISOString().slice(0, 10);
+    document.getElementById("g-desc").value = item ? (item.descripcion || "") : "";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-btn").addEventListener("click", () => openForm(null));
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function load() {
+    const { data, error } = await window.spfc.from("gallery").select("*").order("fecha", { ascending: false });
+    const body = document.getElementById("gallery-body");
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    items = data || [];
+    if (!items.length) { body.innerHTML = '<tr><td colspan="4">Todavía no hay elementos en la galería.</td></tr>'; return; }
+    body.innerHTML = items.map((it) => `
+      <tr>
+        <td>${it.fecha}</td>
+        <td>${it.tipo}</td>
+        <td>${escapeHtml(it.descripcion || "")}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit="${it.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${it.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(items.find((it) => it.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este elemento?")) return;
+        await window.spfc.from("gallery").delete().eq("id", btn.dataset.del);
+        load();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("g-id").value;
+    const payload = {
+      tipo: document.getElementById("g-tipo").value,
+      match_id: document.getElementById("g-match").value || null,
+      url: document.getElementById("g-url").value.trim(),
+      fecha: document.getElementById("g-fecha").value,
+      descripcion: document.getElementById("g-desc").value.trim(),
+    };
+    const { error } = id
+      ? await window.spfc.from("gallery").update(payload).eq("id", id)
+      : await window.spfc.from("gallery").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    load();
+  });
+
+  await loadMatches();
+  await load();
+})();
+</script>
+</body>
+</html>

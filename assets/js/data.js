@@ -132,13 +132,6 @@ const SPFC_DATA = (function () {
     async sponsors() {
       return safe((c) => c.from("sponsors").select("*").order("nivel"), window.SPFC_FALLBACK.sponsors);
     },
-    async submitMember(payload) {
-      const c = client();
-      if (!c) throw new Error("Supabase no configurado");
-      const { error } = await c.from("members").insert(payload);
-      if (error) throw error;
-      return true;
-    },
   };
 })();
 

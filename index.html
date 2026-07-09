@@ -17,24 +17,28 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .campus-block {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-    align-items: center;
-  }
-  .campus-copy .btn { margin-top: 0.8rem; }
-  .campus-video video {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-lg);
+  .video-hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
     background: var(--dark);
-    box-shadow: var(--shadow-md);
+    color: var(--text-on-dark);
   }
-  @media (max-width: 860px) {
-    .campus-block { grid-template-columns: 1fr; }
-    .campus-video { order: -1; }
+  .video-hero__media {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
   }
+  .video-hero__tint {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.15) 75%);
+  }
+  .video-hero__content { position: relative; z-index: 2; padding: 5rem 0; width: 100%; }
+  .video-hero__title { color: #fff; margin: 0.2em 0 0.5em; }
+  .video-hero__lede { max-width: 540px; color: rgba(244,240,232,0.8); font-size: 1.05rem; }
+  .video-hero__content .btn { margin-top: 0.6rem; }
 </style>
 </head>
 <body>
@@ -118,22 +122,18 @@
   </section>
 
   <!-- BLOQUE TEMPORAL CAMPUS — quitar al acabar el verano -->
-  <section class="section campus-section" aria-labelledby="campus-heading">
-    <div class="container campus-block">
-      <div class="campus-copy">
-        <span class="eyebrow">Verano 2026</span>
-        <h2 id="campus-heading">Campus Santa Ponsa</h2>
-        <p>Una semana de fútbol, playa y convivencia para niñas de todas las edades, dirigida por el
-          cuerpo técnico del club. Del 7 al 11 de julio, en el Camp Municipal de Santa Ponsa.
-          Plazas limitadas.</p>
-        <a href="contacto.html" class="btn btn-outline">Más información e inscripciones</a>
-      </div>
-      <div class="campus-video">
-        <video controls preload="none" poster="assets/img/campus-poster.jpg">
-          <source src="assets/video/campus-santa-ponsa.mp4" type="video/mp4">
-          Tu navegador no soporta la reproducción de vídeo.
-        </video>
-      </div>
+  <section class="video-hero" aria-labelledby="campus-heading">
+    <video class="video-hero__media" autoplay muted loop playsinline preload="auto" poster="assets/img/campus-poster.jpg" aria-hidden="true">
+      <source src="assets/video/campus-santa-ponsa.mp4" type="video/mp4">
+    </video>
+    <div class="video-hero__tint" aria-hidden="true"></div>
+    <div class="container video-hero__content">
+      <span class="hero__tag">Verano 2026</span>
+      <h2 id="campus-heading" class="video-hero__title">Campus Santa Ponsa</h2>
+      <p class="video-hero__lede">Una semana de fútbol, playa y convivencia para niñas de todas las edades, dirigida por el
+        cuerpo técnico del club. Del 7 al 11 de julio, en el Camp Municipal de Santa Ponsa.
+        Plazas limitadas.</p>
+      <a href="contacto.html" class="btn btn-primary">Más información e inscripciones</a>
     </div>
   </section>
   <!-- FIN BLOQUE TEMPORAL CAMPUS -->

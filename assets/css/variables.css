@@ -1,32 +1,33 @@
 /*
   Femenino Santa Ponsa — Design tokens
-  Morado apagado del escudo del club sobre base crema/hueso. El acento se
-  reserva para header, escudo, líneas/subrayados y enlaces — no para
-  rellenar fondos ni tarjetas enteras. Redondeo comedido, nada de "todo
-  en píldora".
+  Morado vivo sobre base crema/hueso y negro casi puro. El acento se usa
+  con contundencia (botones, líneas, hover-fills, marquee) en vez de
+  reservarse solo para detalles. Bordes rectos, tipografía Unbounded en
+  mayúsculas para todo lo grande.
 */
 :root {
-  /* Brand — morado real del escudo, no un lila saturado */
-  --accent: #5c5082;
-  --accent-dark: #423a5f;
-  --accent-light: #8f84ad;
-  --accent-soft: rgba(92, 80, 130, 0.10);
+  /* Brand — morado vivo del rediseño */
+  --accent: #a855f7;
+  --accent-dark: #7e22ce;
+  --accent-light: #d8b4fe;
+  --accent-soft: rgba(168, 85, 247, 0.10);
+  --accent-hot: #e879f9;
 
   /* Base */
-  --cream: #f5f0e8;
+  --cream: #f4f0e8;
   --cream-deep: #ece4d4;
-  --ink: #1c1a1f;
+  --ink: #0a0a0a;
   --ink-soft: #423e47;
-  --dark: #17151b;
-  --dark-2: #201d24;
-  --dark-3: #29252d;
+  --dark: #0a0a0a;
+  --dark-2: #141414;
+  --dark-3: #1c1c1c;
   --paper: #ffffff;
 
   /* Text */
   --text-on-cream: var(--ink);
   --text-on-cream-muted: #6b6570;
-  --text-on-dark: #f5f0e8;
-  --text-on-dark-muted: #aba6ae;
+  --text-on-dark: #f4f0e8;
+  --text-on-dark-muted: #9a97a0;
 
   /* Status */
   --win: #22c55e;
@@ -37,19 +38,20 @@
   --font-display: "Unbounded", "Familjen Grotesk", sans-serif;
   --font-body: "Familjen Grotesk", "Segoe UI", sans-serif;
 
-  /* Scale — redondeo discreto */
-  --radius-sm: 5px;
-  --radius-md: 9px;
-  --radius-lg: 12px;
-  --radius-pill: 8px;
+  /* Scale — bordes rectos, casi sin redondeo */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-pill: 2px;
 
-  --shadow-sm: 0 2px 8px rgba(22, 18, 28, 0.08);
-  --shadow-md: 0 8px 24px rgba(22, 18, 28, 0.12);
-  --shadow-lg: 0 20px 48px rgba(22, 18, 28, 0.22);
-  --shadow-accent: 0 6px 16px rgba(92, 80, 130, 0.25);
+  --shadow-sm: 0 2px 8px rgba(10, 10, 10, 0.08);
+  --shadow-md: 0 16px 32px rgba(10, 10, 10, 0.18);
+  --shadow-lg: 0 28px 56px rgba(10, 10, 10, 0.35);
+  --shadow-accent: 0 6px 18px rgba(168, 85, 247, 0.35);
 
   --container: 1240px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.77, 0, 0.175, 1);
 }

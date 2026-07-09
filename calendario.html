@@ -163,6 +163,12 @@
     return (name || "").trim().slice(0, 2).toUpperCase() || "--";
   }
 
+  function crestHtml(esClub, rival, rivalEscudoUrl) {
+    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
+    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
+    return crest(rival);
+  }
+
   function renderProximos(list) {
     if (!list.length) {
       proximosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">No hay próximos partidos programados por ahora.</p>`;
@@ -175,12 +181,12 @@
         <span class="match-card__comp">${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
         <div class="match-card__teams">
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? "SP" : crest(m.rival)}</span>
+            <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? "Santa Ponsa" : (m.rival || "")}</span>
           </div>
           <span class="match-card__vs">VS</span>
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? crest(m.rival) : "SP"}</span>
+            <span class="match-team__crest">${crestHtml(!esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? (m.rival || "") : "Santa Ponsa"}</span>
           </div>
         </div>
@@ -206,12 +212,12 @@
         <span class="match-card__comp">${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
         <div class="match-card__teams">
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? "SP" : crest(m.rival)}</span>
+            <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? "Santa Ponsa" : (m.rival || "")}</span>
           </div>
           <span class="match-card__score">${esLocal ? m.goles_equipo : m.goles_rival} — ${esLocal ? m.goles_rival : m.goles_equipo}</span>
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? crest(m.rival) : "SP"}</span>
+            <span class="match-team__crest">${crestHtml(!esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? (m.rival || "") : "Santa Ponsa"}</span>
           </div>
         </div>

@@ -17,28 +17,27 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .player-profile {
+  .player-profile--photo {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 2.5rem;
     align-items: start;
   }
   @media (max-width: 780px) {
-    .player-profile { grid-template-columns: 1fr; }
+    .player-profile--photo { grid-template-columns: 1fr; }
   }
   .player-profile__photo {
     aspect-ratio: 3/4;
-    background: linear-gradient(160deg, var(--dark-3), var(--dark));
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(246,242,234,0.08);
+    border: 1px solid rgba(10,10,10,0.1);
     position: relative;
     overflow: hidden;
   }
   .player-profile__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .player-profile__header { display: flex; align-items: center; gap: 1.1rem; }
   .player-profile__number {
-    position: absolute; top: 1rem; left: 1rem;
-    font-family: var(--font-display); font-weight: 800; font-size: 2.4rem;
-    color: var(--text-on-dark); text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    font-family: var(--font-display); font-weight: 900; font-size: 3rem; line-height: 1;
+    color: var(--accent-dark);
   }
   .player-profile__pos { margin-top: 0.3em; }
   .player-profile__name { margin: 0.3em 0 1rem; }
@@ -169,24 +168,28 @@
   document.getElementById("page-description").setAttribute("content", desc);
   document.getElementById("og-description").setAttribute("content", desc);
 
-  content.innerHTML = `
-    <div class="player-profile">
-      <div class="player-profile__photo">
-        ${player.foto_url ? `<img src="${player.foto_url}" alt="${player.nombre}">` : ""}
-        <span class="player-profile__number">${player.dorsal != null ? player.dorsal : "-"}</span>
-      </div>
+  const infoHtml = `
+    <div class="player-profile__header">
+      <span class="player-profile__number">${player.dorsal != null ? player.dorsal : "-"}</span>
       <div>
         <span class="eyebrow player-profile__pos">${player.posicion || ""}</span>
         <h1 class="player-profile__name">${player.nombre || ""}</h1>
-        <p class="player-profile__bio">${player.bio || "Ficha de jugadora del Futbol Femenino Santa Ponsa."}</p>
-        <div class="stat-strip">
-          <div class="stat-item"><strong>${player.partidos_jugados != null ? player.partidos_jugados : "-"}</strong><span>Partidos jugados</span></div>
-          <div class="stat-item"><strong>${player.goles != null ? player.goles : "-"}</strong><span>Goles</span></div>
-          <div class="stat-item"><strong>${player.tarjetas_amarillas != null ? player.tarjetas_amarillas : "-"}</strong><span>T. amarillas</span></div>
-          <div class="stat-item"><strong>${player.tarjetas_rojas != null ? player.tarjetas_rojas : "-"}</strong><span>T. rojas</span></div>
-        </div>
       </div>
+    </div>
+    <p class="player-profile__bio">${player.bio || "Ficha de jugadora del Futbol Femenino Santa Ponsa."}</p>
+    <div class="stat-strip">
+      <div class="stat-item"><strong>${player.partidos_jugados != null ? player.partidos_jugados : "-"}</strong><span>Partidos jugados</span></div>
+      <div class="stat-item"><strong>${player.goles != null ? player.goles : "-"}</strong><span>Goles</span></div>
+      <div class="stat-item"><strong>${player.tarjetas_amarillas != null ? player.tarjetas_amarillas : "-"}</strong><span>T. amarillas</span></div>
+      <div class="stat-item"><strong>${player.tarjetas_rojas != null ? player.tarjetas_rojas : "-"}</strong><span>T. rojas</span></div>
     </div>`;
+
+  content.innerHTML = player.foto_url
+    ? `<div class="player-profile--photo">
+         <div class="player-profile__photo"><img src="${player.foto_url}" alt="${player.nombre}"></div>
+         <div>${infoHtml}</div>
+       </div>`
+    : `<div style="max-width:640px;">${infoHtml}</div>`;
 })();
 </script>
 </body>

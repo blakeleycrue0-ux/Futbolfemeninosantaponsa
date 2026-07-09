@@ -69,12 +69,11 @@
 <main id="main">
 
   <section class="hero">
-    <div class="hero__media" aria-hidden="true"></div>
+    <div class="hero__media hero__media--photo" aria-hidden="true"></div>
     <img class="hero__crest" src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">
     <div class="container hero__content">
       <span class="hero__tag">Temporada 2025/26 · Preferente Femenina</span>
-      <h1 class="hero__title">Fútbol <span class="hollow">femenino</span> con raíces en <span class="accent">Santa Ponsa</span>.</h1>
-      <p class="hero__lede">Del alevín al primer equipo: un proyecto de club para que el fútbol femenino de Calvià compita, forme y crezca temporada tras temporada.</p>
+      <h1 class="hero__title">Futbol <span class="hollow">Femenino</span> <span class="accent">Santa Ponsa</span></h1>
       <div class="hero__actions">
         <a href="calendario.html" class="btn btn-primary">Ver calendario</a>
         <a href="club.html" class="btn btn-ghost-light">Conoce el club</a>
@@ -235,6 +234,12 @@
 (async function () {
   const teamId = window.SPFC_FALLBACK.club.equipo_primero_id;
 
+  function crestHtml(esClub, rival, rivalEscudoUrl) {
+    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
+    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
+    return (rival || "").trim().slice(0, 2).toUpperCase() || "--";
+  }
+
   const teams = await SPFC_DATA.teams();
   const equiposEl = document.getElementById("stat-equipos");
   if (equiposEl && teams.length) equiposEl.textContent = String(teams.length);
@@ -254,12 +259,12 @@
         <span class="match-card__comp">${proximo.competicion || ""}</span>
         <div class="match-card__teams">
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? "SP" : proximo.rival.slice(0,2).toUpperCase()}</span>
+            <span class="match-team__crest">${crestHtml(esLocal, proximo.rival, proximo.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? "Santa Ponsa" : proximo.rival}</span>
           </div>
           <span class="match-card__vs">VS</span>
           <div class="match-team">
-            <span class="match-team__crest">${esLocal ? proximo.rival.slice(0,2).toUpperCase() : "SP"}</span>
+            <span class="match-team__crest">${crestHtml(!esLocal, proximo.rival, proximo.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? proximo.rival : "Santa Ponsa"}</span>
           </div>
         </div>
@@ -289,12 +294,12 @@
           <span class="match-card__comp">${m.competicion || ""}</span>
           <div class="match-card__teams">
             <div class="match-team">
-              <span class="match-team__crest">${esLocal ? "SP" : m.rival.slice(0,2).toUpperCase()}</span>
+              <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
               <span class="match-team__name">${esLocal ? "Santa Ponsa" : m.rival}</span>
             </div>
             <span class="match-card__score">${esLocal ? m.goles_equipo : m.goles_rival} — ${esLocal ? m.goles_rival : m.goles_equipo}</span>
             <div class="match-team">
-              <span class="match-team__crest">${esLocal ? m.rival.slice(0,2).toUpperCase() : "SP"}</span>
+              <span class="match-team__crest">${crestHtml(!esLocal, m.rival, m.rival_escudo_url)}</span>
               <span class="match-team__name">${esLocal ? m.rival : "Santa Ponsa"}</span>
             </div>
           </div>

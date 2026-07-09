@@ -185,6 +185,12 @@
     return (name || "").trim().slice(0, 2).toUpperCase() || "--";
   }
 
+  function crestHtml(esClub, rival, rivalEscudoUrl) {
+    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
+    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
+    return crest(rival);
+  }
+
   function extractYouTubeId(url) {
     if (!url) return null;
     const patterns = [
@@ -257,14 +263,14 @@
       <span class="match-card__comp">${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
       <div class="match-card__teams">
         <div class="match-team">
-          <span class="match-team__crest">${esLocal ? "SP" : crest(rivalName)}</span>
+          <span class="match-team__crest">${crestHtml(esLocal, rivalName, match.rival_escudo_url)}</span>
           <span class="match-team__name">${esLocal ? "Santa Ponsa" : rivalName}</span>
         </div>
         ${jugado
           ? `<span class="match-card__score">${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}</span>`
           : `<span class="match-card__vs">VS</span>`}
         <div class="match-team">
-          <span class="match-team__crest">${esLocal ? crest(rivalName) : "SP"}</span>
+          <span class="match-team__crest">${crestHtml(!esLocal, rivalName, match.rival_escudo_url)}</span>
           <span class="match-team__name">${esLocal ? rivalName : "Santa Ponsa"}</span>
         </div>
       </div>

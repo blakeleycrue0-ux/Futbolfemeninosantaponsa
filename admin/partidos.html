@@ -54,6 +54,8 @@
           <div class="form-field"><label for="m-fecha">Fecha</label><input type="date" id="m-fecha" required></div>
           <div class="form-field"><label for="m-hora">Hora</label><input type="time" id="m-hora"></div>
         </div>
+        <div class="form-field"><label for="m-rival-escudo">Escudo del rival (URL)</label><input type="url" id="m-rival-escudo" placeholder="https://…"></div>
+        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Opcional. Si lo dejas vacío se mostrarán las iniciales del rival. Sube el logo a un sitio como Supabase Storage o Imgur y pega aquí la URL.</p>
         <div class="form-row">
           <div class="form-field"><label for="m-condicion">Condición</label>
             <select id="m-condicion"><option value="local">Local</option><option value="visitante">Visitante</option></select>
@@ -126,6 +128,7 @@
     document.getElementById("m-id").value = item ? item.id : "";
     if (item) document.getElementById("m-team").value = item.team_id;
     document.getElementById("m-rival").value = item ? item.rival : "";
+    document.getElementById("m-rival-escudo").value = item ? (item.rival_escudo_url || "") : "";
     document.getElementById("m-fecha").value = item ? item.fecha : "";
     document.getElementById("m-hora").value = item ? (item.hora || "") : "";
     document.getElementById("m-condicion").value = item ? item.condicion : "local";
@@ -182,6 +185,7 @@
     const payload = {
       team_id: document.getElementById("m-team").value,
       rival: document.getElementById("m-rival").value.trim(),
+      rival_escudo_url: document.getElementById("m-rival-escudo").value.trim() || null,
       fecha: document.getElementById("m-fecha").value,
       hora: document.getElementById("m-hora").value || null,
       condicion: document.getElementById("m-condicion").value,

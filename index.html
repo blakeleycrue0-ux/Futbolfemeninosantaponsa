@@ -73,7 +73,7 @@
     <img class="hero__crest" src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">
     <div class="container hero__content">
       <span class="hero__tag">Temporada 2025/26 · Preferente Femenina</span>
-      <h1 class="hero__title">Fútbol femenino con raíces en Santa Ponsa.</h1>
+      <h1 class="hero__title">Fútbol <span class="hollow">femenino</span> con raíces en <span class="accent">Santa Ponsa</span>.</h1>
       <p class="hero__lede">Del alevín al primer equipo: un proyecto de club para que el fútbol femenino de Calvià compita, forme y crezca temporada tras temporada.</p>
       <div class="hero__actions">
         <a href="calendario.html" class="btn btn-primary">Ver calendario</a>
@@ -81,6 +81,27 @@
       </div>
     </div>
   </section>
+
+  <div class="marquee-strip" aria-hidden="true">
+    <div class="marquee-inner">
+      <span>Futbol Femenino Santa Ponsa</span><span class="dot">✦</span>
+      <span>Calvià, Mallorca</span><span class="dot">✦</span>
+      <span>Preferente Femenina</span><span class="dot">✦</span>
+      <span>Cantera propia</span><span class="dot">✦</span>
+      <span>Inscripciones abiertas</span><span class="dot">✦</span>
+      <span>Futbol Femenino Santa Ponsa</span><span class="dot">✦</span>
+      <span>Calvià, Mallorca</span><span class="dot">✦</span>
+      <span>Preferente Femenina</span><span class="dot">✦</span>
+      <span>Cantera propia</span><span class="dot">✦</span>
+      <span>Inscripciones abiertas</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  <div class="stats-sec">
+    <div class="stat-cell"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
+    <div class="stat-cell"><strong id="stat-jugadoras">80+</strong><span>Jugadoras</span></div>
+    <div class="stat-cell"><strong>1ª</strong><span>Temporada</span></div>
+  </div>
 
   <section class="section" aria-labelledby="proximo-heading">
     <div class="container">
@@ -213,6 +234,16 @@
 <script>
 (async function () {
   const teamId = window.SPFC_FALLBACK.club.equipo_primero_id;
+
+  const teams = await SPFC_DATA.teams();
+  const equiposEl = document.getElementById("stat-equipos");
+  if (equiposEl && teams.length) equiposEl.textContent = String(teams.length);
+  const jugadorasEl = document.getElementById("stat-jugadoras");
+  if (jugadorasEl && teams.length) {
+    const counts = await Promise.all(teams.map((t) => SPFC_DATA.players(t.id)));
+    const total = counts.reduce((sum, list) => sum + list.length, 0);
+    if (total > 0) jugadorasEl.textContent = total + "+";
+  }
 
   const proximo = await SPFC_DATA.upcomingMatch(teamId);
   const proximoEl = document.getElementById("proximo-partido");

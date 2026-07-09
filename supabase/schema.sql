@@ -265,10 +265,15 @@ create policy "spfc_media_admin_delete" on storage.objects
   for delete using (bucket_id = 'spfc-media' and is_app_admin());
 
 -- ============================================================================
--- Semilla mínima: primer equipo. Ajustar/ampliar desde el panel admin.
+-- Semilla: categorías reales del club. Ajustar/ampliar desde el panel admin
+-- (Plantilla → Equipos) si cambian de una temporada a otra.
 -- ============================================================================
 insert into teams (nombre, categoria, temporada, slug, orden)
-values ('Primer Equipo', 'Preferente Femenina', '2025/26', 'primer-equipo', 0)
+values
+  ('Amateur', 'Amateur', '2025/26', 'amateur', 0),
+  ('Cadete Juvenil Femenino', 'Cadete Juvenil', '2025/26', 'cadete-juvenil', 1),
+  ('Infantil Femenino', 'Infantil', '2025/26', 'infantil', 2),
+  ('Alevín Femenino', 'Alevín', '2025/26', 'alevin', 3)
 on conflict do nothing;
 
 -- Recuerda añadir tu email de administrador, p.ej.:

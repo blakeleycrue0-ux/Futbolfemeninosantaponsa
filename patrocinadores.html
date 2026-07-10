@@ -74,26 +74,17 @@
     <div class="container">
       <div class="section-head">
         <div>
-          <span class="eyebrow">Patrocinio principal</span>
-          <h2 id="patro-principales-heading">Patrocinadores principales</h2>
-        </div>
-      </div>
-      <div id="sponsors-principales" class="grid grid-2">
-        <p class="empty-state">Cargando patrocinadores…</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="patro-colab-heading" style="padding-top:0;">
-    <div class="container">
-      <div class="section-head">
-        <div>
           <span class="eyebrow">Con su apoyo</span>
-          <h2 id="patro-colab-heading">Colaboradores</h2>
+          <h2 id="patro-principales-heading">Nuestros patrocinadores</h2>
         </div>
       </div>
-      <div id="sponsors-colaboradores" class="grid grid-4">
-        <p class="empty-state">Cargando colaboradores…</p>
+      <div class="grid grid-2">
+        <a href="#" class="card sponsor-main-card" tabindex="-1" style="pointer-events:none;">
+          <img src="assets/img/sponsors/universal-nautic.jpg" alt="Universal Nàutic">
+        </a>
+        <a href="#" class="card sponsor-main-card" tabindex="-1" style="pointer-events:none;">
+          <img src="assets/img/sponsors/ajuntament-calvia.jpeg" alt="Ajuntament de Calvià">
+        </a>
       </div>
     </div>
   </section>
@@ -151,33 +142,6 @@
   </div>
 </footer>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/data.js"></script>
 <script src="assets/js/nav.js"></script>
-<script>
-(async function () {
-  const sponsors = await SPFC_DATA.sponsors();
-  const principales = sponsors.filter((s) => s.nivel === "principal");
-  const colaboradores = sponsors.filter((s) => s.nivel !== "principal");
-
-  const principalesEl = document.getElementById("sponsors-principales");
-  principalesEl.innerHTML = principales.length
-    ? principales.map((s) => `
-      <a href="${s.url || '#'}" class="card sponsor-main-card" ${s.url ? 'target="_blank" rel="noopener"' : 'tabindex="-1" style="pointer-events:none;"'}>
-        ${s.logo_url ? `<img src="${s.logo_url}" alt="${s.nombre}">` : `<span class="pill">${s.nombre}</span>`}
-      </a>`).join("")
-    : `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay patrocinadores principales publicados.</p>`;
-
-  const colaboradoresEl = document.getElementById("sponsors-colaboradores");
-  colaboradoresEl.innerHTML = colaboradores.length
-    ? colaboradores.map((s) => `
-      <a href="${s.url || '#'}" class="card sponsor-collab-card" ${s.url ? 'target="_blank" rel="noopener"' : 'tabindex="-1" style="pointer-events:none;"'}>
-        ${s.logo_url ? `<img src="${s.logo_url}" alt="${s.nombre}">` : `<span class="pill">${s.nombre}</span>`}
-      </a>`).join("")
-    : `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay colaboradores publicados.</p>`;
-})();
-</script>
 </body>
 </html>

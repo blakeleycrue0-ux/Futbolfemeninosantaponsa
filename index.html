@@ -23,7 +23,7 @@
     background: var(--dark); color: var(--text-on-dark); border-top: 2px solid var(--accent);
   }
   .feature-banner__media { position: absolute; inset: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: saturate(0.85) brightness(0.8); }
-  .feature-banner__media video, .feature-banner__media iframe { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; pointer-events: none; }
+  .feature-banner__media video, .feature-banner__media iframe { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; border: 0; pointer-events: none; }
   .feature-banner__tint { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.15) 75%); }
   .feature-banner__content { position: relative; z-index: 2; padding: 4rem var(--gutter); width: 100%; max-width: var(--container); margin: 0 auto; }
   .feature-banner__title { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; color: #fff; margin: 0.2em 0 0.5em; font-size: clamp(1.8rem, 5vw, 3rem); }
@@ -209,7 +209,10 @@
   <section class="sponsors-sec-v2">
     <div class="sr-l tag-line">Hacen posible el club</div>
     <h2 class="big-title-v2 sr">Patrocinadores</h2>
-    <div class="sponsor-logos-v2 sr" id="sponsorLogos"></div>
+    <div class="sponsor-logos-v2 sr">
+      <img src="assets/img/sponsors/universal-nautic.jpg" alt="Universal Nàutic">
+      <img src="assets/img/sponsors/ajuntament-calvia.jpeg" alt="Ajuntament de Calvià">
+    </div>
     <div class="soc-row sr">
       <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" class="soc-a">Instagram</a>
       <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" class="soc-a">Facebook</a>
@@ -358,8 +361,11 @@ function countUp(el, target, suffix) {
         const video = document.createElement("video");
         video.setAttribute("autoplay", ""); video.setAttribute("muted", ""); video.setAttribute("loop", "");
         video.setAttribute("playsinline", ""); video.setAttribute("webkit-playsinline", "");
-        video.muted = true; video.disableRemotePlayback = true;
+        video.muted = true; video.loop = true; video.disableRemotePlayback = true;
         if (destacado.imagen_url) video.poster = destacado.imagen_url;
+        // Si el vídeo llega al final sin que "loop" lo reinicie solo
+        // (pasa en algunos navegadores/streams), lo forzamos a mano.
+        video.addEventListener("ended", () => { video.currentTime = 0; video.play().catch(() => {}); });
         video.addEventListener("error", () => video.remove());
         video.src = destacado.video_url;
         mediaEl.appendChild(video);
@@ -438,7 +444,9 @@ function countUp(el, target, suffix) {
   newsGrid.innerHTML = noticias.length
     ? noticias.map((n) => `
       <a class="nc" href="noticia.html?id=${n.id}">
-        ${n.imagen_url ? `<img class="nc-img" src="${n.imagen_url}" alt="${escapeHtml(n.titulo)}" loading="lazy">` : ""}
+        ${n.imagen_url
+          ? `<img class="nc-img" src="${n.imagen_url}" alt="${escapeHtml(n.titulo)}" loading="lazy">`
+          : `<div class="nc-img nc-img-fallback"><img src="assets/img/escudo-santa-ponsa.png" alt=""></div>`}
         <div class="nc-body">
           <span class="nc-eq">${spfcFormatDate(n.fecha)}</span>
           <div class="nc-title">${escapeHtml(n.titulo)}</div>
@@ -446,15 +454,6 @@ function countUp(el, target, suffix) {
         </div>
       </a>`).join("")
     : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
-
-  /* Sponsors */
-  const sponsors = await SPFC_DATA.sponsors();
-  document.getElementById("sponsorLogos").innerHTML = sponsors.length
-    ? sponsors.map((s) => `
-      <a href="${s.url || 'patrocinadores.html'}" target="_blank" rel="noopener">
-        ${s.logo_url ? `<img src="${s.logo_url}" alt="${escapeHtml(s.nombre)}">` : `<span class="pill">${escapeHtml(s.nombre)}</span>`}
-      </a>`).join("")
-    : "";
 })();
 </script>
 </body>

@@ -69,6 +69,19 @@
             <span class="media-upload-status" id="d-imagen-status"></span>
           </div>
         </div>
+        <div class="form-field">
+          <label for="d-video">Vídeo de fondo (opcional)</label>
+          <input type="url" id="d-video" placeholder="https://… o un enlace de YouTube">
+          <div class="media-upload">
+            <input type="file" id="d-video-file" accept="video/*">
+            <span class="media-upload-status" id="d-video-status"></span>
+          </div>
+        </div>
+        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">
+          Si pones un vídeo, se reproduce de fondo en bucle (sin sonido) en vez de la foto — la foto se
+          usa igualmente mientras el vídeo carga. Puedes subir un archivo de vídeo desde el móvil/ordenador
+          o pegar un enlace de YouTube.
+        </p>
         <div class="form-row">
           <div class="form-field"><label for="d-enlace-url">Enlace del botón (opcional)</label><input type="url" id="d-enlace-url" placeholder="https://… o inscripcion.html"></div>
           <div class="form-field"><label for="d-enlace-texto">Texto del botón</label><input type="text" id="d-enlace-texto" placeholder="Más información e inscripciones"></div>
@@ -101,6 +114,7 @@
 (async function () {
   if (!window.spfc) return;
   wireMediaUpload({ fileInputId: "d-imagen-file", urlInputId: "d-imagen", statusId: "d-imagen-status", folder: "destacado" });
+  wireMediaUpload({ fileInputId: "d-video-file", urlInputId: "d-video", statusId: "d-video-status", folder: "destacado" });
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -118,6 +132,7 @@
     document.getElementById("d-titulo").value = item ? (item.titulo || "") : "";
     document.getElementById("d-texto").value = item ? (item.texto || "") : "";
     document.getElementById("d-imagen").value = item ? (item.imagen_url || "") : "";
+    document.getElementById("d-video").value = item ? (item.video_url || "") : "";
     document.getElementById("d-enlace-url").value = item ? (item.enlace_url || "") : "";
     document.getElementById("d-enlace-texto").value = item ? (item.enlace_texto || "") : "";
     formCard.style.display = "block";
@@ -162,6 +177,7 @@
       titulo: document.getElementById("d-titulo").value.trim(),
       texto: document.getElementById("d-texto").value.trim(),
       imagen_url: document.getElementById("d-imagen").value.trim() || null,
+      video_url: document.getElementById("d-video").value.trim() || null,
       enlace_url: document.getElementById("d-enlace-url").value.trim() || null,
       enlace_texto: document.getElementById("d-enlace-texto").value.trim() || null,
       actualizado_en: new Date().toISOString(),

@@ -175,6 +175,7 @@ create table if not exists destacado (
   titulo text,
   texto text,
   imagen_url text,
+  video_url text,
   enlace_url text,
   enlace_texto text,
   actualizado_en timestamptz not null default now()

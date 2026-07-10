@@ -69,7 +69,7 @@ const SPFC_DATA = (function () {
 
   return {
     async teams() {
-      return safe((c) => c.from("teams").select("*").order("categoria"), window.SPFC_FALLBACK.teams);
+      return safe((c) => c.from("teams").select("*").order("orden"), window.SPFC_FALLBACK.teams);
     },
     async players(teamId) {
       return safe(

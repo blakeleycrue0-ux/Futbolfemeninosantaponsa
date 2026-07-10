@@ -24,6 +24,7 @@
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
       <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="inscripciones.html">Inscripciones</a>
     </nav>
     <div class="admin-sidebar-foot">
       <span data-admin-email>—</span>
@@ -42,6 +43,7 @@
       <div class="admin-stat"><strong>—</strong><span>Jugadoras</span></div>
       <div class="admin-stat"><strong>—</strong><span>Partidos</span></div>
       <div class="admin-stat"><strong>—</strong><span>Patrocinadores</span></div>
+      <div class="admin-stat"><strong>—</strong><span>Inscripciones</span></div>
     </div>
 
     <div class="admin-card">
@@ -81,14 +83,15 @@
     return count ?? 0;
   }
 
-  const [news, players, matches, sponsors] = await Promise.all([
+  const [news, players, matches, sponsors, inscripciones] = await Promise.all([
     count("news"),
     count("players"),
     count("matches"),
     count("sponsors"),
+    count("inscripciones"),
   ]);
 
-  const stats = [news, players, matches, sponsors];
+  const stats = [news, players, matches, sponsors, inscripciones];
   document.querySelectorAll("#stat-grid strong").forEach((el, i) => (el.textContent = stats[i]));
 
   async function loadLog() {

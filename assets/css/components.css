@@ -88,6 +88,8 @@
   font-size: 0.85rem;
   letter-spacing: -0.01em;
   text-transform: uppercase;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .brand__crest {
   width: 42px;
@@ -99,16 +101,17 @@
 .brand__name { display: flex; flex-direction: column; line-height: 1.15; }
 .brand__name small { font-family: var(--font-body); font-weight: 400; font-size: 0.6rem; color: var(--text-on-dark-muted); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 2px; }
 
-.main-nav { display: flex; align-items: center; gap: clamp(0.9rem, 1.6vw, 1.9rem); }
+.main-nav { display: flex; align-items: center; gap: clamp(0.55rem, 1vw, 1.3rem); flex-shrink: 1; min-width: 0; }
 .main-nav a {
   color: var(--text-on-dark-muted);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   position: relative;
   padding: 0.4em 0;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 .main-nav a:hover, .main-nav a[aria-current="page"] { color: var(--text-on-dark); }
 .main-nav a[aria-current="page"]::after {
@@ -118,7 +121,16 @@
   height: 2px;
   background: var(--accent);
 }
-.header-actions { display: flex; align-items: center; gap: 0.9rem; }
+.header-actions { display: flex; align-items: center; gap: 0.9rem; flex-shrink: 0; }
+
+/*
+  "Inscripción" lives in the mobile full-screen menu (plenty of vertical
+  room there) but NOT in the desktop text nav — an 11th item there
+  overflowed the header at common widths (1440px included) and wrapped
+  the logo. On desktop it's the standalone .header-cta button instead.
+*/
+.main-nav a[href="inscripcion.html"] { display: none; }
+.header-cta { white-space: nowrap; }
 
 .nav-toggle {
   display: none;
@@ -159,8 +171,9 @@
   .main-nav a:hover { color: var(--accent-dark); }
   .main-nav a[aria-current="page"]::after { display: none; }
   .main-nav a[aria-current="page"] { color: var(--accent-dark); }
+  .main-nav a[href="inscripcion.html"] { display: block; }
   .nav-toggle { display: flex; }
-  .header-actions .btn span { display: none; }
+  .header-cta { display: none; }
 }
 
 /* ===================== Hero ===================== */

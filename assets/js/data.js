@@ -132,6 +132,21 @@ const SPFC_DATA = (function () {
     async sponsors() {
       return safe((c) => c.from("sponsors").select("*").order("nivel"), window.SPFC_FALLBACK.sponsors);
     },
+    // Escritura pública (formulario de inscripción) — a diferencia del resto
+    // de funciones de este objeto, no usa el patrón "safe": el formulario
+    // necesita saber si el guardado falló para poder avisar a quien lo rellena.
+    async submitInscripcion(payload, cuotas) {
+      const c = client();
+      if (!c) return { error: { message: "Supabase no está configurado en esta web." } };
+      const { data, error } = await c.from("inscripciones").insert(payload).select().single();
+      if (error) return { error };
+      if (cuotas && cuotas.length) {
+        const rows = cuotas.map((cu) => Object.assign({}, cu, { inscripcion_id: data.id }));
+        const { error: pagosError } = await c.from("inscripcion_pagos").insert(rows);
+        if (pagosError) return { data, error: pagosError };
+      }
+      return { data };
+    },
   };
 })();
 

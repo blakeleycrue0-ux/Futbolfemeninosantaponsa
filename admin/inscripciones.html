@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inscripciones — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Futbol Femenino Santa Ponsa">
+      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="inscripciones.html">Inscripciones</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Inscripciones</h1>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Aquí llegan las inscripciones enviadas desde <span class="tag-fuente">inscripcion.html</span>.
+      El cobro por Stripe todavía no está conectado, así que marca manualmente el estado de cada una
+      según vayas gestionando el pago con la familia.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
+      <h2 id="detail-title">Inscripción</h2>
+      <div id="detail-body" style="font-size:0.9rem;line-height:1.8;"></div>
+      <div class="form-row" style="margin-top:1.2rem;">
+        <div class="form-field">
+          <label for="i-estado">Estado</label>
+          <select id="i-estado">
+            <option value="pendiente">Pendiente</option>
+            <option value="pago_parcial">Pago parcial</option>
+            <option value="pagado">Pagado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="i-notas">Notas internas</label>
+          <input type="text" id="i-notas" placeholder="p.ej. paga 1ª cuota en efectivo el 3/9">
+        </div>
+      </div>
+      <div style="display:flex;gap:0.8rem;">
+        <button type="button" class="btn btn-primary btn-sm" id="save-btn">Guardar</button>
+        <button type="button" class="btn btn-outline btn-sm" id="close-btn">Cerrar</button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="inscripciones-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  const planLabels = { unico: "Pago único", "2_cuotas": "2 cuotas", "4_cuotas": "4 cuotas" };
+  const estadoLabels = { pendiente: "Pendiente", pago_parcial: "Pago parcial", pagado: "Pagado", cancelado: "Cancelado" };
+
+  let teams = [];
+  let inscripciones = [];
+
+  async function loadTeams() {
+    const { data } = await window.spfc.from("teams").select("*");
+    teams = data || [];
+  }
+
+  function teamName(teamId) {
+    const t = teams.find((x) => x.id === teamId);
+    return t ? t.nombre : "—";
+  }
+
+  const detailCard = document.getElementById("detail-card");
+
+  function openDetail(item) {
+    document.getElementById("detail-title").textContent = item.jugadora_nombre;
+    document.getElementById("detail-body").innerHTML = `
+      <p><strong>Jugadora:</strong> ${escapeHtml(item.jugadora_nombre)}${item.jugadora_fecha_nacimiento ? " · nacida " + escapeHtml(item.jugadora_fecha_nacimiento) : ""}</p>
+      <p><strong>Equipo:</strong> ${escapeHtml(teamName(item.team_id))} &nbsp; <strong>Talla:</strong> ${escapeHtml(item.talla_equipacion || "—")}</p>
+      <p><strong>Tutor/a:</strong> ${escapeHtml(item.tutor_nombre)}${item.tutor_dni ? " · " + escapeHtml(item.tutor_dni) : ""}</p>
+      <p><strong>Teléfono:</strong> <a href="tel:${escapeHtml(item.tutor_telefono)}">${escapeHtml(item.tutor_telefono)}</a> &nbsp; <strong>Email:</strong> <a href="mailto:${escapeHtml(item.tutor_email)}">${escapeHtml(item.tutor_email)}</a></p>
+      <p><strong>Dirección:</strong> ${escapeHtml(item.direccion || "—")} ${escapeHtml(item.poblacion || "")} ${escapeHtml(item.codigo_postal || "")}</p>
+      <p><strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago}</p>
+    `;
+    document.getElementById("i-estado").value = item.estado;
+    document.getElementById("i-notas").value = item.notas || "";
+    detailCard.dataset.id = item.id;
+    detailCard.style.display = "block";
+    detailCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("close-btn").addEventListener("click", () => (detailCard.style.display = "none"));
+
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    const id = detailCard.dataset.id;
+    const { error } = await window.spfc.from("inscripciones").update({
+      estado: document.getElementById("i-estado").value,
+      notas: document.getElementById("i-notas").value.trim(),
+    }).eq("id", id);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    detailCard.style.display = "none";
+    loadInscripciones();
+  });
+
+  async function loadInscripciones() {
+    const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
+    const body = document.getElementById("inscripciones-body");
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    inscripciones = data || [];
+    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay inscripciones.</td></tr>'; return; }
+    body.innerHTML = inscripciones.map((i) => `
+      <tr>
+        <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>
+        <td>${escapeHtml(i.jugadora_nombre)}</td>
+        <td>${escapeHtml(teamName(i.team_id))}</td>
+        <td>${escapeHtml(i.tutor_nombre)}</td>
+        <td>${planLabels[i.plan_pago] || escapeHtml(i.plan_pago)}</td>
+        <td>${estadoLabels[i.estado] || escapeHtml(i.estado)}</td>
+        <td class="actions">
+          <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${i.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-view]").forEach((btn) =>
+      btn.addEventListener("click", () => openDetail(inscripciones.find((i) => i.id === btn.dataset.view))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta inscripción?")) return;
+        await window.spfc.from("inscripciones").delete().eq("id", btn.dataset.del);
+        loadInscripciones();
+      }));
+  }
+
+  await loadTeams();
+  await loadInscripciones();
+})();
+</script>
+</body>
+</html>

@@ -11,96 +11,107 @@
 <meta property="og:description" content="Web oficial del club: resultados, clasificación, plantilla, noticias y actualidad.">
 <meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/">
 <meta property="og:locale" content="es_ES">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  /* Banner "destacado" — editable desde Admin → Destacado. Genérico: sirve
-     para el campus de verano, el inicio de temporada, o lo que haga falta,
-     sin tener que tocar este HTML cada vez. Se oculta si no hay ninguna
-     fila activa en la tabla `destacado`. */
+  /* Banner "destacado" — editable desde Admin → Destacado. */
   .feature-banner {
-    position: relative;
-    min-height: 70vh;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-    background: var(--dark);
-    color: var(--text-on-dark);
+    position: relative; min-height: 60vh; display: flex; align-items: flex-end; overflow: hidden;
+    background: var(--dark); color: var(--text-on-dark); border-top: 2px solid var(--accent);
   }
-  .feature-banner__media {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    background-size: cover;
-    background-position: center;
-    filter: saturate(0.85) brightness(0.8);
-  }
-  .feature-banner__media video,
-  .feature-banner__media iframe {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border: 0;
-    pointer-events: none;
-  }
-  .feature-banner__tint {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.15) 75%);
-  }
-  .feature-banner__content { position: relative; z-index: 2; padding: 4.5rem 0; width: 100%; }
-  .feature-banner__title { color: #fff; margin: 0.2em 0 0.5em; }
+  .feature-banner__media { position: absolute; inset: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: saturate(0.85) brightness(0.8); }
+  .feature-banner__media video, .feature-banner__media iframe { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; pointer-events: none; }
+  .feature-banner__tint { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.15) 75%); }
+  .feature-banner__content { position: relative; z-index: 2; padding: 4rem var(--gutter); width: 100%; max-width: var(--container); margin: 0 auto; }
+  .feature-banner__title { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: -0.03em; color: #fff; margin: 0.2em 0 0.5em; font-size: clamp(1.8rem, 5vw, 3rem); }
   .feature-banner__lede { max-width: 540px; color: rgba(244,240,232,0.8); font-size: 1.05rem; }
-  .feature-banner__content .btn { margin-top: 0.6rem; }
+  .feature-banner__content .hero-pill { margin-top: 1.2rem; }
 </style>
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
-<header class="site-header">
-  <div class="container">
-    <a href="index.html" class="brand">
-      <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
-      <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
-    </a>
-    <nav class="main-nav" data-nav id="main-nav">
-      <a href="index.html">Inicio</a>
-      <a href="equipos.html">Equipos</a>
-      <a href="plantilla.html">Plantilla</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="clasificacion.html">Clasificación</a>
-      <a href="noticias.html">Noticias</a>
-      <a href="galeria.html">Galería</a>
-      <a href="club.html">Club</a>
-      <a href="patrocinadores.html">Patrocinadores</a>
-      <a href="contacto.html">Contacto</a>
-      <a href="inscripcion.html">Inscripción</a>
-    </nav>
-    <div class="header-actions">
-      <a href="inscripcion.html" class="btn btn-primary btn-sm header-cta"><span>Inscribirme</span></a>
-      <button class="nav-toggle" data-nav-toggle aria-label="Abrir menú" aria-expanded="false" aria-controls="main-nav">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </button>
-    </div>
+<!-- ═══ LOADER ═══ -->
+<div id="loader">
+  <div class="ld-word" id="ldWord"><span>F</span><span>S</span><span>P</span></div>
+  <div class="ld-bar-bg"><div class="ld-bar" id="lbar"></div></div>
+  <div class="ld-pct" id="lpct">0%</div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="#partidos">Partidos</a>
+    <a href="#proyecto">Club</a>
+    <a href="#noticias">Noticias</a>
+    <a href="#contacto">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Inscribirme</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
   </div>
 </header>
 
+<!-- ═══ FULL NAV ═══ -->
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+    <a href="inscripcion.html" class="fullnav-link">Inscripción</a>
+  </div>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook</a>
+    <a href="admin/index.html">Acceso club</a>
+  </div>
+</nav>
+
 <main id="main">
 
-  <section class="hero">
-    <div class="hero__media hero__media--photo" aria-hidden="true"></div>
-    <img class="hero__crest" src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">
-    <div class="container hero__content">
-      <span class="hero__tag">Temporada 2025/26 · Preferente Femenina</span>
-      <h1 class="hero__title">Fútbol <span class="hollow">Femenino</span> <span class="accent">Santa Ponça</span></h1>
-      <div class="hero__actions">
-        <a href="calendario.html" class="btn btn-primary">Ver calendario</a>
-        <a href="club.html" class="btn btn-ghost-light">Conoce el club</a>
+  <!-- ═══ HERO ═══ -->
+  <section class="h-hero">
+    <div class="hero-photo" aria-hidden="true"></div>
+    <div class="hero-tint" aria-hidden="true"></div>
+    <div class="hero-grain" aria-hidden="true"></div>
+    <div class="hero-spotlight" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <h1 class="hero-title" aria-label="Fútbol Femenino Santa Ponça">
+        <span class="line"><span class="word" id="w1">Fútbol</span></span>
+        <span class="line"><span class="word hollow" id="w2">Femenino</span></span>
+        <span class="line"><span class="word highlight" id="w3">Santa Ponça</span></span>
+      </h1>
+      <div class="hero-sub-row" id="heroSub">
+        <p class="hero-desc">Club de fútbol femenino en Calvià, Mallorca. Formamos, competimos y abrimos puertas reales en el deporte, desde la cantera hasta el primer equipo.</p>
+        <a href="inscripcion.html" class="hero-pill">
+          <span>Inscribirme ahora</span>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
       </div>
+    </div>
+
+    <div class="hero-scroll">
+      <div class="scroll-wire"></div>
+      <span>Scroll</span>
     </div>
   </section>
 
+  <!-- MARQUEE -->
   <div class="marquee-strip" aria-hidden="true">
     <div class="marquee-inner">
       <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
@@ -116,123 +127,101 @@
     </div>
   </div>
 
+  <!-- STATS -->
   <div class="stats-sec">
-    <div class="stat-cell"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
-    <div class="stat-cell"><strong id="stat-jugadoras">80+</strong><span>Jugadoras</span></div>
-    <div class="stat-cell"><strong>1ª</strong><span>Temporada</span></div>
+    <div class="stat-cell sr"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
+    <div class="stat-cell sr" style="transition-delay:.1s"><strong id="stat-jugadoras">80+</strong><span>Jugadoras</span></div>
+    <div class="stat-cell sr" style="transition-delay:.2s"><strong>1ª</strong><span>Temporada</span></div>
   </div>
 
-  <section class="section" aria-labelledby="proximo-heading">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Próximo partido</span>
-          <h2 id="proximo-heading">No te lo pierdas</h2>
-        </div>
-        <a href="calendario.html" class="back-link" style="margin:0;">Calendario completo →</a>
-      </div>
-      <div id="proximo-partido" class="grid grid-3" style="grid-template-columns: 2fr 1fr 1fr;">
-        <p class="empty-state">Cargando próximo partido…</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Destacado: se rellena y activa/desactiva desde Admin → Destacado -->
+  <!-- ═══ DESTACADO (admin) ═══ -->
   <section class="feature-banner" id="destacado-section" style="display:none;" aria-labelledby="destacado-heading">
     <div class="feature-banner__media" id="destacado-media" aria-hidden="true"></div>
     <div class="feature-banner__tint" aria-hidden="true"></div>
-    <div class="container feature-banner__content">
+    <div class="feature-banner__content">
       <h2 id="destacado-heading" class="feature-banner__title"></h2>
       <p class="feature-banner__lede" id="destacado-texto"></p>
-      <a href="#" id="destacado-link" class="btn btn-primary" style="display:none;"></a>
+      <a href="#" id="destacado-link" class="hero-pill" style="display:none;"><span></span></a>
     </div>
   </section>
 
-  <section class="section section-dark" aria-labelledby="resultados-heading">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Última jornada</span>
-          <h2 id="resultados-heading">Resultados recientes</h2>
-        </div>
-        <a href="clasificacion.html" class="back-link" style="margin:0; color: var(--accent-light);">Ver clasificación →</a>
+  <!-- ═══ MATCHES ═══ -->
+  <section class="matches-sec" id="partidos">
+    <div class="sr-l tag-line">Calendario y resultados</div>
+    <h2 class="big-title-v2 sr">Partidos</h2>
+    <div class="drag-hint sr">← Desliza →</div>
+    <div class="match-scroll" id="matchScroll">
+      <div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div>
+    </div>
+  </section>
+
+  <!-- ═══ ABOUT ═══ -->
+  <section class="about-sec" id="proyecto">
+    <div class="about-inner">
+      <div class="about-left">
+        <div class="sr-l tag-line">Nuestro proyecto</div>
+        <h2 class="big-title-v2 sr">Más que<br><em style="font-style:italic;font-weight:300;">fútbol</em></h2>
+        <p class="sub-copy sr">Metodología profesional, ambición competitiva y visión de futuro. Un club construido para durar en Calvià, Mallorca.</p>
+        <a href="club.html" class="conocer-link sr">
+          Conocer más
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
       </div>
-      <div id="resultados-recientes" class="grid grid-3">
-        <p class="empty-state">Cargando resultados…</p>
+      <div class="about-right">
+        <div class="pc sr"><div class="pc-n">01</div><h3>Formación</h3><p>Metodología profesional adaptada a cada categoría, con entrenadores cualificados.</p></div>
+        <div class="pc sr" style="transition-delay:.1s"><div class="pc-n">02</div><h3>Competición</h3><p>Participamos en la Preferente Femenina con ambición de seguir creciendo.</p></div>
+        <div class="pc sr" style="transition-delay:.2s"><div class="pc-n">03</div><h3>Comunidad</h3><p>Somos una familia. Valores del deporte dentro y fuera del campo.</p></div>
+        <div class="pc sr" style="transition-delay:.3s"><div class="pc-n">04</div><h3>Futuro</h3><p>Proyecto a largo plazo con cantera propia en Santa Ponça.</p></div>
       </div>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="noticias-heading">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Actualidad</span>
-          <h2 id="noticias-heading">Últimas noticias</h2>
-        </div>
-        <a href="noticias.html" class="back-link" style="margin:0;">Todas las noticias →</a>
-      </div>
-      <div id="noticias-home" class="grid grid-3">
-        <p class="empty-state">Cargando noticias…</p>
-      </div>
-    </div>
+  <!-- ═══ JOIN ═══ -->
+  <section class="join-sec">
+    <h2 class="join-title sr">Forma parte<br>del club</h2>
+    <p class="join-desc sr">Buscamos jugadoras comprometidas. Todas las edades y niveles son bienvenidos en Santa Ponça.</p>
+    <a href="inscripcion.html" class="join-btn sr">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      <span>Quiero inscribirme</span>
+    </a>
   </section>
 
-  <section class="section" aria-labelledby="patro-heading" style="padding-top:0;">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Gracias por el apoyo</span>
-          <h2 id="patro-heading">Patrocinadores</h2>
-        </div>
-        <a href="patrocinadores.html" class="back-link" style="margin:0;">Ver todos →</a>
-      </div>
-      <div id="sponsor-strip-home" class="sponsor-strip"></div>
+  <!-- ═══ CONTACT ═══ -->
+  <div class="contact-sec-v2" id="contacto">
+    <div class="cc sr">
+      <div class="cc-lbl">Escríbenos</div>
+      <div class="cc-val"><a href="mailto:secretariaspfc@gmail.com">secretariaspfc@gmail.com</a></div>
+    </div>
+    <div class="cc sr" style="transition-delay:.12s">
+      <div class="cc-lbl">Llámanos</div>
+      <div class="cc-val"><a href="tel:+34676040111">676 04 01 11</a></div>
+    </div>
+  </div>
+
+  <!-- ═══ NEWS ═══ -->
+  <section class="news-sec-v2" id="noticias">
+    <div class="sr-l tag-line">Actualidad</div>
+    <h2 class="big-title-v2 sr" style="color:var(--ink);">Noticias</h2>
+    <div class="news-grid-v2 sr" id="newsGrid"></div>
+  </section>
+
+  <!-- ═══ SPONSORS ═══ -->
+  <section class="sponsors-sec-v2">
+    <div class="sr-l tag-line">Hacen posible el club</div>
+    <h2 class="big-title-v2 sr">Patrocinadores</h2>
+    <div class="sponsor-logos-v2 sr" id="sponsorLogos"></div>
+    <div class="soc-row sr">
+      <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" class="soc-a">Instagram</a>
+      <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" class="soc-a">Facebook</a>
+      <a href="patrocinadores.html" class="soc-a">Ver todos</a>
     </div>
   </section>
 
 </main>
 
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="brand">
-          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
-          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
-        </a>
-        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
-        <div class="footer-social">
-          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
-          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
-          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
-        </div>
-      </div>
-      <div>
-        <h4>Club</h4>
-        <a href="club.html">Historia y palmarés</a>
-        <a href="equipos.html">Equipos</a>
-        <a href="patrocinadores.html">Patrocinadores</a>
-      </div>
-      <div>
-        <h4>Competición</h4>
-        <a href="calendario.html">Calendario</a>
-        <a href="clasificacion.html">Clasificación</a>
-        <a href="plantilla.html">Plantilla</a>
-        <a href="galeria.html">Galería</a>
-      </div>
-      <div>
-        <h4>Contacto</h4>
-        <a href="contacto.html">Ubicación y contacto</a>
-        <a href="noticias.html">Prensa y noticias</a>
-        <a href="mailto:secretariaspfc@gmail.com">secretariaspfc@gmail.com</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
-      <a href="admin/index.html">Acceso club</a>
-    </div>
-  </div>
+<footer class="ft-v2">
+  <p>© <span data-year></span> <strong>Fútbol Femenino Santa Ponça</strong> · Calvià, Mallorca</p>
+  <a href="admin/index.html">Acceso club</a>
 </footer>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -241,27 +230,124 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
+/* ── LOADER ── */
+(function () {
+  const chars = document.querySelectorAll('#ldWord span');
+  chars.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 100));
+  const bar = document.getElementById('lbar');
+  const pct = document.getElementById('lpct');
+  let p = 0;
+  const iv = setInterval(() => {
+    p += Math.random() * 20;
+    if (p >= 100) { p = 100; clearInterval(iv); }
+    bar.style.width = p + '%';
+    pct.textContent = Math.floor(p) + '%';
+    if (p === 100) setTimeout(() => {
+      document.getElementById('loader').classList.add('done');
+      startHero();
+    }, 320);
+  }, 80);
+})();
+
+/* ── HERO ANIMATION ── */
+function animWord(id, delay) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.transition = 'transform .85s cubic-bezier(.23,1,.32,1), opacity .7s ease';
+    el.style.transform = 'translateY(0)';
+    el.style.opacity = '1';
+  }, delay);
+}
+function startHero() {
+  animWord('w1', 0);
+  animWord('w2', 280);
+  animWord('w3', 560);
+  setTimeout(() => { const el = document.getElementById('heroSub'); if (el) el.classList.add('in'); }, 1100);
+}
+// Red de seguridad: si algo falla en el loader, no dejar la web tapada.
+setTimeout(() => {
+  document.getElementById('loader').classList.add('done');
+  if (!document.getElementById('w1').style.opacity) startHero();
+}, 2600);
+
+/* ── HEADER SCROLL ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+
+/* ── MOBILE FULL NAV ── */
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.classList.toggle('x', open);
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+(function highlightCurrentNav() {
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.fullnav-link[href]').forEach((a) => {
+    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
+  });
+})();
+
+/* ── SCROLL REVEAL ── */
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.09 });
+document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
+
+/* ── STAT COUNTERS ── */
+function countUp(el, target, suffix) {
+  suffix = suffix || '';
+  let n = 0;
+  const step = Math.max(1, Math.ceil(target / 40));
+  const iv = setInterval(() => {
+    n += step;
+    if (n >= target) { n = target; clearInterval(iv); }
+    el.textContent = n + suffix;
+  }, 40);
+}
+
+/* ── DRAG SCROLL (partidos) ── */
+(function () {
+  const el = document.getElementById('matchScroll');
+  if (!el) return;
+  let isDown = false, startX, scrollL;
+  el.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - el.offsetLeft; scrollL = el.scrollLeft; });
+  el.addEventListener('mouseleave', () => isDown = false);
+  el.addEventListener('mouseup', () => isDown = false);
+  el.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    el.scrollLeft = scrollL - (e.pageX - el.offsetLeft - startX) * 1.5;
+  });
+})();
+
 (async function () {
   const teamId = window.SPFC_FALLBACK.club.equipo_primero_id;
 
-  function crestHtml(esClub, rival, rivalEscudoUrl) {
-    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
-    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
-    return (rival || "").trim().slice(0, 2).toUpperCase() || "--";
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
+  function crestHtml(esClub, rival, rivalEscudoUrl) {
+    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:6px;">`;
+    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:6px;">`;
+    return "";
+  }
+
+  /* Destacado */
   const destacado = await SPFC_DATA.destacado();
   if (destacado) {
     document.getElementById("destacado-heading").textContent = destacado.titulo || "";
     document.getElementById("destacado-texto").textContent = destacado.texto || "";
     const mediaEl = document.getElementById("destacado-media");
-    if (destacado.imagen_url) {
-      mediaEl.style.backgroundImage = `url('${destacado.imagen_url}')`;
-    }
+    if (destacado.imagen_url) mediaEl.style.backgroundImage = `url('${destacado.imagen_url}')`;
     if (destacado.video_url) {
-      const ytMatch = String(destacado.video_url).match(
-        /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/
-      );
+      const ytMatch = String(destacado.video_url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
       if (ytMatch) {
         const iframe = document.createElement("iframe");
         iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&modestbranding=1&playsinline=1`;
@@ -270,19 +356,11 @@
         mediaEl.appendChild(iframe);
       } else {
         const video = document.createElement("video");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("muted", "");
-        video.setAttribute("loop", "");
-        video.setAttribute("playsinline", "");
-        video.setAttribute("webkit-playsinline", "");
-        video.muted = true;
-        video.disableRemotePlayback = true;
+        video.setAttribute("autoplay", ""); video.setAttribute("muted", ""); video.setAttribute("loop", "");
+        video.setAttribute("playsinline", ""); video.setAttribute("webkit-playsinline", "");
+        video.muted = true; video.disableRemotePlayback = true;
         if (destacado.imagen_url) video.poster = destacado.imagen_url;
-        video.addEventListener("error", () => {
-          // El vídeo no se puede reproducir (formato no soportado, etc.):
-          // se queda la foto de fondo como respaldo, sin dejar el hueco vacío.
-          video.remove();
-        });
+        video.addEventListener("error", () => video.remove());
         video.src = destacado.video_url;
         mediaEl.appendChild(video);
         video.play().catch(() => {});
@@ -291,102 +369,92 @@
     const linkEl = document.getElementById("destacado-link");
     if (destacado.enlace_url) {
       linkEl.href = destacado.enlace_url;
-      linkEl.textContent = destacado.enlace_texto || "Más información";
-      linkEl.style.display = "";
+      linkEl.querySelector("span").textContent = destacado.enlace_texto || "Más información";
+      linkEl.style.display = "inline-flex";
     }
     document.getElementById("destacado-section").style.display = "";
   }
 
+  /* Stats */
   const teams = await SPFC_DATA.teams();
   const equiposEl = document.getElementById("stat-equipos");
-  if (equiposEl && teams.length) equiposEl.textContent = String(teams.length);
   const jugadorasEl = document.getElementById("stat-jugadoras");
-  if (jugadorasEl && teams.length) {
+  const statsObs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      if (teams.length) countUp(equiposEl, teams.length);
+      statsObs.disconnect();
+    });
+  }, { threshold: 0.5 });
+  if (equiposEl) statsObs.observe(equiposEl);
+  if (teams.length) {
     const counts = await Promise.all(teams.map((t) => SPFC_DATA.players(t.id)));
     const total = counts.reduce((sum, list) => sum + list.length, 0);
-    if (total > 0) jugadorasEl.textContent = total + "+";
+    if (total > 0 && jugadorasEl) jugadorasEl.textContent = total + "+";
   }
 
-  const proximo = await SPFC_DATA.upcomingMatch(teamId);
-  const proximoEl = document.getElementById("proximo-partido");
-  if (proximo) {
-    const esLocal = proximo.condicion === "local";
-    proximoEl.innerHTML = `
-      <div class="match-card" style="grid-column: span 2;">
-        <span class="match-card__comp">${proximo.competicion || ""}</span>
-        <div class="match-card__teams">
-          <div class="match-team">
-            <span class="match-team__crest">${crestHtml(esLocal, proximo.rival, proximo.rival_escudo_url)}</span>
-            <span class="match-team__name">${esLocal ? "Santa Ponça" : proximo.rival}</span>
-          </div>
-          <span class="match-card__vs">VS</span>
-          <div class="match-team">
-            <span class="match-team__crest">${crestHtml(!esLocal, proximo.rival, proximo.rival_escudo_url)}</span>
-            <span class="match-team__name">${esLocal ? proximo.rival : "Santa Ponça"}</span>
-          </div>
-        </div>
-        <div class="match-card__meta">
-          <span>${spfcFormatDate(proximo.fecha, { weekday: "long", day: "2-digit", month: "long" })}${proximo.hora ? " · " + proximo.hora.slice(0,5) + "h" : ""}</span>
-          <span>${proximo.campo || ""}</span>
-        </div>
-      </div>
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1.6rem;">
-        <span class="eyebrow">Cuenta atrás</span>
-        <p style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--text-on-cream);margin-top:0.4rem;">No faltes en la grada</p>
-        <a href="partido.html?id=${proximo.id || ""}" class="btn btn-outline btn-sm" style="margin-top:0.8rem;">Ficha del partido</a>
-      </div>
-    `;
+  /* Matches (próximo + recientes, en una sola tira) */
+  const [proximo, resultados] = await Promise.all([
+    SPFC_DATA.upcomingMatch(teamId),
+    SPFC_DATA.recentResults(teamId, 6),
+  ]);
+  const matchScroll = document.getElementById("matchScroll");
+  const items = [];
+  if (proximo) items.push(Object.assign({ _jugado: false }, proximo));
+  resultados.forEach((m) => items.push(Object.assign({ _jugado: true }, m)));
+
+  if (!items.length) {
+    matchScroll.innerHTML = `<p style="color:rgba(244,240,232,.35);padding:20px;">Todavía no hay partidos programados.</p>`;
   } else {
-    proximoEl.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">No hay próximos partidos programados por ahora.</p>`;
+    matchScroll.innerHTML = items.map((m) => {
+      const esLocal = m.condicion === "local";
+      const local = esLocal ? "Santa Ponça" : m.rival;
+      const visitante = esLocal ? m.rival : "Santa Ponça";
+      const localEscudo = crestHtml(esLocal, m.rival, m.rival_escudo_url);
+      const visitanteEscudo = crestHtml(!esLocal, m.rival, m.rival_escudo_url);
+      const marcador = m._jugado && m.goles_equipo != null
+        ? `<div class="mc-score">${esLocal ? m.goles_equipo : m.goles_rival} - ${esLocal ? m.goles_rival : m.goles_equipo}</div>`
+        : `<div class="mc-div"></div>`;
+      return `<a class="mc" href="${m._jugado ? "partido.html?id=" + (m.id || "") : "partido.html?id=" + (m.id || "")}">
+        <div class="mc-top">
+          <span class="mc-badge ${m._jugado ? "past" : "prox"}">${m._jugado ? "Jugado" : "Próximo"}</span>
+          <div class="mc-vs-row">
+            <div class="mc-tn">${localEscudo}${escapeHtml(local)}</div>
+            ${marcador}
+            <div class="mc-tn away">${escapeHtml(visitante)}${visitanteEscudo}</div>
+          </div>
+        </div>
+        <div class="mc-foot">
+          <div class="mc-info">${spfcFormatDate(m.fecha, { day: "2-digit", month: "short" })}${m.hora ? " · " + m.hora.slice(0,5) + "h" : ""}</div>
+          ${m.campo ? `<div class="mc-info">${escapeHtml(m.campo)}</div>` : ""}
+        </div>
+      </a>`;
+    }).join("");
   }
 
-  const resultados = await SPFC_DATA.recentResults(teamId, 3);
-  const resultadosEl = document.getElementById("resultados-recientes");
-  resultadosEl.innerHTML = resultados.length
-    ? resultados.map((m) => {
-        const esLocal = m.condicion === "local";
-        const res = spfcResultLabel(m);
-        return `
-        <div class="match-card">
-          <span class="match-card__comp">${m.competicion || ""}</span>
-          <div class="match-card__teams">
-            <div class="match-team">
-              <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
-              <span class="match-team__name">${esLocal ? "Santa Ponça" : m.rival}</span>
-            </div>
-            <span class="match-card__score">${esLocal ? m.goles_equipo : m.goles_rival} — ${esLocal ? m.goles_rival : m.goles_equipo}</span>
-            <div class="match-team">
-              <span class="match-team__crest">${crestHtml(!esLocal, m.rival, m.rival_escudo_url)}</span>
-              <span class="match-team__name">${esLocal ? m.rival : "Santa Ponça"}</span>
-            </div>
-          </div>
-          <div class="match-card__meta">
-            <span>${spfcFormatDate(m.fecha)}</span>
-            <span class="match-card__result result-${res}">${res === "W" ? "Victoria" : res === "L" ? "Derrota" : "Empate"}</span>
-          </div>
-        </div>`;
-      }).join("")
-    : `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay resultados registrados.</p>`;
-
+  /* News */
   const noticias = await SPFC_DATA.news(3);
-  const noticiasEl = document.getElementById("noticias-home");
-  noticiasEl.innerHTML = noticias.length
+  const newsGrid = document.getElementById("newsGrid");
+  newsGrid.innerHTML = noticias.length
     ? noticias.map((n) => `
-      <a href="noticia.html?id=${n.id}" class="card">
-        <div class="card__media">${n.imagen_url ? `<img src="${n.imagen_url}" alt="${n.titulo}" loading="lazy">` : ""}</div>
-        <div class="card__body">
-          <span class="card__tag">${spfcFormatDate(n.fecha)}</span>
-          <h3 class="card__title">${n.titulo}</h3>
-          <p class="card__meta">${n.resumen || ""}</p>
+      <a class="nc" href="noticia.html?id=${n.id}">
+        ${n.imagen_url ? `<img class="nc-img" src="${n.imagen_url}" alt="${escapeHtml(n.titulo)}" loading="lazy">` : ""}
+        <div class="nc-body">
+          <span class="nc-eq">${spfcFormatDate(n.fecha)}</span>
+          <div class="nc-title">${escapeHtml(n.titulo)}</div>
+          <div class="nc-desc">${escapeHtml(n.resumen || "")}</div>
         </div>
       </a>`).join("")
-    : `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay noticias publicadas.</p>`;
+    : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
 
+  /* Sponsors */
   const sponsors = await SPFC_DATA.sponsors();
-  document.getElementById("sponsor-strip-home").innerHTML = sponsors.map((s) => `
-    <a href="${s.url || 'patrocinadores.html'}" target="_blank" rel="noopener">
-      ${s.logo_url ? `<img src="${s.logo_url}" alt="${s.nombre}">` : `<span class="pill">${s.nombre}</span>`}
-    </a>`).join("");
+  document.getElementById("sponsorLogos").innerHTML = sponsors.length
+    ? sponsors.map((s) => `
+      <a href="${s.url || 'patrocinadores.html'}" target="_blank" rel="noopener">
+        ${s.logo_url ? `<img src="${s.logo_url}" alt="${escapeHtml(s.nombre)}">` : `<span class="pill">${escapeHtml(s.nombre)}</span>`}
+      </a>`).join("")
+    : "";
 })();
 </script>
 </body>

@@ -31,7 +31,7 @@
     FFIB_COMPETITION_ID         cod_primaria del grupo/categoría del primer
                                  equipo en ffib.es. Se obtiene navegando
                                  manualmente por ffib.es -> Competiciones ->
-                                 localizar el grupo del Femenino Santa Ponsa
+                                 localizar el grupo del Femenino Santa Ponça
                                  -> copiar el valor de cod_primaria de la URL.
     FFIB_TEAM_ID                uuid del equipo en la tabla `teams` de
                                  Supabase al que pertenecen estos datos.
@@ -169,7 +169,7 @@ exports.handler = async function () {
     if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido");
 
     const { data: team } = await supabase.from("teams").select("nombre").eq("id", FFIB_TEAM_ID).single();
-    const clubNombre = (team && team.nombre) || "Futbol Femenino Santa Ponsa";
+    const clubNombre = (team && team.nombre) || "Fútbol Femenino Santa Ponça";
 
     const rows = standings.map((s) => ({
       team_id: FFIB_TEAM_ID,
@@ -198,7 +198,7 @@ exports.handler = async function () {
     if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido");
 
     const { data: team } = await supabase.from("teams").select("nombre").eq("id", FFIB_TEAM_ID).single();
-    const clubNombre = ((team && team.nombre) || "Santa Ponsa").toLowerCase();
+    const clubNombre = ((team && team.nombre) || "Santa Ponça").toLowerCase();
 
     const ownMatches = parsed.filter(
       (m) => m.local.toLowerCase().includes("santa ponsa") || m.visitante.toLowerCase().includes("santa ponsa") ||

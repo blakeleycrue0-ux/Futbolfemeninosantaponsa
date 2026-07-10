@@ -1,5 +1,5 @@
 -- ============================================================================
--- Futbol Femenino Santa Ponsa — esquema Supabase
+-- Fútbol Femenino Santa Ponça — esquema Supabase
 -- Ejecutar en el SQL Editor de Supabase (o via `supabase db push`).
 -- Idempotente: puede volver a ejecutarse sin duplicar objetos.
 -- ============================================================================
@@ -188,9 +188,10 @@ create table if not exists inscripciones (
   -- jugadora
   jugadora_nombre text not null,
   jugadora_fecha_nacimiento date,
+  jugadora_dni text,
   team_id uuid references teams(id),
   talla_equipacion text,
-  -- tutor/madre/padre
+  -- tutor/madre/padre 1 (obligatorio)
   tutor_nombre text not null,
   tutor_dni text,
   tutor_telefono text not null,
@@ -198,6 +199,11 @@ create table if not exists inscripciones (
   direccion text,
   poblacion text,
   codigo_postal text,
+  -- tutor/madre/padre 2 (opcional)
+  tutor2_nombre text,
+  tutor2_dni text,
+  tutor2_telefono text,
+  tutor2_email text,
   -- pago
   plan_pago text not null default 'unico' check (plan_pago in ('unico','2_cuotas','4_cuotas')),
   cuota_total numeric,

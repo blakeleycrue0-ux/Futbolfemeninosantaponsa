@@ -1,4 +1,4 @@
-# Futbol Femenino Santa Ponsa — Web del club
+# Fútbol Femenino Santa Ponça — Web del club
 
 Web pública + panel de administración del club, en HTML/CSS/JS puro
 (sin frameworks), con Supabase como base de datos/auth/storage y Netlify
@@ -57,7 +57,7 @@ comentarios al principio de ese fichero — explican qué ajustar.
 ### 2. Localizar el `cod_primaria` de la FFIB
 
 1. Entra en [ffib.es](https://www.ffib.es), navega hasta la competición
-   femenina donde juega el Femenino Santa Ponsa (grupo/categoría correctos).
+   femenina donde juega el Femenino Santa Ponça (grupo/categoría correctos).
 2. Copia el valor de `cod_primaria` (y `cod_competicion` si aparece) de la
    URL de la página de jornada/clasificación de ese grupo.
 3. Guarda ese valor como `FFIB_COMPETITION_ID`.
@@ -107,7 +107,7 @@ Galería, Patrocinadores.
 
 ## Bloque Campus (temporal, solo verano)
 
-`index.html` incluye una sección "Campus Santa Ponsa" justo después del
+`index.html` incluye una sección "Campus Santa Ponça" justo después del
 próximo partido, marcada en el código con
 `<!-- BLOQUE TEMPORAL CAMPUS — quitar al acabar el verano -->`. Está pensada
 para quitarse (o actualizarse para el año siguiente) cuando acabe el campus

@@ -2,7 +2,7 @@
   "name": "futbol-femenino-santa-ponsa",
   "version": "2.0.0",
   "private": true,
-  "description": "Web del club Futbol Femenino Santa Ponsa",
+  "description": "Web del club Fútbol Femenino Santa Ponça",
   "scripts": {
     "build": "node scripts/inject-config.js"
   },

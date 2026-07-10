@@ -14,8 +14,8 @@
 <div class="admin-shell">
   <aside class="admin-sidebar">
     <div class="brand">
-      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Futbol Femenino Santa Ponsa">
-      <span class="brand__name">Futbol Femenino<small>Panel club</small></span>
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
     </div>
     <nav class="admin-nav" data-nav>
       <a href="dashboard.html">Resumen</a>
@@ -106,21 +106,33 @@
 
   const detailCard = document.getElementById("detail-card");
 
-  function openDetail(item) {
+  async function openDetail(item) {
     document.getElementById("detail-title").textContent = item.jugadora_nombre;
     document.getElementById("detail-body").innerHTML = `
-      <p><strong>Jugadora:</strong> ${escapeHtml(item.jugadora_nombre)}${item.jugadora_fecha_nacimiento ? " · nacida " + escapeHtml(item.jugadora_fecha_nacimiento) : ""}</p>
-      <p><strong>Equipo:</strong> ${escapeHtml(teamName(item.team_id))} &nbsp; <strong>Talla:</strong> ${escapeHtml(item.talla_equipacion || "—")}</p>
-      <p><strong>Tutor/a:</strong> ${escapeHtml(item.tutor_nombre)}${item.tutor_dni ? " · " + escapeHtml(item.tutor_dni) : ""}</p>
-      <p><strong>Teléfono:</strong> <a href="tel:${escapeHtml(item.tutor_telefono)}">${escapeHtml(item.tutor_telefono)}</a> &nbsp; <strong>Email:</strong> <a href="mailto:${escapeHtml(item.tutor_email)}">${escapeHtml(item.tutor_email)}</a></p>
+      <p><strong>Jugadora:</strong> ${escapeHtml(item.jugadora_nombre)}${item.jugadora_fecha_nacimiento ? " · nacida " + escapeHtml(item.jugadora_fecha_nacimiento) : ""}${item.jugadora_dni ? " · " + escapeHtml(item.jugadora_dni) : ""}</p>
+      <p><strong>Equipo:</strong> ${escapeHtml(teamName(item.team_id))} &nbsp; <strong>Talla orientativa:</strong> ${escapeHtml(item.talla_equipacion || "—")}</p>
       <p><strong>Dirección:</strong> ${escapeHtml(item.direccion || "—")} ${escapeHtml(item.poblacion || "")} ${escapeHtml(item.codigo_postal || "")}</p>
-      <p><strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago}</p>
+      <p><strong>Tutor/a 1:</strong> ${escapeHtml(item.tutor_nombre)}${item.tutor_dni ? " · " + escapeHtml(item.tutor_dni) : ""} · <a href="tel:${escapeHtml(item.tutor_telefono)}">${escapeHtml(item.tutor_telefono)}</a> · <a href="mailto:${escapeHtml(item.tutor_email)}">${escapeHtml(item.tutor_email)}</a></p>
+      ${item.tutor2_nombre ? `<p><strong>Tutor/a 2:</strong> ${escapeHtml(item.tutor2_nombre)}${item.tutor2_dni ? " · " + escapeHtml(item.tutor2_dni) : ""}${item.tutor2_telefono ? " · " + escapeHtml(item.tutor2_telefono) : ""}${item.tutor2_email ? " · " + escapeHtml(item.tutor2_email) : ""}</p>` : ""}
+      <p><strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago} &nbsp; <strong>Cuota total:</strong> ${item.cuota_total != null ? item.cuota_total + " €" : "—"}</p>
+      <div id="detail-pagos">Cargando plazos…</div>
     `;
     document.getElementById("i-estado").value = item.estado;
     document.getElementById("i-notas").value = item.notas || "";
     detailCard.dataset.id = item.id;
     detailCard.style.display = "block";
     detailCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");
+    const pagosEl = document.getElementById("detail-pagos");
+    if (!pagos || !pagos.length) {
+      pagosEl.innerHTML = "<p><strong>Plazos:</strong> —</p>";
+      return;
+    }
+    const pagoEstadoLabels = { pendiente: "Pendiente", pagado: "Pagado", fallido: "Fallido" };
+    pagosEl.innerHTML = `<p><strong>Plazos:</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +
+      pagos.map((p) => `<li>Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}</li>`).join("") +
+      `</ul>`;
   }
 
   document.getElementById("close-btn").addEventListener("click", () => (detailCard.style.display = "none"));

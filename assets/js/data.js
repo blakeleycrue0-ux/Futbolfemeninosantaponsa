@@ -140,12 +140,14 @@ const SPFC_DATA = (function () {
       if (!c) return { error: { message: "Supabase no está configurado en esta web." } };
       const { data, error } = await c.from("inscripciones").insert(payload).select().single();
       if (error) return { error };
+      let pagos = [];
       if (cuotas && cuotas.length) {
         const rows = cuotas.map((cu) => Object.assign({}, cu, { inscripcion_id: data.id }));
-        const { error: pagosError } = await c.from("inscripcion_pagos").insert(rows);
+        const { data: pagosData, error: pagosError } = await c.from("inscripcion_pagos").insert(rows).select();
         if (pagosError) return { data, error: pagosError };
+        pagos = pagosData || [];
       }
-      return { data };
+      return { data, pagos };
     },
   };
 })();

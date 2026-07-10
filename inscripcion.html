@@ -373,8 +373,13 @@ const I18N = {
     label_condiciones: "He leído y acepto las condiciones generales del club, la gestión de la licencia federativa si corresponde, y el uso de estos datos e imágenes de la jugadora según la normativa de protección de datos. *",
     btn_submit: "Enviar inscripción",
     btn_sending: "Enviando…",
+    btn_redirecting: "Redirigiendo al pago…",
+    btn_retry: "Reintentar pago",
     err_prefix: "No se ha podido enviar la inscripción: ",
     err_generic: "inténtalo de nuevo en unos minutos.",
+    err_checkout: "Se ha guardado tu inscripción, pero no hemos podido abrir la pasarela de pago. Escríbenos a secretariaspfc@gmail.com y lo resolvemos, o inténtalo de nuevo.",
+    pago_exito: "¡Gracias! Hemos recibido tu inscripción y el pago se ha completado correctamente.",
+    pago_cancelado: "Tu inscripción se ha guardado, pero el pago no se ha completado. Puedes reintentarlo cuando quieras.",
   },
   en: {
     hero_tag: "Pre-season 2026/27 · Join the club",
@@ -415,8 +420,13 @@ const I18N = {
     label_condiciones: "I have read and accept the club's general terms, the federation licence process where applicable, and the use of this data and the player's images in line with data protection rules. *",
     btn_submit: "Submit registration",
     btn_sending: "Sending…",
+    btn_redirecting: "Redirecting to payment…",
+    btn_retry: "Retry payment",
     err_prefix: "The registration could not be sent: ",
     err_generic: "please try again in a few minutes.",
+    err_checkout: "Your registration was saved, but we couldn't open the payment page. Email us at secretariaspfc@gmail.com and we'll sort it out, or try again.",
+    pago_exito: "Thank you! We've received your registration and the payment has been completed successfully.",
+    pago_cancelado: "Your registration was saved, but the payment wasn't completed. You can retry it whenever you like.",
   },
 };
 
@@ -467,6 +477,19 @@ function applyLang(lang) {
   const errorEl = document.getElementById("inscripcion-error");
   const submitBtn = document.getElementById("inscripcion-submit");
 
+  async function goToCheckout(pagoId) {
+    sessionStorage.setItem("spfc_pending_pago_id", pagoId);
+    const res = await fetch("/.netlify/functions/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pago_id: pagoId }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
+    window.location.href = json.url;
+  }
+
   form.addEventListener("submit", async function (evt) {
     evt.preventDefault();
     successEl.style.display = "none";
@@ -504,23 +527,80 @@ function applyLang(lang) {
     submitBtn.disabled = true;
     submitBtn.textContent = I18N[window.SPFC_LANG].btn_sending;
 
-    const { error } = await SPFC_DATA.submitInscripcion(payload, PLAN_CUOTAS[planPago]);
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
+    const { data, pagos, error } = await SPFC_DATA.submitInscripcion(payload, PLAN_CUOTAS[planPago]);
 
     if (error) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
       errorEl.textContent = I18N[window.SPFC_LANG].err_prefix + (error.message || I18N[window.SPFC_LANG].err_generic);
       errorEl.style.display = "block";
       errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
-    form.reset();
-    form.style.display = "none";
-    successEl.style.display = "block";
-    successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    const primerPago = (pagos || []).slice().sort((a, b) => a.numero_cuota - b.numero_cuota)[0];
+    if (!primerPago) {
+      // No debería pasar (siempre mandamos al menos 1 cuota), pero si pasa
+      // la inscripción ya está guardada — no la perdemos, solo avisamos.
+      form.reset();
+      form.style.display = "none";
+      successEl.style.display = "block";
+      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    try {
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_redirecting;
+      await goToCheckout(primerPago.id);
+      // si goToCheckout funciona, el navegador ya está navegando a Stripe.
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
+      errorEl.textContent = I18N[window.SPFC_LANG].err_checkout;
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   });
+
+  // Vuelta desde Stripe Checkout (éxito o cancelación).
+  (function handleReturnFromStripe() {
+    const params = new URLSearchParams(location.search);
+    const pago = params.get("pago");
+    if (!pago) return;
+
+    form.style.display = "none";
+    if (pago === "exito") {
+      sessionStorage.removeItem("spfc_pending_pago_id");
+      successEl.style.display = "block";
+      successEl.textContent = I18N[window.SPFC_LANG].pago_exito;
+      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (pago === "cancelado") {
+      errorEl.style.display = "block";
+      errorEl.innerHTML = "";
+      const msg = document.createElement("span");
+      msg.textContent = I18N[window.SPFC_LANG].pago_cancelado;
+      errorEl.appendChild(msg);
+      const pendingId = sessionStorage.getItem("spfc_pending_pago_id");
+      if (pendingId) {
+        const retryBtn = document.createElement("button");
+        retryBtn.type = "button";
+        retryBtn.className = "btn btn-outline btn-sm";
+        retryBtn.style.marginTop = "0.8rem";
+        retryBtn.style.display = "block";
+        retryBtn.textContent = I18N[window.SPFC_LANG].btn_retry;
+        retryBtn.addEventListener("click", async () => {
+          retryBtn.disabled = true;
+          try {
+            await goToCheckout(pendingId);
+          } catch (err) {
+            retryBtn.disabled = false;
+          }
+        });
+        errorEl.appendChild(retryBtn);
+      }
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  })();
 })();
 </script>
 </body>

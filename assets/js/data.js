@@ -6,9 +6,9 @@
 */
 window.SPFC_FALLBACK = {
   club: {
-    nombre: "Futbol Femenino Santa Ponsa",
+    nombre: "Fútbol Femenino Santa Ponça",
     equipo_primero_id: "amateur",
-    ciudad: "Santa Ponsa, Calvià, Mallorca",
+    ciudad: "Santa Ponça, Calvià, Mallorca",
   },
   teams: [
     { id: "amateur", nombre: "Amateur", categoria: "Amateur", temporada: "2025/26" },
@@ -25,7 +25,7 @@ window.SPFC_FALLBACK = {
     { id: "p6", team_id: "amateur", nombre: "Carla Mut", dorsal: 8, posicion: "Centrocampista", goles: 4, partidos_jugados: 16 },
   ],
   matches: [
-    { id: "m1", team_id: "amateur", rival: "CE Andratx Femení", fecha: "2026-07-12", hora: "18:00", condicion: "local", competicion: "Amateur", estado: "programado", campo: "Camp Municipal Santa Ponsa" },
+    { id: "m1", team_id: "amateur", rival: "CE Andratx Femení", fecha: "2026-07-12", hora: "18:00", condicion: "local", competicion: "Amateur", estado: "programado", campo: "Camp Municipal Santa Ponça" },
     { id: "m2", team_id: "amateur", rival: "Platges de Calvià", fecha: "2026-06-28", condicion: "visitante", competicion: "Amateur", estado: "jugado", goles_equipo: 2, goles_rival: 1 },
     { id: "m3", team_id: "amateur", rival: "CD Son Ferriol", fecha: "2026-06-21", condicion: "local", competicion: "Amateur", estado: "jugado", goles_equipo: 1, goles_rival: 1 },
     { id: "m4", team_id: "amateur", rival: "UD Poblense Femení", fecha: "2026-06-14", condicion: "visitante", competicion: "Amateur", estado: "jugado", goles_equipo: 0, goles_rival: 2 },
@@ -33,7 +33,7 @@ window.SPFC_FALLBACK = {
   standings: [
     { posicion: 1, equipo: "UD Poblense Femení", pj: 18, pg: 15, pe: 2, pp: 1, gf: 48, gc: 12, puntos: 47 },
     { posicion: 2, equipo: "CD Son Ferriol", pj: 18, pg: 13, pe: 3, pp: 2, gf: 40, gc: 18, puntos: 42 },
-    { posicion: 3, equipo: "Futbol Femenino Santa Ponsa", pj: 18, pg: 11, pe: 4, pp: 3, gf: 35, gc: 20, puntos: 37, es_club: true },
+    { posicion: 3, equipo: "Fútbol Femenino Santa Ponça", pj: 18, pg: 11, pe: 4, pp: 3, gf: 35, gc: 20, puntos: 37, es_club: true },
     { posicion: 4, equipo: "Platges de Calvià", pj: 18, pg: 9, pe: 3, pp: 6, gf: 30, gc: 25, puntos: 30 },
     { posicion: 5, equipo: "CE Andratx Femení", pj: 18, pg: 6, pe: 5, pp: 7, gf: 24, gc: 28, puntos: 23 },
   ],
@@ -46,7 +46,7 @@ window.SPFC_FALLBACK = {
   sponsors: [
     { id: "s1", nombre: "Ajuntament de Calvià", nivel: "principal" },
     { id: "s2", nombre: "Restaurant Es Molí", nivel: "colaborador" },
-    { id: "s3", nombre: "Nàutica Santa Ponsa", nivel: "colaborador" },
+    { id: "s3", nombre: "Nàutica Santa Ponça", nivel: "colaborador" },
   ],
 };
 
@@ -131,6 +131,23 @@ const SPFC_DATA = (function () {
     },
     async sponsors() {
       return safe((c) => c.from("sponsors").select("*").order("nivel"), window.SPFC_FALLBACK.sponsors);
+    },
+    // Escritura pública (formulario de inscripción) — a diferencia del resto
+    // de funciones de este objeto, no usa el patrón "safe": el formulario
+    // necesita saber si el guardado falló para poder avisar a quien lo rellena.
+    async submitInscripcion(payload, cuotas) {
+      const c = client();
+      if (!c) return { error: { message: "Supabase no está configurado en esta web." } };
+      const { data, error } = await c.from("inscripciones").insert(payload).select().single();
+      if (error) return { error };
+      let pagos = [];
+      if (cuotas && cuotas.length) {
+        const rows = cuotas.map((cu) => Object.assign({}, cu, { inscripcion_id: data.id }));
+        const { data: pagosData, error: pagosError } = await c.from("inscripcion_pagos").insert(rows).select();
+        if (pagosError) return { data, error: pagosError };
+        pagos = pagosData || [];
+      }
+      return { data, pagos };
     },
   };
 })();

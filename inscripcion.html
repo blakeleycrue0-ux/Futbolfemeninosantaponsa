@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inscripción — Fútbol Femenino Santa Ponça</title>
+<meta name="description" content="Inscríbete en el Fútbol Femenino Santa Ponça: rellena tus datos, elige equipación y plan de pago. Club de fútbol femenino de Calvià, Mallorca.">
+<link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inscripción — Fútbol Femenino Santa Ponça">
+<meta property="og:description" content="Rellena tus datos, elige equipación y plan de pago.">
+<meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
+<meta property="og:locale" content="es_ES">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .inscripcion-form-wrap { max-width: 720px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; }
+  @media (max-width: 620px) { .inscripcion-form-wrap { padding: 1.5rem; } }
+  .form-section-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; margin: 2rem 0 1.1rem; }
+  .form-section-title:first-child { margin-top: 0; }
+  .form-section-note { font-size: 0.8rem; color: var(--text-on-cream-muted); margin: -0.8rem 0 1.2rem; }
+  .plan-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin-bottom: 0.6rem; }
+  @media (max-width: 620px) { .plan-pago-grid { grid-template-columns: 1fr; } }
+  .plan-pago-opt {
+    display: block; cursor: pointer;
+    border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md);
+    padding: 1rem 1.1rem; transition: border-color 0.2s, background 0.2s;
+  }
+  .plan-pago-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .plan-pago-opt input { margin-right: 0.5em; }
+  .plan-pago-opt strong { font-family: var(--font-display); font-size: 0.88rem; text-transform: uppercase; letter-spacing: -0.01em; display: block; }
+  .plan-pago-opt .plan-amount { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; color: var(--accent-dark); margin-top: 0.3em; }
+  .plan-pago-opt span.plan-when { display: block; font-size: 0.76rem; color: var(--text-on-cream-muted); margin-top: 0.3em; }
+  .consent-field { display: flex; align-items: flex-start; gap: 0.7em; margin: 1.4rem 0; }
+  .consent-field input { margin-top: 0.3em; flex-shrink: 0; }
+  .consent-field label { font-size: 0.84rem; color: var(--text-on-cream-muted); font-weight: 400; text-transform: none; letter-spacing: normal; }
+  .lang-switch { display: inline-flex; gap: 0.4rem; margin-top: 1rem; }
+  .lang-switch button {
+    font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+    background: transparent; border: 1px solid rgba(244,240,232,0.3); color: rgba(244,240,232,0.6);
+    padding: 0.4em 0.9em; border-radius: var(--radius-pill); cursor: pointer; transition: all 0.2s;
+  }
+  .lang-switch button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .condiciones-details { margin: 0 0 1.4rem; border: 1px solid rgba(10,10,10,0.14); border-radius: var(--radius-md); padding: 0.9rem 1.1rem; }
+  .condiciones-details summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: -0.01em; }
+  .condiciones-body { margin-top: 1rem; font-size: 0.84rem; line-height: 1.7; color: var(--text-on-cream-muted); }
+  .condiciones-body p { margin: 0 0 0.9em; }
+  .condiciones-body strong { color: var(--text-on-cream); }
+  [data-lang-content="en"] { display: none; }
+  html[data-lang="en"] [data-lang-content="es"] { display: none; }
+  html[data-lang="en"] [data-lang-content="en"] { display: block; }
+  html[data-lang="en"] span[data-lang-content="en"], html[data-lang="en"] strong[data-lang-content="en"] { display: inline; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+    </a>
+    <nav class="main-nav" data-nav id="main-nav">
+      <a href="index.html">Inicio</a>
+      <a href="equipos.html">Equipos</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="clasificacion.html">Clasificación</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="galeria.html">Galería</a>
+      <a href="club.html">Club</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="contacto.html">Contacto</a>
+      <a href="inscripcion.html">Inscripción</a>
+    </nav>
+    <div class="header-actions">
+      <a href="inscripcion.html" class="btn btn-primary btn-sm header-cta"><span>Inscribirme</span></a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Abrir menú" aria-expanded="false" aria-controls="main-nav">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag" data-i18n="hero_tag">Pretemporada 2026/27 · Únete al club</span>
+      <h1 class="hero__title" data-i18n="hero_title">Inscripción</h1>
+      <p class="hero__lede" data-i18n="hero_lede">Rellena tus datos, elige la equipación y el plan de pago. Nos pondremos en contacto contigo para confirmarlo todo.</p>
+      <div class="lang-switch" role="group" aria-label="Idioma / Language">
+        <button type="button" id="lang-es" aria-pressed="true">ES</button>
+        <button type="button" id="lang-en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="form-heading">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow" data-i18n="eyebrow_form">Formulario</span>
+          <h2 id="form-heading" class="visually-hidden">Formulario de inscripción</h2>
+        </div>
+      </div>
+
+      <div class="inscripcion-form-wrap">
+        <div id="inscripcion-success" class="form-success" role="status">
+          <span data-lang-content="es">¡Gracias! Hemos recibido tu inscripción. Nos pondremos en contacto contigo por email para confirmar los datos y completar el pago.</span>
+          <span data-lang-content="en">Thank you! We've received your registration. We'll contact you by email to confirm the details and complete the payment.</span>
+        </div>
+        <div id="inscripcion-error" class="form-error" role="alert"></div>
+
+        <form id="inscripcion-form" novalidate>
+          <h3 class="form-section-title" data-i18n="section_jugadora">Datos de la jugadora</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-jugadora-nombre" data-i18n="label_jugadora_nombre">Nombre completo *</label>
+              <input type="text" id="i-jugadora-nombre" required autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="i-jugadora-nacimiento" data-i18n="label_jugadora_nacimiento">Fecha de nacimiento</label>
+              <input type="date" id="i-jugadora-nacimiento">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-jugadora-dni" data-i18n="label_jugadora_dni">DNI / NIE / Pasaporte</label>
+              <input type="text" id="i-jugadora-dni">
+            </div>
+            <div class="form-field">
+              <label for="i-equipo" data-i18n="label_equipo">Equipo / categoría</label>
+              <select id="i-equipo"><option value="" data-i18n="option_selecciona">Selecciona…</option></select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="i-talla" data-i18n="label_talla">Talla aproximada de equipación</label>
+            <select id="i-talla">
+              <option value="" data-i18n="option_selecciona">Selecciona…</option>
+              <option>6</option><option>8</option><option>10</option><option>12</option><option>14</option><option>16</option>
+              <option>S</option><option>M</option><option>L</option><option>XL</option>
+            </select>
+          </div>
+          <p class="form-section-note" data-i18n="note_talla">Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.</p>
+
+          <h3 class="form-section-title" data-i18n="section_direccion">Dirección</h3>
+          <div class="form-field">
+            <label for="i-direccion" data-i18n="label_direccion">Dirección</label>
+            <input type="text" id="i-direccion" autocomplete="street-address">
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-poblacion" data-i18n="label_poblacion">Población</label>
+              <input type="text" id="i-poblacion" autocomplete="address-level2">
+            </div>
+            <div class="form-field">
+              <label for="i-cp" data-i18n="label_cp">Código postal</label>
+              <input type="text" id="i-cp" autocomplete="postal-code">
+            </div>
+          </div>
+
+          <h3 class="form-section-title" data-i18n="section_tutor1">Madre / padre / tutor legal 1</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-tutor-nombre" data-i18n="label_tutor_nombre">Nombre completo *</label>
+              <input type="text" id="i-tutor-nombre" required autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="i-tutor-dni" data-i18n="label_tutor_dni">DNI / NIE</label>
+              <input type="text" id="i-tutor-dni">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-tutor-telefono" data-i18n="label_tutor_telefono">Teléfono *</label>
+              <input type="tel" id="i-tutor-telefono" required autocomplete="tel">
+            </div>
+            <div class="form-field">
+              <label for="i-tutor-email" data-i18n="label_tutor_email">Correo electrónico *</label>
+              <input type="email" id="i-tutor-email" required autocomplete="email">
+            </div>
+          </div>
+
+          <h3 class="form-section-title" data-i18n="section_tutor2">Madre / padre / tutor legal 2 (opcional)</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-tutor2-nombre" data-i18n="label_tutor2_nombre">Nombre completo</label>
+              <input type="text" id="i-tutor2-nombre" autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="i-tutor2-dni" data-i18n="label_tutor_dni">DNI / NIE</label>
+              <input type="text" id="i-tutor2-dni">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="i-tutor2-telefono" data-i18n="label_tutor2_telefono">Teléfono</label>
+              <input type="tel" id="i-tutor2-telefono" autocomplete="tel">
+            </div>
+            <div class="form-field">
+              <label for="i-tutor2-email" data-i18n="label_tutor2_email">Correo electrónico</label>
+              <input type="email" id="i-tutor2-email" autocomplete="email">
+            </div>
+          </div>
+
+          <h3 class="form-section-title" data-i18n="section_plan">Cuota de temporada y plan de pago</h3>
+          <p class="form-section-note" data-i18n="note_cuota" style="margin-top:-0.6rem;">Cuota anual: 650 €</p>
+          <div class="plan-pago-grid" role="radiogroup" aria-label="Plan de pago">
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="unico" checked>
+              <strong data-i18n="plan_unico_title">Pago único</strong>
+              <span class="plan-amount">650 €</span>
+              <span class="plan-when" data-i18n="plan_unico_when">100% en julio 2026</span>
+            </label>
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="2_cuotas">
+              <strong data-i18n="plan_2_title">2 cuotas</strong>
+              <span class="plan-amount">325 € + 325 €</span>
+              <span class="plan-when" data-i18n="plan_2_when">Julio y octubre 2026</span>
+            </label>
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="4_cuotas">
+              <strong data-i18n="plan_4_title">4 cuotas</strong>
+              <span class="plan-amount">245 € + 135 € + 135 € + 135 €</span>
+              <span class="plan-when" data-i18n="plan_4_when">Julio, octubre y diciembre 2026, febrero 2027</span>
+            </label>
+          </div>
+          <p class="form-note" data-i18n="note_plan">La cuota incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.</p>
+
+          <details class="condiciones-details">
+            <summary data-i18n="condiciones_summary">Ver condiciones generales</summary>
+            <div class="condiciones-body">
+              <p style="font-style:italic;" data-lang-content="es">Modelo orientativo para revisar y adaptar antes de enviar a familias. Para condiciones legales definitivas, conviene revisarlo con el club/gestoría.</p>
+              <p style="font-style:italic;" data-lang-content="en">Draft model to review and adapt before sending to families. For definitive legal wording, it should be reviewed by the club/administrator.</p>
+
+              <div data-lang-content="es">
+                <p><strong>Inscripción y plaza:</strong> La plaza queda reservada cuando el club recibe la ficha de datos completa, las autorizaciones necesarias y el primer pago correspondiente. Las licencias federativas quedan sujetas a la validación de la FFIB y a la entrega correcta de la documentación.</p>
+                <p><strong>Cuota de temporada:</strong> La cuota anual es de 650 €. Incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.</p>
+                <p><strong>Pagos:</strong> Las fechas de pago indicadas deben respetarse para permitir una planificación responsable del club. Cualquier dificultad puntual debe comunicarse con antelación y por privado.</p>
+                <p><strong>Material deportivo:</strong> El tallaje de ropa se realizará durante la primera quincena de julio. Una vez confirmado el pedido, los cambios dependerán de disponibilidad del proveedor.</p>
+                <p><strong>Compromiso deportivo:</strong> Pedimos asistencia, puntualidad y comunicación. El desarrollo de una jugadora necesita continuidad, paciencia y hábitos. El club se compromete a formar; la familia y la jugadora se comprometen a respetar el proceso.</p>
+                <p><strong>Convivencia y respeto:</strong> No se aceptarán faltas de respeto hacia compañeras, rivales, árbitros, entrenadores, familias o personal del club. Ganar importa, pero nunca por encima de los valores.</p>
+                <p><strong>Desarrollo de jugadoras:</strong> Las convocatorias, minutos y roles deportivos se decidirán por criterios técnicos, físicos, actitudinales y de compromiso. La comunicación será honesta y constructiva, siempre buscando el crecimiento de la jugadora.</p>
+                <p><strong>Salud, lesiones y seguros:</strong> Las familias deben informar al club de cualquier lesión, condición médica relevante o limitación. En caso de lesión, el regreso a la actividad será progresivo y responsable. La cobertura federativa dependerá de la licencia y normativa aplicable.</p>
+                <p><strong>Protección de menores:</strong> Todas las comunicaciones con menores se realizarán de forma adecuada y transparente. El club prioriza un entorno seguro, educativo e inclusivo.</p>
+                <p><strong>Imagen y comunicaciones:</strong> El uso de imágenes para fines deportivos, informativos o promocionales requerirá autorización familiar cuando proceda. Las comunicaciones oficiales se harán por los canales indicados por el club.</p>
+                <p><strong>Bajas y devoluciones:</strong> La cuota organiza una temporada completa. Las bajas voluntarias, cambios de decisión o ausencias prolongadas no garantizan devolución automática. Cualquier caso excepcional se estudiará de forma individual.</p>
+                <p><strong>Protección de datos:</strong> Los datos facilitados se utilizarán únicamente para fines deportivos, administrativos, federativos y de comunicación del club, conforme a la normativa aplicable.</p>
+              </div>
+
+              <div data-lang-content="en">
+                <p><strong>Registration and place:</strong> A place is reserved when the club receives the completed information form, the required authorisations and the relevant first payment. Federative licences are subject to FFIB validation and correct documentation.</p>
+                <p><strong>Season fee:</strong> The annual fee is 650 €. It includes regular sporting activity for the season and ordinary club administration. It does not include exceptional expenses, special travel, additional tournaments or extra kit unless clearly communicated.</p>
+                <p><strong>Payments:</strong> The stated payment dates must be respected so the club can plan responsibly. Any temporary difficulty should be communicated in advance and privately.</p>
+                <p><strong>Club kit:</strong> Kit sizing will be carried out during the first fortnight of July. Once the order is confirmed, exchanges will depend on supplier availability.</p>
+                <p><strong>Sporting commitment:</strong> We ask for attendance, punctuality and communication. Player development needs continuity, patience and good habits. The club commits to coaching; the player and family commit to respecting the process.</p>
+                <p><strong>Respect and behaviour:</strong> Disrespect towards teammates, opponents, referees, coaches, families or club staff will not be accepted. Winning matters, but never above the values.</p>
+                <p><strong>Player development:</strong> Selections, minutes and sporting roles will be decided through technical, physical, attitudinal and commitment criteria. Communication will be honest and constructive, always focused on the player's growth.</p>
+                <p><strong>Health, injuries and insurance:</strong> Families must inform the club of any injury, relevant medical condition or limitation. Return to play after injury will be progressive and responsible. Federative cover depends on the licence and applicable regulations.</p>
+                <p><strong>Safeguarding minors:</strong> All communication with minors will be appropriate and transparent. The club prioritises a safe, educational and inclusive environment.</p>
+                <p><strong>Image and communications:</strong> Use of images for sporting, information or promotional purposes will require family authorisation where necessary. Official communications will be made through the channels indicated by the club.</p>
+                <p><strong>Withdrawals and refunds:</strong> The fee is organised around a full season. Voluntary withdrawals, changes of decision or extended absences do not guarantee automatic refund. Any exceptional case will be reviewed individually.</p>
+                <p><strong>Data protection:</strong> The information provided will be used only for sporting, administrative, federative and club communication purposes, in accordance with applicable regulations.</p>
+              </div>
+            </div>
+          </details>
+
+          <div class="consent-field">
+            <input type="checkbox" id="i-condiciones" required>
+            <label for="i-condiciones" data-i18n="label_condiciones">He leído y acepto las condiciones generales del club, la gestión de la licencia federativa si corresponde, y el uso de estos datos e imágenes de la jugadora según la normativa de protección de datos. *</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="inscripcion-submit" data-i18n="btn_submit">Enviar inscripción</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://instagram.com/" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://facebook.com/" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:secretariaspfc@gmail.com">secretariaspfc@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+/* ── i18n: solo esta página. El resto de la web sigue en español. ── */
+const I18N = {
+  es: {
+    hero_tag: "Pretemporada 2026/27 · Únete al club",
+    hero_title: "Inscripción",
+    hero_lede: "Rellena tus datos, elige la equipación y el plan de pago. Nos pondremos en contacto contigo para confirmarlo todo.",
+    eyebrow_form: "Formulario",
+    section_jugadora: "Datos de la jugadora",
+    label_jugadora_nombre: "Nombre completo *",
+    label_jugadora_nacimiento: "Fecha de nacimiento",
+    label_jugadora_dni: "DNI / NIE / Pasaporte",
+    label_equipo: "Equipo / categoría",
+    option_selecciona: "Selecciona…",
+    label_talla: "Talla aproximada de equipación",
+    note_talla: "Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.",
+    section_direccion: "Dirección",
+    label_direccion: "Dirección",
+    label_poblacion: "Población",
+    label_cp: "Código postal",
+    section_tutor1: "Madre / padre / tutor legal 1",
+    section_tutor2: "Madre / padre / tutor legal 2 (opcional)",
+    label_tutor_nombre: "Nombre completo *",
+    label_tutor_dni: "DNI / NIE",
+    label_tutor_telefono: "Teléfono *",
+    label_tutor_email: "Correo electrónico *",
+    label_tutor2_nombre: "Nombre completo",
+    label_tutor2_telefono: "Teléfono",
+    label_tutor2_email: "Correo electrónico",
+    section_plan: "Cuota de temporada y plan de pago",
+    note_cuota: "Cuota anual: 650 €",
+    plan_unico_title: "Pago único",
+    plan_unico_when: "100% en julio 2026",
+    plan_2_title: "2 cuotas",
+    plan_2_when: "Julio y octubre 2026",
+    plan_4_title: "4 cuotas",
+    plan_4_when: "Julio, octubre y diciembre 2026, febrero 2027",
+    note_plan: "La cuota incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.",
+    condiciones_summary: "Ver condiciones generales",
+    label_condiciones: "He leído y acepto las condiciones generales del club, la gestión de la licencia federativa si corresponde, y el uso de estos datos e imágenes de la jugadora según la normativa de protección de datos. *",
+    btn_submit: "Enviar inscripción",
+    btn_sending: "Enviando…",
+    btn_redirecting: "Redirigiendo al pago…",
+    btn_retry: "Reintentar pago",
+    err_prefix: "No se ha podido enviar la inscripción: ",
+    err_generic: "inténtalo de nuevo en unos minutos.",
+    err_checkout: "Se ha guardado tu inscripción, pero no hemos podido abrir la pasarela de pago. Escríbenos a secretariaspfc@gmail.com y lo resolvemos, o inténtalo de nuevo.",
+    pago_exito: "¡Gracias! Hemos recibido tu inscripción y el pago se ha completado correctamente.",
+    pago_cancelado: "Tu inscripción se ha guardado, pero el pago no se ha completado. Puedes reintentarlo cuando quieras.",
+  },
+  en: {
+    hero_tag: "Pre-season 2026/27 · Join the club",
+    hero_title: "Registration",
+    hero_lede: "Fill in your details, choose the kit and the payment plan. We'll get in touch to confirm everything.",
+    eyebrow_form: "Form",
+    section_jugadora: "Player details",
+    label_jugadora_nombre: "Full name *",
+    label_jugadora_nacimiento: "Date of birth",
+    label_jugadora_dni: "DNI / NIE / Passport",
+    label_equipo: "Team / category",
+    option_selecciona: "Select…",
+    label_talla: "Approximate kit size",
+    note_talla: "Indicative only: official kit sizing will take place in person during the first fortnight of July. Exact date, time and location will follow.",
+    section_direccion: "Address",
+    label_direccion: "Address",
+    label_poblacion: "Town / city",
+    label_cp: "Postal code",
+    section_tutor1: "Parent / guardian 1",
+    section_tutor2: "Parent / guardian 2 (optional)",
+    label_tutor_nombre: "Full name *",
+    label_tutor_dni: "DNI / NIE",
+    label_tutor_telefono: "Phone *",
+    label_tutor_email: "Email *",
+    label_tutor2_nombre: "Full name",
+    label_tutor2_telefono: "Phone",
+    label_tutor2_email: "Email",
+    section_plan: "Season fee and payment plan",
+    note_cuota: "Annual fee: 650 €",
+    plan_unico_title: "Single payment",
+    plan_unico_when: "100% in July 2026",
+    plan_2_title: "2 payments",
+    plan_2_when: "July and October 2026",
+    plan_4_title: "4 payments",
+    plan_4_when: "July, October and December 2026, February 2027",
+    note_plan: "The fee includes regular sporting activity for the season and ordinary club administration. It does not include exceptional expenses, special travel, additional tournaments or extra kit unless clearly communicated.",
+    condiciones_summary: "View general terms",
+    label_condiciones: "I have read and accept the club's general terms, the federation licence process where applicable, and the use of this data and the player's images in line with data protection rules. *",
+    btn_submit: "Submit registration",
+    btn_sending: "Sending…",
+    btn_redirecting: "Redirecting to payment…",
+    btn_retry: "Retry payment",
+    err_prefix: "The registration could not be sent: ",
+    err_generic: "please try again in a few minutes.",
+    err_checkout: "Your registration was saved, but we couldn't open the payment page. Email us at secretariaspfc@gmail.com and we'll sort it out, or try again.",
+    pago_exito: "Thank you! We've received your registration and the payment has been completed successfully.",
+    pago_cancelado: "Your registration was saved, but the payment wasn't completed. You can retry it whenever you like.",
+  },
+};
+
+function applyLang(lang) {
+  document.documentElement.lang = lang;
+  document.documentElement.dataset.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    if (I18N[lang][key]) el.textContent = I18N[lang][key];
+  });
+  document.getElementById("lang-es").setAttribute("aria-pressed", String(lang === "es"));
+  document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
+  window.SPFC_LANG = lang;
+}
+
+(function initLang() {
+  const detected = (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+  applyLang(detected);
+  document.getElementById("lang-es").addEventListener("click", () => applyLang("es"));
+  document.getElementById("lang-en").addEventListener("click", () => applyLang("en"));
+})();
+
+(async function () {
+  const teams = await SPFC_DATA.teams();
+  const equipoSelect = document.getElementById("i-equipo");
+  if (teams && teams.length) {
+    equipoSelect.innerHTML = `<option value="" data-i18n="option_selecciona">${I18N[window.SPFC_LANG].option_selecciona}</option>` +
+      teams.map((t) => `<option value="${t.id}">${t.nombre}${t.categoria ? " · " + t.categoria : ""}</option>`).join("");
+  }
+
+  // Importes reales de supabase/schema.sql · dossier pretemporada 2026/27.
+  const PLAN_CUOTAS = {
+    unico: [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }],
+    "2_cuotas": [
+      { numero_cuota: 1, importe: 325, fecha_vencimiento: "2026-07-01" },
+      { numero_cuota: 2, importe: 325, fecha_vencimiento: "2026-10-01" },
+    ],
+    "4_cuotas": [
+      { numero_cuota: 1, importe: 245, fecha_vencimiento: "2026-07-01" },
+      { numero_cuota: 2, importe: 135, fecha_vencimiento: "2026-10-01" },
+      { numero_cuota: 3, importe: 135, fecha_vencimiento: "2026-12-01" },
+      { numero_cuota: 4, importe: 135, fecha_vencimiento: "2027-02-01" },
+    ],
+  };
+
+  const form = document.getElementById("inscripcion-form");
+  const successEl = document.getElementById("inscripcion-success");
+  const errorEl = document.getElementById("inscripcion-error");
+  const submitBtn = document.getElementById("inscripcion-submit");
+
+  async function goToCheckout(pagoId) {
+    sessionStorage.setItem("spfc_pending_pago_id", pagoId);
+    const res = await fetch("/.netlify/functions/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pago_id: pagoId }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
+    window.location.href = json.url;
+  }
+
+  form.addEventListener("submit", async function (evt) {
+    evt.preventDefault();
+    successEl.style.display = "none";
+    errorEl.style.display = "none";
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const planPago = (form.querySelector('input[name="plan-pago"]:checked') || {}).value || "unico";
+
+    const payload = {
+      jugadora_nombre: document.getElementById("i-jugadora-nombre").value.trim(),
+      jugadora_fecha_nacimiento: document.getElementById("i-jugadora-nacimiento").value || null,
+      jugadora_dni: document.getElementById("i-jugadora-dni").value.trim() || null,
+      team_id: document.getElementById("i-equipo").value || null,
+      talla_equipacion: document.getElementById("i-talla").value || null,
+      tutor_nombre: document.getElementById("i-tutor-nombre").value.trim(),
+      tutor_dni: document.getElementById("i-tutor-dni").value.trim() || null,
+      tutor_telefono: document.getElementById("i-tutor-telefono").value.trim(),
+      tutor_email: document.getElementById("i-tutor-email").value.trim(),
+      direccion: document.getElementById("i-direccion").value.trim() || null,
+      poblacion: document.getElementById("i-poblacion").value.trim() || null,
+      codigo_postal: document.getElementById("i-cp").value.trim() || null,
+      tutor2_nombre: document.getElementById("i-tutor2-nombre").value.trim() || null,
+      tutor2_dni: document.getElementById("i-tutor2-dni").value.trim() || null,
+      tutor2_telefono: document.getElementById("i-tutor2-telefono").value.trim() || null,
+      tutor2_email: document.getElementById("i-tutor2-email").value.trim() || null,
+      plan_pago: planPago,
+      cuota_total: 650,
+      acepta_condiciones: document.getElementById("i-condiciones").checked,
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = I18N[window.SPFC_LANG].btn_sending;
+
+    const { data, pagos, error } = await SPFC_DATA.submitInscripcion(payload, PLAN_CUOTAS[planPago]);
+
+    if (error) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
+      errorEl.textContent = I18N[window.SPFC_LANG].err_prefix + (error.message || I18N[window.SPFC_LANG].err_generic);
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    const primerPago = (pagos || []).slice().sort((a, b) => a.numero_cuota - b.numero_cuota)[0];
+    if (!primerPago) {
+      // No debería pasar (siempre mandamos al menos 1 cuota), pero si pasa
+      // la inscripción ya está guardada — no la perdemos, solo avisamos.
+      form.reset();
+      form.style.display = "none";
+      successEl.style.display = "block";
+      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    try {
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_redirecting;
+      await goToCheckout(primerPago.id);
+      // si goToCheckout funciona, el navegador ya está navegando a Stripe.
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
+      errorEl.textContent = I18N[window.SPFC_LANG].err_checkout;
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+
+  // Vuelta desde Stripe Checkout (éxito o cancelación).
+  (function handleReturnFromStripe() {
+    const params = new URLSearchParams(location.search);
+    const pago = params.get("pago");
+    if (!pago) return;
+
+    form.style.display = "none";
+    if (pago === "exito") {
+      sessionStorage.removeItem("spfc_pending_pago_id");
+      successEl.style.display = "block";
+      successEl.textContent = I18N[window.SPFC_LANG].pago_exito;
+      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (pago === "cancelado") {
+      errorEl.style.display = "block";
+      errorEl.innerHTML = "";
+      const msg = document.createElement("span");
+      msg.textContent = I18N[window.SPFC_LANG].pago_cancelado;
+      errorEl.appendChild(msg);
+      const pendingId = sessionStorage.getItem("spfc_pending_pago_id");
+      if (pendingId) {
+        const retryBtn = document.createElement("button");
+        retryBtn.type = "button";
+        retryBtn.className = "btn btn-outline btn-sm";
+        retryBtn.style.marginTop = "0.8rem";
+        retryBtn.style.display = "block";
+        retryBtn.textContent = I18N[window.SPFC_LANG].btn_retry;
+        retryBtn.addEventListener("click", async () => {
+          retryBtn.disabled = true;
+          try {
+            await goToCheckout(pendingId);
+          } catch (err) {
+            retryBtn.disabled = false;
+          }
+        });
+        errorEl.appendChild(retryBtn);
+      }
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  })();
+})();
+</script>
+</body>
+</html>

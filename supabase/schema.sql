@@ -1,5 +1,5 @@
 -- ============================================================================
--- Futbol Femenino Santa Ponsa — esquema Supabase
+-- Fútbol Femenino Santa Ponça — esquema Supabase
 -- Ejecutar en el SQL Editor de Supabase (o via `supabase db push`).
 -- Idempotente: puede volver a ejecutarse sin duplicar objetos.
 -- ============================================================================
@@ -176,6 +176,66 @@ create table if not exists members (
 );
 
 -- ----------------------------------------------------------------------------
+-- inscripciones
+-- Formulario público de inscripción (inscripcion.html). Cada inscripción
+-- genera N filas en inscripcion_pagos según el plan elegido (1, 2 o 4
+-- cuotas) — hoy se crean en estado 'pendiente' porque el cobro por Stripe
+-- todavía no está conectado; cuando se conecte, el webhook de Stripe
+-- actualizará cada cuota a 'pagado' según se completen los cargos.
+-- ----------------------------------------------------------------------------
+create table if not exists inscripciones (
+  id uuid primary key default gen_random_uuid(),
+  -- jugadora
+  jugadora_nombre text not null,
+  jugadora_fecha_nacimiento date,
+  jugadora_dni text,
+  team_id uuid references teams(id),
+  talla_equipacion text,
+  -- tutor/madre/padre 1 (obligatorio)
+  tutor_nombre text not null,
+  tutor_dni text,
+  tutor_telefono text not null,
+  tutor_email text not null,
+  direccion text,
+  poblacion text,
+  codigo_postal text,
+  -- tutor/madre/padre 2 (opcional)
+  tutor2_nombre text,
+  tutor2_dni text,
+  tutor2_telefono text,
+  tutor2_email text,
+  -- pago
+  plan_pago text not null default 'unico' check (plan_pago in ('unico','2_cuotas','4_cuotas')),
+  cuota_total numeric,
+  acepta_condiciones boolean not null default false,
+  notas text,
+  estado text not null default 'pendiente' check (estado in ('pendiente','pago_parcial','pagado','cancelado')),
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists inscripciones_team_idx on inscripciones(team_id);
+
+-- ----------------------------------------------------------------------------
+-- inscripcion_pagos
+-- Un plazo por fila. stripe_payment_intent_id / stripe_checkout_session_id
+-- quedan vacíos hasta que se conecte Stripe.
+-- ----------------------------------------------------------------------------
+create table if not exists inscripcion_pagos (
+  id uuid primary key default gen_random_uuid(),
+  inscripcion_id uuid not null references inscripciones(id) on delete cascade,
+  numero_cuota int not null,
+  importe numeric,
+  fecha_vencimiento date,
+  estado text not null default 'pendiente' check (estado in ('pendiente','pagado','fallido')),
+  stripe_payment_intent_id text,
+  recordatorio_enviado boolean not null default false,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists inscripcion_pagos_inscripcion_idx on inscripcion_pagos(inscripcion_id);
+create index if not exists inscripcion_pagos_vencimiento_idx on inscripcion_pagos(fecha_vencimiento) where estado = 'pendiente';
+
+-- ----------------------------------------------------------------------------
 -- ffib_sync_log
 -- Auditoría de cada ejecución de la función de scraping, para depurar
 -- cuándo la FFIB cambia su HTML y el parser deja de funcionar.
@@ -205,6 +265,8 @@ alter table news enable row level security;
 alter table gallery enable row level security;
 alter table sponsors enable row level security;
 alter table members enable row level security;
+alter table inscripciones enable row level security;
+alter table inscripcion_pagos enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -240,6 +302,19 @@ create policy "members_public_insert" on members for insert with check (true);
 create policy "members_admin_read" on members for select using (is_app_admin());
 create policy "members_admin_update" on members for update using (is_app_admin()) with check (is_app_admin());
 create policy "members_admin_delete" on members for delete using (is_app_admin());
+
+-- inscripciones: alta pública (formulario), lectura y gestión solo admin
+create policy "inscripciones_public_insert" on inscripciones for insert with check (true);
+create policy "inscripciones_admin_read" on inscripciones for select using (is_app_admin());
+create policy "inscripciones_admin_update" on inscripciones for update using (is_app_admin()) with check (is_app_admin());
+create policy "inscripciones_admin_delete" on inscripciones for delete using (is_app_admin());
+
+-- inscripcion_pagos: se crean junto con la inscripción (alta pública),
+-- gestión (marcar pagado, etc.) solo admin
+create policy "inscripcion_pagos_public_insert" on inscripcion_pagos for insert with check (true);
+create policy "inscripcion_pagos_admin_read" on inscripcion_pagos for select using (is_app_admin());
+create policy "inscripcion_pagos_admin_update" on inscripcion_pagos for update using (is_app_admin()) with check (is_app_admin());
+create policy "inscripcion_pagos_admin_delete" on inscripcion_pagos for delete using (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

@@ -330,8 +330,6 @@ function countUp(el, target, suffix) {
 })();
 
 (async function () {
-  const teamId = window.SPFC_FALLBACK.club.equipo_primero_id;
-
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -381,8 +379,13 @@ function countUp(el, target, suffix) {
     document.getElementById("destacado-section").style.display = "";
   }
 
-  /* Stats */
+  /* Equipos — el "primer equipo" es el primero por orden, no un id fijo:
+     los ids reales de Supabase son UUID generados, nunca coinciden con
+     ids de ejemplo como "amateur". */
   const teams = await SPFC_DATA.teams();
+  const teamId = teams.length ? teams[0].id : window.SPFC_FALLBACK.club.equipo_primero_id;
+
+  /* Stats */
   const equiposEl = document.getElementById("stat-equipos");
   const jugadorasEl = document.getElementById("stat-jugadoras");
   const statsObs = new IntersectionObserver((entries) => {

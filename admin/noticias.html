@@ -19,6 +19,7 @@
     </div>
     <nav class="admin-nav" data-nav>
       <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
@@ -57,8 +58,12 @@
           </div>
         </div>
         <div class="form-field">
-          <label for="imagen_url">URL de imagen</label>
+          <label for="imagen_url">Imagen</label>
           <input type="url" id="imagen_url" placeholder="https://…">
+          <div class="media-upload">
+            <input type="file" id="imagen_file" accept="image/*">
+            <span class="media-upload-status" id="imagen_status"></span>
+          </div>
         </div>
         <div class="form-field">
           <label for="resumen">Resumen</label>
@@ -94,10 +99,12 @@
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="js/admin-auth.js"></script>
+<script src="js/media-upload.js"></script>
 <script src="../assets/js/nav.js"></script>
 <script>
 (async function () {
   if (!window.spfc) return;
+  wireMediaUpload({ fileInputId: "imagen_file", urlInputId: "imagen_url", statusId: "imagen_status", folder: "noticias" });
   const formCard = document.getElementById("form-card");
   const form = document.getElementById("news-form");
 

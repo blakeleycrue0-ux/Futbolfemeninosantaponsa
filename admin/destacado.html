@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Destacado — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="patrocinadores.html">Patrocinadores</a>
+      <a href="inscripciones.html">Inscripciones</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Destacado</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo destacado</button>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Es el aviso grande con foto que sale en la portada, justo después del próximo partido — hoy lo usa
+      el campus de verano, pero sirve para cualquier cosa (inicio de temporada, evento, campaña de socias…).
+      Solo se muestra en la web el que tenga <strong>Activo</strong> marcado (el más reciente si hay varios).
+      Para quitarlo de la portada, desmarca "Activo" — no hace falta borrarlo.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nuevo destacado</h2>
+      <form id="destacado-form">
+        <input type="hidden" id="d-id">
+        <div class="form-field" style="flex-direction:row;align-items:center;gap:0.6rem;">
+          <input type="checkbox" id="d-activo" style="width:auto;">
+          <label for="d-activo" style="margin:0;">Activo (se muestra en la portada)</label>
+        </div>
+        <div class="form-field">
+          <label for="d-titulo">Título</label>
+          <input type="text" id="d-titulo" placeholder="Campus Santa Ponça">
+        </div>
+        <div class="form-field">
+          <label for="d-texto">Texto</label>
+          <textarea id="d-texto" rows="3" placeholder="Una semana de fútbol, playa y convivencia…"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="d-imagen">Foto de fondo</label>
+          <input type="url" id="d-imagen" placeholder="https://…">
+          <div class="media-upload">
+            <input type="file" id="d-imagen-file" accept="image/*">
+            <span class="media-upload-status" id="d-imagen-status"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="d-enlace-url">Enlace del botón (opcional)</label><input type="url" id="d-enlace-url" placeholder="https://… o inscripcion.html"></div>
+          <div class="form-field"><label for="d-enlace-texto">Texto del botón</label><input type="text" id="d-enlace-texto" placeholder="Más información e inscripciones"></div>
+        </div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Estado</th><th>Título</th><th>Actualizado</th><th></th></tr></thead>
+          <tbody id="destacado-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="js/media-upload.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  wireMediaUpload({ fileInputId: "d-imagen-file", urlInputId: "d-imagen", statusId: "d-imagen-status", folder: "destacado" });
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let items = [];
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("destacado-form");
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar destacado" : "Nuevo destacado";
+    document.getElementById("d-id").value = item ? item.id : "";
+    document.getElementById("d-activo").checked = item ? !!item.activo : true;
+    document.getElementById("d-titulo").value = item ? (item.titulo || "") : "";
+    document.getElementById("d-texto").value = item ? (item.texto || "") : "";
+    document.getElementById("d-imagen").value = item ? (item.imagen_url || "") : "";
+    document.getElementById("d-enlace-url").value = item ? (item.enlace_url || "") : "";
+    document.getElementById("d-enlace-texto").value = item ? (item.enlace_texto || "") : "";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-btn").addEventListener("click", () => openForm(null));
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function load() {
+    const { data, error } = await window.spfc.from("destacado").select("*").order("actualizado_en", { ascending: false });
+    const body = document.getElementById("destacado-body");
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    items = data || [];
+    if (!items.length) { body.innerHTML = '<tr><td colspan="4">Todavía no hay ningún destacado creado.</td></tr>'; return; }
+    body.innerHTML = items.map((d) => `
+      <tr>
+        <td>${d.activo ? '<span class="pill">Activo</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">Inactivo</span>'}</td>
+        <td>${escapeHtml(d.titulo || "(sin título)")}</td>
+        <td>${new Date(d.actualizado_en).toLocaleDateString("es-ES")}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit="${d.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${d.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(items.find((d) => d.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este destacado?")) return;
+        await window.spfc.from("destacado").delete().eq("id", btn.dataset.del);
+        load();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("d-id").value;
+    const payload = {
+      activo: document.getElementById("d-activo").checked,
+      titulo: document.getElementById("d-titulo").value.trim(),
+      texto: document.getElementById("d-texto").value.trim(),
+      imagen_url: document.getElementById("d-imagen").value.trim() || null,
+      enlace_url: document.getElementById("d-enlace-url").value.trim() || null,
+      enlace_texto: document.getElementById("d-enlace-texto").value.trim() || null,
+      actualizado_en: new Date().toISOString(),
+    };
+    const { error } = id
+      ? await window.spfc.from("destacado").update(payload).eq("id", id)
+      : await window.spfc.from("destacado").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    load();
+  });
+
+  await load();
+})();
+</script>
+</body>
+</html>

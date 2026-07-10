@@ -48,6 +48,7 @@ window.SPFC_FALLBACK = {
     { id: "s2", nombre: "Restaurant Es Molí", nivel: "colaborador" },
     { id: "s3", nombre: "Nàutica Santa Ponça", nivel: "colaborador" },
   ],
+  destacado: null,
 };
 
 const SPFC_DATA = (function () {
@@ -131,6 +132,13 @@ const SPFC_DATA = (function () {
     },
     async sponsors() {
       return safe((c) => c.from("sponsors").select("*").order("nivel"), window.SPFC_FALLBACK.sponsors);
+    },
+    async destacado() {
+      const list = await safe(
+        (c) => c.from("destacado").select("*").eq("activo", true).order("actualizado_en", { ascending: false }).limit(1),
+        window.SPFC_FALLBACK.destacado ? [window.SPFC_FALLBACK.destacado] : []
+      );
+      return Array.isArray(list) ? list[0] || null : list;
     },
     // Escritura pública (formulario de inscripción) — a diferencia del resto
     // de funciones de este objeto, no usa el patrón "safe": el formulario

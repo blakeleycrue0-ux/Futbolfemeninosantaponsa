@@ -163,6 +163,24 @@ create table if not exists sponsors (
 );
 
 -- ----------------------------------------------------------------------------
+-- destacado
+-- Banner destacado de portada, genérico y editable desde el admin (no hace
+-- falta tocar código para poner/quitar el aviso del campus de verano, el
+-- inicio de temporada, etc.). La portada muestra la fila más reciente con
+-- activo = true; si no hay ninguna, no se muestra nada.
+-- ----------------------------------------------------------------------------
+create table if not exists destacado (
+  id uuid primary key default gen_random_uuid(),
+  activo boolean not null default false,
+  titulo text,
+  texto text,
+  imagen_url text,
+  enlace_url text,
+  enlace_texto text,
+  actualizado_en timestamptz not null default now()
+);
+
+-- ----------------------------------------------------------------------------
 -- members (socias/socios)
 -- ----------------------------------------------------------------------------
 create table if not exists members (
@@ -264,6 +282,7 @@ alter table ffib_standings enable row level security;
 alter table news enable row level security;
 alter table gallery enable row level security;
 alter table sponsors enable row level security;
+alter table destacado enable row level security;
 alter table members enable row level security;
 alter table inscripciones enable row level security;
 alter table inscripcion_pagos enable row level security;
@@ -296,6 +315,10 @@ create policy "gallery_admin_write" on gallery for all using (is_app_admin()) wi
 -- sponsors
 create policy "sponsors_public_read" on sponsors for select using (true);
 create policy "sponsors_admin_write" on sponsors for all using (is_app_admin()) with check (is_app_admin());
+
+-- destacado
+create policy "destacado_public_read" on destacado for select using (true);
+create policy "destacado_admin_write" on destacado for all using (is_app_admin()) with check (is_app_admin());
 
 -- members: alta pública (formulario), lectura y gestión solo admin
 create policy "members_public_insert" on members for insert with check (true);

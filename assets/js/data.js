@@ -82,18 +82,29 @@ const SPFC_DATA = (function () {
       if (Array.isArray(all)) return all[0] || window.SPFC_FALLBACK.players.find((p) => p.id === id);
       return window.SPFC_FALLBACK.players.find((p) => p.id === id);
     },
+    // teamId es opcional: si no se pasa, mira partidos de CUALQUIER equipo
+    // del club (así la portada nunca se queda "vacía" por estar mirando
+    // solo a un equipo concreto).
     async upcomingMatch(teamId) {
       const list = await safe(
-        (c) => c.from("matches").select("*").eq("team_id", teamId).eq("estado", "programado").order("fecha").limit(1),
-        window.SPFC_FALLBACK.matches.filter((m) => m.estado === "programado")
+        (c) => {
+          let q = c.from("matches").select("*").eq("estado", "programado").order("fecha").limit(1);
+          if (teamId) q = q.eq("team_id", teamId);
+          return q;
+        },
+        window.SPFC_FALLBACK.matches.filter((m) => m.estado === "programado" && (!teamId || m.team_id === teamId))
       );
       return Array.isArray(list) ? list[0] : list;
     },
     async recentResults(teamId, limit) {
       limit = limit || 5;
       return safe(
-        (c) => c.from("matches").select("*").eq("team_id", teamId).eq("estado", "jugado").order("fecha", { ascending: false }).limit(limit),
-        window.SPFC_FALLBACK.matches.filter((m) => m.estado === "jugado").slice(0, limit)
+        (c) => {
+          let q = c.from("matches").select("*").eq("estado", "jugado").order("fecha", { ascending: false }).limit(limit);
+          if (teamId) q = q.eq("team_id", teamId);
+          return q;
+        },
+        window.SPFC_FALLBACK.matches.filter((m) => m.estado === "jugado" && (!teamId || m.team_id === teamId)).slice(0, limit)
       );
     },
     async allMatches(teamId) {

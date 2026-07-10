@@ -379,11 +379,7 @@ function countUp(el, target, suffix) {
     document.getElementById("destacado-section").style.display = "";
   }
 
-  /* Equipos — el "primer equipo" es el primero por orden, no un id fijo:
-     los ids reales de Supabase son UUID generados, nunca coinciden con
-     ids de ejemplo como "amateur". */
   const teams = await SPFC_DATA.teams();
-  const teamId = teams.length ? teams[0].id : window.SPFC_FALLBACK.club.equipo_primero_id;
 
   /* Stats */
   const equiposEl = document.getElementById("stat-equipos");
@@ -402,10 +398,12 @@ function countUp(el, target, suffix) {
     if (total > 0 && jugadorasEl) jugadorasEl.textContent = total + "+";
   }
 
-  /* Matches (próximo + recientes, en una sola tira) */
+  /* Matches (próximo + recientes, en una sola tira). Sin filtrar por
+     equipo: se muestra cualquier partido de cualquier equipo del club,
+     así siempre aparece lo último que se añada desde el admin. */
   const [proximo, resultados] = await Promise.all([
-    SPFC_DATA.upcomingMatch(teamId),
-    SPFC_DATA.recentResults(teamId, 6),
+    SPFC_DATA.upcomingMatch(),
+    SPFC_DATA.recentResults(undefined, 6),
   ]);
   const matchScroll = document.getElementById("matchScroll");
   const items = [];
@@ -435,7 +433,7 @@ function countUp(el, target, suffix) {
         </div>
         <div class="mc-foot">
           <div class="mc-info">${spfcFormatDate(m.fecha, { day: "2-digit", month: "short" })}${m.hora ? " · " + m.hora.slice(0,5) + "h" : ""}</div>
-          ${m.campo ? `<div class="mc-info">${escapeHtml(m.campo)}</div>` : ""}
+          ${m.competicion ? `<div class="mc-info">${escapeHtml(m.competicion)}</div>` : m.campo ? `<div class="mc-info">${escapeHtml(m.campo)}</div>` : ""}
         </div>
       </a>`;
     }).join("");

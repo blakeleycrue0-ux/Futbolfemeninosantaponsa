@@ -270,13 +270,22 @@
         mediaEl.appendChild(iframe);
       } else {
         const video = document.createElement("video");
-        video.src = destacado.video_url;
-        video.autoplay = true;
+        video.setAttribute("autoplay", "");
+        video.setAttribute("muted", "");
+        video.setAttribute("loop", "");
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "");
         video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
+        video.disableRemotePlayback = true;
         if (destacado.imagen_url) video.poster = destacado.imagen_url;
+        video.addEventListener("error", () => {
+          // El vídeo no se puede reproducir (formato no soportado, etc.):
+          // se queda la foto de fondo como respaldo, sin dejar el hueco vacío.
+          video.remove();
+        });
+        video.src = destacado.video_url;
         mediaEl.appendChild(video);
+        video.play().catch(() => {});
       }
     }
     const linkEl = document.getElementById("destacado-link");

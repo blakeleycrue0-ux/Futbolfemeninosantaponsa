@@ -19,6 +19,7 @@
     </div>
     <nav class="admin-nav" data-nav>
       <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
@@ -38,8 +39,8 @@
       <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo elemento</button>
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
-      Sube primero la imagen o vídeo a Supabase Storage (bucket <code>spfc-media</code>) o pega la URL de
-      YouTube, y registra aquí la referencia para que aparezca en la galería pública.
+      Elige una foto o vídeo desde el botón "Nuevo elemento" — se sube solo. Para vídeos de YouTube, pega
+      directamente el enlace en el campo de URL en vez de subir un archivo.
     </p>
 
     <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
@@ -52,7 +53,14 @@
           </div>
           <div class="form-field"><label for="g-match">Partido relacionado (opcional)</label><select id="g-match"><option value="">—</option></select></div>
         </div>
-        <div class="form-field"><label for="g-url">URL</label><input type="url" id="g-url" required placeholder="https://…"></div>
+        <div class="form-field">
+          <label for="g-url">Foto / vídeo</label>
+          <input type="url" id="g-url" required placeholder="https://… (o pega un enlace de YouTube)">
+          <div class="media-upload">
+            <input type="file" id="g-url-file" accept="image/*,video/*">
+            <span class="media-upload-status" id="g-url-status"></span>
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-field"><label for="g-fecha">Fecha</label><input type="date" id="g-fecha" required></div>
           <div class="form-field"><label for="g-desc">Descripción</label><input type="text" id="g-desc"></div>
@@ -79,10 +87,12 @@
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="js/admin-auth.js"></script>
+<script src="js/media-upload.js"></script>
 <script src="../assets/js/nav.js"></script>
 <script>
 (async function () {
   if (!window.spfc) return;
+  wireMediaUpload({ fileInputId: "g-url-file", urlInputId: "g-url", statusId: "g-url-status", folder: "galeria" });
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }

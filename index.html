@@ -17,28 +17,34 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .video-hero {
+  /* Banner "destacado" — editable desde Admin → Destacado. Genérico: sirve
+     para el campus de verano, el inicio de temporada, o lo que haga falta,
+     sin tener que tocar este HTML cada vez. Se oculta si no hay ninguna
+     fila activa en la tabla `destacado`. */
+  .feature-banner {
     position: relative;
-    min-height: 92vh;
+    min-height: 70vh;
     display: flex;
     align-items: flex-end;
     overflow: hidden;
     background: var(--dark);
     color: var(--text-on-dark);
   }
-  .video-hero__media {
+  .feature-banner__media {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover;
+    background-size: cover;
+    background-position: center;
+    filter: saturate(0.85) brightness(0.8);
   }
-  .video-hero__tint {
+  .feature-banner__tint {
     position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.15) 75%);
   }
-  .video-hero__content { position: relative; z-index: 2; padding: 5rem 0; width: 100%; }
-  .video-hero__title { color: #fff; margin: 0.2em 0 0.5em; }
-  .video-hero__lede { max-width: 540px; color: rgba(244,240,232,0.8); font-size: 1.05rem; }
-  .video-hero__content .btn { margin-top: 0.6rem; }
+  .feature-banner__content { position: relative; z-index: 2; padding: 4.5rem 0; width: 100%; }
+  .feature-banner__title { color: #fff; margin: 0.2em 0 0.5em; }
+  .feature-banner__lede { max-width: 540px; color: rgba(244,240,232,0.8); font-size: 1.05rem; }
+  .feature-banner__content .btn { margin-top: 0.6rem; }
 </style>
 </head>
 <body>
@@ -123,22 +129,16 @@
     </div>
   </section>
 
-  <!-- BLOQUE TEMPORAL CAMPUS — quitar al acabar el verano -->
-  <section class="video-hero" aria-labelledby="campus-heading">
-    <video class="video-hero__media" autoplay muted loop playsinline preload="auto" poster="assets/img/campus-poster.jpg" aria-hidden="true">
-      <source src="assets/video/campus-santa-ponsa.mp4" type="video/mp4">
-    </video>
-    <div class="video-hero__tint" aria-hidden="true"></div>
-    <div class="container video-hero__content">
-      <span class="hero__tag">Verano 2026</span>
-      <h2 id="campus-heading" class="video-hero__title">Campus Santa Ponça</h2>
-      <p class="video-hero__lede">Una semana de fútbol, playa y convivencia para niñas de todas las edades, dirigida por el
-        cuerpo técnico del club, en el Camp Municipal de Santa Ponça.
-        Plazas limitadas.</p>
-      <a href="inscripcion.html" class="btn btn-primary">Más información e inscripciones</a>
+  <!-- Destacado: se rellena y activa/desactiva desde Admin → Destacado -->
+  <section class="feature-banner" id="destacado-section" style="display:none;" aria-labelledby="destacado-heading">
+    <div class="feature-banner__media" id="destacado-media" aria-hidden="true"></div>
+    <div class="feature-banner__tint" aria-hidden="true"></div>
+    <div class="container feature-banner__content">
+      <h2 id="destacado-heading" class="feature-banner__title"></h2>
+      <p class="feature-banner__lede" id="destacado-texto"></p>
+      <a href="#" id="destacado-link" class="btn btn-primary" style="display:none;"></a>
     </div>
   </section>
-  <!-- FIN BLOQUE TEMPORAL CAMPUS -->
 
   <section class="section section-dark" aria-labelledby="resultados-heading">
     <div class="container">
@@ -240,6 +240,23 @@
     if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
     if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
     return (rival || "").trim().slice(0, 2).toUpperCase() || "--";
+  }
+
+  const destacado = await SPFC_DATA.destacado();
+  if (destacado) {
+    document.getElementById("destacado-heading").textContent = destacado.titulo || "";
+    document.getElementById("destacado-texto").textContent = destacado.texto || "";
+    if (destacado.imagen_url) {
+      document.getElementById("destacado-media").style.backgroundImage =
+        `url('${destacado.imagen_url}')`;
+    }
+    const linkEl = document.getElementById("destacado-link");
+    if (destacado.enlace_url) {
+      linkEl.href = destacado.enlace_url;
+      linkEl.textContent = destacado.enlace_texto || "Más información";
+      linkEl.style.display = "";
+    }
+    document.getElementById("destacado-section").style.display = "";
   }
 
   const teams = await SPFC_DATA.teams();

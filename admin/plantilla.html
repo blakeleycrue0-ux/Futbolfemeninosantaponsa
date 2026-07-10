@@ -19,6 +19,7 @@
     </div>
     <nav class="admin-nav" data-nav>
       <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
@@ -87,8 +88,12 @@
             <input type="date" id="p-nacimiento">
           </div>
           <div class="form-field">
-            <label for="p-foto">URL de foto</label>
+            <label for="p-foto">Foto</label>
             <input type="url" id="p-foto" placeholder="https://…">
+            <div class="media-upload">
+              <input type="file" id="p-foto-file" accept="image/*">
+              <span class="media-upload-status" id="p-foto-status"></span>
+            </div>
           </div>
         </div>
         <div class="form-row">
@@ -126,10 +131,12 @@
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="js/admin-auth.js"></script>
+<script src="js/media-upload.js"></script>
 <script src="../assets/js/nav.js"></script>
 <script>
 (async function () {
   if (!window.spfc) return;
+  wireMediaUpload({ fileInputId: "p-foto-file", urlInputId: "p-foto", statusId: "p-foto-status", folder: "jugadoras" });
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }

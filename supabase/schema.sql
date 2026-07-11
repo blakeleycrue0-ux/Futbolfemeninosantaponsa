@@ -229,9 +229,13 @@ create table if not exists inscripciones (
   acepta_condiciones boolean not null default false,
   notas text,
   estado text not null default 'pendiente' check (estado in ('pendiente','pago_parcial','pagado','cancelado')),
-  -- se rellena cuando el club revisa la solicitud desde el admin y confirma
-  -- el envío del email con el enlace de pago; null = todavía pendiente de revisar.
+  -- se rellena cuando el club acepta la solicitud desde el admin y se envía
+  -- el email de aceptación (sin precio ni enlace de pago todavía); null =
+  -- todavía pendiente de revisar.
   confirmada_en timestamptz,
+  -- se rellena cuando, aparte y más adelante, el club pide el pago desde el
+  -- admin y se envía el email con el enlace a pago.html.
+  pago_solicitado_en timestamptz,
   creado_en timestamptz not null default now()
 );
 

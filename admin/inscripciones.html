@@ -38,8 +38,9 @@
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
       Aquí llegan las solicitudes enviadas desde <span class="tag-fuente">inscripcion.html</span>. Todavía
-      no se cobra nada al enviarlas: revisa los datos y dale a <strong>"Confirmar y enviar enlace de pago"</strong>
-      — solo entonces se manda un email a esa familia (y a nadie más) con el enlace para pagar.
+      no se cobra nada al enviarlas. Son dos pasos, cada uno con su email (solo a esa familia, nadie más):
+      primero <strong>"Aceptar solicitud y enviar confirmación"</strong> (sin precio, solo avisa de que está
+      aceptada), y más adelante, cuando decidáis, <strong>"Enviar enlace de pago"</strong>.
     </p>
 
     <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
@@ -70,7 +71,7 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Confirmada</th><th>Estado</th><th></th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Aceptada</th><th>Estado</th><th></th></tr></thead>
           <tbody id="inscripciones-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
         </table>
       </div>
@@ -124,37 +125,60 @@
     detailCard.style.display = "block";
     detailCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
+    async function callAdminFunction(fnName, btn, status) {
+      btn.disabled = true;
+      status.textContent = "Enviando…";
+      try {
+        const { data: { session } } = await window.spfc.auth.getSession();
+        const res = await fetch("/.netlify/functions/" + fnName, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + (session ? session.access_token : ""),
+          },
+          body: JSON.stringify({ inscripcion_id: item.id }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        status.textContent = "Email enviado ✓";
+        openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+        loadInscripciones();
+      } catch (err) {
+        btn.disabled = false;
+        status.textContent = "Error: " + err.message;
+      }
+    }
+
     const confirmarWrap = document.getElementById("confirmar-wrap");
-    if (item.confirmada_en) {
-      confirmarWrap.innerHTML = `<p style="font-size:0.86rem;"><span class="pill">Confirmada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — ya se envió el email con el enlace de pago a ${escapeHtml(item.tutor_email)}.</p>`;
+    let html = "";
+    if (!item.confirmada_en) {
+      html += `
+        <p style="font-size:0.86rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="aceptar-btn">Aceptar solicitud y enviar confirmación</button>
+          <span id="aceptar-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
+        </p>`;
     } else {
-      confirmarWrap.innerHTML = `
-        <button type="button" class="btn btn-primary btn-sm" id="confirmar-btn">Confirmar y enviar enlace de pago</button>
-        <span id="confirmar-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
-      `;
-      document.getElementById("confirmar-btn").addEventListener("click", async () => {
-        const btn = document.getElementById("confirmar-btn");
-        const status = document.getElementById("confirmar-status");
-        btn.disabled = true;
-        status.textContent = "Enviando…";
-        try {
-          const { data: { session } } = await window.spfc.auth.getSession();
-          const res = await fetch("/.netlify/functions/confirm-inscripcion", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + (session ? session.access_token : ""),
-            },
-            body: JSON.stringify({ inscripcion_id: item.id }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          status.textContent = "Email enviado ✓";
-          loadInscripciones();
-        } catch (err) {
-          btn.disabled = false;
-          status.textContent = "Error: " + err.message;
-        }
-      });
+      html += `<p style="font-size:0.86rem;"><span class="pill">Aceptada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — se envió el email de confirmación a ${escapeHtml(item.tutor_email)}.</p>`;
+      if (!item.pago_solicitado_en) {
+        html += `
+          <p style="font-size:0.86rem;">
+            <button type="button" class="btn btn-outline btn-sm" id="pago-btn">Enviar enlace de pago</button>
+            <span id="pago-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
+          </p>`;
+      } else {
+        html += `<p style="font-size:0.86rem;"><span class="pill">Pago solicitado</span> el ${new Date(item.pago_solicitado_en).toLocaleString("es-ES")} — se envió el enlace de pago a ${escapeHtml(item.tutor_email)}.</p>`;
+      }
+    }
+    confirmarWrap.innerHTML = html;
+
+    const aceptarBtn = document.getElementById("aceptar-btn");
+    if (aceptarBtn) {
+      aceptarBtn.addEventListener("click", () =>
+        callAdminFunction("confirm-inscripcion", aceptarBtn, document.getElementById("aceptar-status")));
+    }
+    const pagoBtn = document.getElementById("pago-btn");
+    if (pagoBtn) {
+      pagoBtn.addEventListener("click", () =>
+        callAdminFunction("send-payment-link", pagoBtn, document.getElementById("pago-status")));
     }
 
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");

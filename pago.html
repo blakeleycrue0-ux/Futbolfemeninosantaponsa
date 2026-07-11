@@ -16,6 +16,17 @@
   .pago-importe { font-family: var(--font-display); font-size: 2.6rem; font-weight: 900; color: var(--accent-dark); margin: 0.6rem 0; }
   .pago-meta { color: var(--text-on-cream-muted); font-size: 0.9rem; margin-bottom: 1.6rem; }
   .pago-estado-pagado { color: var(--win); font-weight: 700; }
+  .plan-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 1.4rem 0; text-align: left; }
+  @media (max-width: 620px) { .plan-pago-grid { grid-template-columns: 1fr; } }
+  .plan-pago-opt {
+    display: block; cursor: pointer;
+    border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md);
+    padding: 1rem 1.1rem; transition: border-color 0.2s, background 0.2s;
+  }
+  .plan-pago-opt:hover { border-color: var(--accent); }
+  .plan-pago-opt strong { font-family: var(--font-display); font-size: 0.88rem; text-transform: uppercase; letter-spacing: -0.01em; display: block; }
+  .plan-pago-opt .plan-amount { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; color: var(--accent-dark); margin-top: 0.3em; }
+  .plan-pago-opt span.plan-when { display: block; font-size: 0.76rem; color: var(--text-on-cream-muted); margin-top: 0.3em; }
 </style>
 </head>
 <body>
@@ -73,6 +84,34 @@
     <div class="container">
       <div class="pago-wrap">
         <div id="pago-loading">Cargando…</div>
+
+        <div id="plan-picker" style="display:none;">
+          <div class="pago-jugadora" id="plan-jugadora"></div>
+          <p class="pago-meta" style="margin-top:0.3rem;">Elige el plan de pago que prefieras.</p>
+          <div class="plan-pago-grid" role="radiogroup" aria-label="Plan de pago">
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="unico" checked>
+              <strong>Pago único</strong>
+              <span class="plan-amount">650 €</span>
+              <span class="plan-when">100% en julio 2026</span>
+            </label>
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="2_cuotas">
+              <strong>2 cuotas</strong>
+              <span class="plan-amount">325 € + 325 €</span>
+              <span class="plan-when">Julio y octubre 2026</span>
+            </label>
+            <label class="plan-pago-opt">
+              <input type="radio" name="plan-pago" value="4_cuotas">
+              <strong>4 cuotas</strong>
+              <span class="plan-amount">245 € + 135 € + 135 € + 135 €</span>
+              <span class="plan-when">Julio, octubre y diciembre 2026, febrero 2027</span>
+            </label>
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="plan-btn">Confirmar plan y continuar</button>
+          <p id="plan-status" style="margin-top:1rem;font-size:0.86rem;"></p>
+        </div>
+
         <div id="pago-content" style="display:none;">
           <span class="eyebrow" id="pago-cuota-label">Cuota</span>
           <div class="pago-jugadora" id="pago-jugadora"></div>
@@ -154,9 +193,10 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 <script>
 (async function () {
   const params = new URLSearchParams(location.search);
-  const pagoId = params.get("id");
+  const inscripcionId = params.get("id");
   const resultado = params.get("resultado");
   const loadingEl = document.getElementById("pago-loading");
+  const pickerEl = document.getElementById("plan-picker");
   const contentEl = document.getElementById("pago-content");
   const errorEl = document.getElementById("pago-error");
   const btn = document.getElementById("pago-btn");
@@ -164,68 +204,117 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
   function showError(msg) {
     loadingEl.style.display = "none";
+    pickerEl.style.display = "none";
     contentEl.style.display = "none";
     errorEl.style.display = "block";
     errorEl.textContent = msg;
   }
 
-  if (!pagoId) {
+  if (!inscripcionId) {
     showError("Este enlace no es válido. Revisa que lo hayas abierto completo desde el email.");
     return;
   }
 
-  let pago;
-  try {
-    const res = await fetch("/.netlify/functions/get-pago?id=" + encodeURIComponent(pagoId));
+  async function cargarEstado() {
+    const res = await fetch("/.netlify/functions/get-pago-inscripcion?id=" + encodeURIComponent(inscripcionId));
     if (!res.ok) throw new Error(await res.text());
-    pago = await res.json();
+    return res.json();
+  }
+
+  let estado;
+  try {
+    estado = await cargarEstado();
   } catch (err) {
     showError("No hemos podido cargar los datos de este pago. [" + (err && err.message ? err.message : "") + "]");
     return;
   }
 
+  if (!estado.confirmada_en || !estado.pago_solicitado_en) {
+    showError("Este enlace todavía no está disponible. Te avisaremos por email en cuanto lo esté.");
+    return;
+  }
+
+  function mostrarPago(pago) {
+    loadingEl.style.display = "none";
+    pickerEl.style.display = "none";
+    contentEl.style.display = "block";
+    document.getElementById("pago-cuota-label").textContent = "Cuota " + pago.numero_cuota;
+    document.getElementById("pago-jugadora").textContent = estado.jugadora_nombre || "";
+    document.getElementById("pago-importe").textContent = pago.importe + " €";
+    document.getElementById("pago-meta").textContent = pago.fecha_vencimiento
+      ? "Vencimiento: " + new Date(pago.fecha_vencimiento + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
+      : "";
+
+    if (pago.estado === "pagado") {
+      btn.style.display = "none";
+      statusEl.innerHTML = '<span class="pago-estado-pagado">Esta cuota ya está pagada. ¡Gracias!</span>';
+      return;
+    }
+
+    if (resultado === "exito") {
+      statusEl.innerHTML = '<span class="pago-estado-pagado">¡Pago completado correctamente! Gracias.</span>';
+      btn.style.display = "none";
+      return;
+    }
+    if (resultado === "cancelado") {
+      statusEl.textContent = "El pago no se ha completado. Puedes intentarlo de nuevo cuando quieras con el botón de arriba.";
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Redirigiendo al pago…";
+      statusEl.textContent = "";
+      try {
+        const res = await fetch("/.netlify/functions/create-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pago_id: pago.id }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
+        window.location.href = json.url;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "Pagar ahora";
+        statusEl.textContent = "No hemos podido abrir la pasarela de pago. Inténtalo de nuevo o escríbenos a ffsp2026@gmail.com. [" + (err && err.message ? err.message : "") + "]";
+      }
+    });
+  }
+
+  if (estado.pagos && estado.pagos.length) {
+    const primerPago = estado.pagos.find((p) => p.estado !== "pagado") || estado.pagos[0];
+    mostrarPago(primerPago);
+    return;
+  }
+
+  // Sin plazos todavía: la familia elige plan la primera vez que entra.
   loadingEl.style.display = "none";
-  contentEl.style.display = "block";
-  document.getElementById("pago-cuota-label").textContent = "Cuota " + pago.numero_cuota;
-  document.getElementById("pago-jugadora").textContent = pago.jugadora_nombre || "";
-  document.getElementById("pago-importe").textContent = pago.importe + " €";
-  document.getElementById("pago-meta").textContent = pago.fecha_vencimiento
-    ? "Vencimiento: " + new Date(pago.fecha_vencimiento + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
-    : "";
+  pickerEl.style.display = "block";
+  document.getElementById("plan-jugadora").textContent = estado.jugadora_nombre || "";
 
-  if (pago.estado === "pagado") {
-    btn.style.display = "none";
-    statusEl.innerHTML = '<span class="pago-estado-pagado">Esta cuota ya está pagada. ¡Gracias!</span>';
-    return;
-  }
-
-  if (resultado === "exito") {
-    statusEl.innerHTML = '<span class="pago-estado-pagado">¡Pago completado correctamente! Gracias.</span>';
-    btn.style.display = "none";
-    return;
-  }
-  if (resultado === "cancelado") {
-    statusEl.textContent = "El pago no se ha completado. Puedes intentarlo de nuevo cuando quieras con el botón de arriba.";
-  }
-
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
-    btn.textContent = "Redirigiendo al pago…";
-    statusEl.textContent = "";
+  document.getElementById("plan-btn").addEventListener("click", async () => {
+    const planBtn = document.getElementById("plan-btn");
+    const planStatus = document.getElementById("plan-status");
+    const planPago = (document.querySelector('input[name="plan-pago"]:checked') || {}).value || "unico";
+    planBtn.disabled = true;
+    planBtn.textContent = "Confirmando…";
+    planStatus.textContent = "";
     try {
-      const res = await fetch("/.netlify/functions/create-checkout-session", {
+      const res = await fetch("/.netlify/functions/select-plan-pago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pago_id: pagoId }),
+        body: JSON.stringify({ inscripcion_id: inscripcionId, plan_pago: planPago }),
       });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
-      if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
-      window.location.href = json.url;
+      const primerPago = (json.pagos || []).find((p) => p.estado !== "pagado") || (json.pagos || [])[0];
+      if (!primerPago) throw new Error("No se ha podido preparar el plan de pago.");
+      mostrarPago(primerPago);
     } catch (err) {
-      btn.disabled = false;
-      btn.textContent = "Pagar ahora";
-      statusEl.textContent = "No hemos podido abrir la pasarela de pago. Inténtalo de nuevo o escríbenos a ffsp2026@gmail.com. [" + (err && err.message ? err.message : "") + "]";
+      planBtn.disabled = false;
+      planBtn.textContent = "Confirmar plan y continuar";
+      planStatus.textContent = "No se ha podido confirmar el plan. Inténtalo de nuevo o escríbenos a ffsp2026@gmail.com. [" + (err && err.message ? err.message : "") + "]";
     }
   });
 })();

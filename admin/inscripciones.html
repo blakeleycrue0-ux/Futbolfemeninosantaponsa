@@ -161,15 +161,10 @@
       if (!item.pago_solicitado_en) {
         html += `
           <p style="font-size:0.86rem;">
-            <label for="pago-plan" style="font-weight:700;text-transform:uppercase;font-size:0.72rem;letter-spacing:0.04em;">Plan de pago a enviar</label><br>
-            <select id="pago-plan" style="margin:0.3rem 0 0.6rem;">
-              <option value="unico">Pago único — 650 €</option>
-              <option value="2_cuotas">2 cuotas — 325 € + 325 €</option>
-              <option value="4_cuotas">4 cuotas — 245 € + 135 € + 135 € + 135 €</option>
-            </select><br>
             <button type="button" class="btn btn-outline btn-sm" id="pago-btn">Enviar enlace de pago</button>
             <span id="pago-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
-          </p>`;
+          </p>
+          <p class="form-note" style="margin-top:-0.4rem;">La familia elige el plan (único / 2 / 4 cuotas) al abrir el enlace.</p>`;
       } else {
         html += `<p style="font-size:0.86rem;"><span class="pill">Pago solicitado</span> el ${new Date(item.pago_solicitado_en).toLocaleString("es-ES")} — se envió el enlace de pago a ${escapeHtml(item.tutor_email)}.</p>`;
       }
@@ -184,8 +179,7 @@
     const pagoBtn = document.getElementById("pago-btn");
     if (pagoBtn) {
       pagoBtn.addEventListener("click", () =>
-        callAdminFunction("send-payment-link", pagoBtn, document.getElementById("pago-status"),
-          { plan_pago: document.getElementById("pago-plan").value }));
+        callAdminFunction("send-payment-link", pagoBtn, document.getElementById("pago-status")));
     }
 
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");

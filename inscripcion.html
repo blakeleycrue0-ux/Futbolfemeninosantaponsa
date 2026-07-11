@@ -142,11 +142,6 @@
               <input type="date" id="i-jugadora-nacimiento">
             </div>
           </div>
-          <div class="form-field">
-            <label for="i-equipo" data-i18n="label_equipo">Equipo / categoría</label>
-            <select id="i-equipo"><option value="" data-i18n="option_selecciona">Selecciona…</option></select>
-          </div>
-
           <h3 class="form-section-title" data-i18n="section_tutor1">Madre / padre / tutor legal</h3>
           <div class="form-field">
             <label for="i-tutor-nombre" data-i18n="label_tutor_nombre">Nombre completo *</label>
@@ -283,8 +278,6 @@ const I18N = {
     section_jugadora: "Datos de la jugadora",
     label_jugadora_nombre: "Nombre completo *",
     label_jugadora_nacimiento: "Fecha de nacimiento",
-    label_equipo: "Equipo / categoría",
-    option_selecciona: "Selecciona…",
     section_tutor1: "Madre / padre / tutor legal",
     label_tutor_nombre: "Nombre completo *",
     label_tutor_telefono: "Teléfono *",
@@ -315,8 +308,6 @@ const I18N = {
     section_jugadora: "Player details",
     label_jugadora_nombre: "Full name *",
     label_jugadora_nacimiento: "Date of birth",
-    label_equipo: "Team / category",
-    option_selecciona: "Select…",
     section_tutor1: "Parent / guardian",
     label_tutor_nombre: "Full name *",
     label_tutor_telefono: "Phone *",
@@ -360,13 +351,6 @@ function applyLang(lang) {
 })();
 
 (async function () {
-  const teams = await SPFC_DATA.teams();
-  const equipoSelect = document.getElementById("i-equipo");
-  if (teams && teams.length) {
-    equipoSelect.innerHTML = `<option value="" data-i18n="option_selecciona">${I18N[window.SPFC_LANG].option_selecciona}</option>` +
-      teams.map((t) => `<option value="${t.id}">${t.nombre}${t.categoria ? " · " + t.categoria : ""}</option>`).join("");
-  }
-
   // Importes reales de supabase/schema.sql · dossier pretemporada 2026/27.
   const PLAN_CUOTAS = {
     unico: [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }],
@@ -402,7 +386,6 @@ function applyLang(lang) {
     const payload = {
       jugadora_nombre: document.getElementById("i-jugadora-nombre").value.trim(),
       jugadora_fecha_nacimiento: document.getElementById("i-jugadora-nacimiento").value || null,
-      team_id: document.getElementById("i-equipo").value || null,
       tutor_nombre: document.getElementById("i-tutor-nombre").value.trim(),
       tutor_telefono: document.getElementById("i-tutor-telefono").value.trim(),
       tutor_email: document.getElementById("i-tutor-email").value.trim(),

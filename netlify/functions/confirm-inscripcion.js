@@ -1,12 +1,11 @@
 /*
   confirm-inscripcion.js — Netlify Function
   ============================================================================
-  Llamada desde Admin → Inscripciones cuando el club revisa una solicitud y
-  le da a "Aceptar solicitud y enviar confirmación". Marca la inscripción
-  como confirmada y envía un email SOLO al tutor/a de esa inscripción
-  avisando de que la solicitud ha sido aceptada — sin precio ni enlace de
-  pago todavía. El pago se pide después, como paso aparte, con
-  send-payment-link.js.
+  Llamada desde Admin → Formularios de interés cuando el club revisa un
+  formulario y le da a "Aceptar plaza y enviar confirmación". Marca la
+  inscripción como confirmada y envía un email SOLO al tutor/a de esa
+  familia avisando de que hay plaza — sin precio ni enlace de pago todavía.
+  El pago se pide después, como paso aparte, con send-payment-link.js.
 
   Requiere que quien llama esté autenticado como admin: recibe el JWT del
   usuario en el header Authorization y comprueba is_app_admin() en Supabase
@@ -76,10 +75,10 @@ exports.handler = async function (event) {
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  const asunto = `Solicitud aceptada — ${inscripcion.jugadora_nombre}`;
+  const asunto = `Plaza confirmada — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>¡Buenas noticias! Hemos aceptado la solicitud de <strong>${inscripcion.jugadora_nombre}</strong> para el Fútbol Femenino Santa Ponça.</p>
+    <p>¡Buenas noticias! Hay plaza para <strong>${inscripcion.jugadora_nombre}</strong> en el Fútbol Femenino Santa Ponça.</p>
     <p>En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido cómo completar el pago.</p>
     <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
     <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

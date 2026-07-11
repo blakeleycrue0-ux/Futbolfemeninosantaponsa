@@ -75,6 +75,7 @@ exports.handler = async function (event) {
 
   const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
   const registroUrl = `${baseUrl}/registro.html?id=${inscripcion_id}`;
+  const transferenciaUrl = `${baseUrl}/pago-transferencia.html`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -89,6 +90,7 @@ exports.handler = async function (event) {
     <p><a href="${registroUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Completar registro</a></p>
     <p>O copia y pega este enlace en el navegador:<br>${registroUrl}</p>
     <p>Este enlace es personal e intransferible — no lo compartas.</p>
+    <p>Si en su momento prefieres pagar por transferencia en vez de con tarjeta, es posible — <a href="${transferenciaUrl}">consulta cómo aquí</a>.</p>
     <p>En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido cómo completar el pago.</p>
     <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
     <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

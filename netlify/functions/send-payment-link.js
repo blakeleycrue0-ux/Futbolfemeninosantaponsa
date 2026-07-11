@@ -1,22 +1,21 @@
 /*
-  confirm-inscripcion.js — Netlify Function
+  send-payment-link.js — Netlify Function
   ============================================================================
-  Llamada desde Admin → Inscripciones cuando el club revisa una solicitud y
-  le da a "Aceptar solicitud y enviar confirmación". Marca la inscripción
-  como confirmada y envía un email SOLO al tutor/a de esa inscripción
-  avisando de que la solicitud ha sido aceptada — sin precio ni enlace de
-  pago todavía. El pago se pide después, como paso aparte, con
-  send-payment-link.js.
+  Llamada desde Admin → Inscripciones cuando el club decide que ya toca
+  pedir el pago (paso aparte y posterior a "Aceptar solicitud"). Envía un
+  email SOLO al tutor/a de esa inscripción con el importe de la primera
+  cuota y el enlace personal a pago.html — una página que no aparece en
+  ningún menú y solo es accesible con ese enlace directo. No cobra nada
+  aquí mismo: el cobro ocurre cuando la familia entra al enlace y pulsa
+  pagar.
 
-  Requiere que quien llama esté autenticado como admin: recibe el JWT del
-  usuario en el header Authorization y comprueba is_app_admin() en Supabase
-  antes de hacer nada (si no, cualquiera con la URL de la función podría
-  confirmar inscripciones y disparar emails).
+  Requiere que quien llama esté autenticado como admin (mismo esquema que
+  confirm-inscripcion.js).
 
   Variables de entorno requeridas:
     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (cuenta de Gmail del club + contraseña
-                                       de aplicación, no la contraseña normal)
+    GMAIL_USER, GMAIL_APP_PASSWORD
+    URL   (la inyecta Netlify automáticamente)
   ============================================================================
 */
 const { createClient } = require("@supabase/supabase-js");
@@ -27,7 +26,7 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, URL: SITE_URL } = process.env;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
     return { statusCode: 500, body: "Faltan variables de entorno de Supabase" };
   }
@@ -71,19 +70,33 @@ exports.handler = async function (event) {
     return { statusCode: 404, body: "No se ha encontrado esa inscripción" };
   }
 
+  const { data: pagos, error: pagosError } = await supabase
+    .from("inscripcion_pagos")
+    .select("*")
+    .eq("inscripcion_id", inscripcion_id)
+    .order("numero_cuota");
+  if (pagosError || !pagos || !pagos.length) {
+    return { statusCode: 404, body: "Esta inscripción no tiene plazos de pago" };
+  }
+  const primerPago = pagos.find((p) => p.estado !== "pagado") || pagos[0];
+
+  const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
+  const pagoUrl = `${baseUrl}/pago.html?id=${primerPago.id}`;
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  const asunto = `Solicitud de inscripción aceptada — ${inscripcion.jugadora_nombre}`;
+  const asunto = `Pago de la inscripción — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>¡Buenas noticias! Hemos aceptado la solicitud de inscripción de <strong>${inscripcion.jugadora_nombre}</strong> en el Fútbol Femenino Santa Ponça.</p>
-    <p>En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido cómo completar el pago.</p>
-    <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
-    <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>
-    <p>¡Bienvenidas al club!<br>Fútbol Femenino Santa Ponça</p>
+    <p>Para completar la inscripción de <strong>${inscripcion.jugadora_nombre}</strong>, falta el pago de la primera cuota (${primerPago.importe} €). Puedes hacerlo de forma segura desde este enlace personal:</p>
+    <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Pagar cuota de inscripción</a></p>
+    <p>O copia y pega este enlace en el navegador:<br>${pagoUrl}</p>
+    <p>Este enlace es personal e intransferible — no lo compartas.</p>
+    <p>Si tienes cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>
+    <p>Gracias,<br>Fútbol Femenino Santa Ponça</p>
   `;
 
   try {
@@ -99,10 +112,10 @@ exports.handler = async function (event) {
 
   const { error: updateError } = await supabase
     .from("inscripciones")
-    .update({ confirmada_en: new Date().toISOString() })
+    .update({ pago_solicitado_en: new Date().toISOString() })
     .eq("id", inscripcion_id);
   if (updateError) {
-    return { statusCode: 200, body: JSON.stringify({ ok: true, warning: "Email enviado, pero no se pudo marcar como confirmada: " + updateError.message }) };
+    return { statusCode: 200, body: JSON.stringify({ ok: true, warning: "Email enviado, pero no se pudo marcar como enviado: " + updateError.message }) };
   }
 
   return {

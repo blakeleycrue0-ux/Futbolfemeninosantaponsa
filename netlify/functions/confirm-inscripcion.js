@@ -4,8 +4,10 @@
   Llamada desde Admin → Formularios de interés cuando el club revisa un
   formulario y le da a "Aceptar plaza y enviar confirmación". Marca la
   inscripción como confirmada y envía un email SOLO al tutor/a de esa
-  familia avisando de que hay plaza — sin precio ni enlace de pago todavía.
-  El pago se pide después, como paso aparte, con send-payment-link.js.
+  familia avisando de que hay plaza — sin precio todavía. Incluye el enlace
+  personal a registro.html para que completen el resto de datos (DNI,
+  dirección, talla, segundo tutor/a), con verificación de email. El pago se
+  pide después, como paso aparte, con send-payment-link.js.
 
   Requiere que quien llama esté autenticado como admin: recibe el JWT del
   usuario en el header Authorization y comprueba is_app_admin() en Supabase
@@ -16,6 +18,7 @@
     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
     GMAIL_USER, GMAIL_APP_PASSWORD   (cuenta de Gmail del club + contraseña
                                        de aplicación, no la contraseña normal)
+    URL   (la inyecta Netlify automáticamente)
   ============================================================================
 */
 const { createClient } = require("@supabase/supabase-js");
@@ -26,7 +29,7 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, URL: SITE_URL } = process.env;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
     return { statusCode: 500, body: "Faltan variables de entorno de Supabase" };
   }
@@ -70,6 +73,9 @@ exports.handler = async function (event) {
     return { statusCode: 404, body: "No se ha encontrado esa inscripción" };
   }
 
+  const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
+  const registroUrl = `${baseUrl}/registro.html?id=${inscripcion_id}`;
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
@@ -79,6 +85,10 @@ exports.handler = async function (event) {
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
     <p>¡Buenas noticias! Hay plaza para <strong>${inscripcion.jugadora_nombre}</strong> en el Fútbol Femenino Santa Ponça.</p>
+    <p>Nos falta terminar de completar tus datos (DNI, dirección, talla y, si aplica, un segundo tutor/a). Puedes hacerlo desde este enlace personal:</p>
+    <p><a href="${registroUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Completar registro</a></p>
+    <p>O copia y pega este enlace en el navegador:<br>${registroUrl}</p>
+    <p>Este enlace es personal e intransferible — no lo compartas.</p>
     <p>En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido cómo completar el pago.</p>
     <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
     <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

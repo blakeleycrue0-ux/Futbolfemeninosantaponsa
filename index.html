@@ -36,9 +36,11 @@
 
 <!-- ═══ LOADER ═══ -->
 <div id="loader">
-  <video id="loaderVideo" autoplay muted playsinline webkit-playsinline preload="auto">
-    <source src="assets/video/loader-escudo.mp4" type="video/mp4">
-  </video>
+  <div class="loader-inner">
+    <div class="loader-ring"></div>
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="loader-crest">
+    <div class="loader-name">Fútbol Femenino<span>Santa Ponça</span></div>
+  </div>
 </div>
 
 <!-- ═══ HEADER ═══ -->
@@ -274,20 +276,10 @@
 /* ── LOADER ── */
 (function () {
   const loader = document.getElementById('loader');
-  const video = document.getElementById('loaderVideo');
-  let finished = false;
-  function finish() {
-    if (finished) return;
-    finished = true;
+  setTimeout(() => {
     loader.classList.add('done');
     startHero();
-  }
-  if (video) {
-    video.addEventListener('ended', finish);
-    video.play().catch(() => {}); // si el autoplay falla, la red de seguridad de abajo cierra el loader igualmente
-  }
-  // Red de seguridad: si el vídeo no carga/reproduce, no dejar la web tapada.
-  setTimeout(finish, 4500);
+  }, 1500);
 })();
 
 /* ── HERO ANIMATION ── */

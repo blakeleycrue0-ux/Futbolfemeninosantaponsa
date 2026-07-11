@@ -236,6 +236,10 @@ create table if not exists inscripciones (
   -- se rellena cuando, aparte y más adelante, el club pide el pago desde el
   -- admin y se envía el email con el enlace a pago.html.
   pago_solicitado_en timestamptz,
+  -- se rellena cuando la familia completa el formulario de registro.html
+  -- (DNI, dirección, talla, segundo tutor…) — solo llega ese enlace una vez
+  -- que confirmada_en no es null. null = todavía sin completar.
+  registro_completado_en timestamptz,
   creado_en timestamptz not null default now()
 );
 

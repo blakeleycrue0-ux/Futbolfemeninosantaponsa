@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Completa el registro — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .registro-wrap { max-width: 720px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; }
+  @media (max-width: 620px) { .registro-wrap { padding: 1.5rem; } }
+  .form-section-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; margin: 2rem 0 1.1rem; }
+  .form-section-title:first-child { margin-top: 0; }
+  .form-section-note { font-size: 0.8rem; color: var(--text-on-cream-muted); margin: -0.8rem 0 1.2rem; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+    <a href="inscripcion.html" class="fullnav-link">Formulario de interés</a>
+  </div>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook</a>
+    <a href="admin/index.html">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Completa el registro</h1>
+      <p class="hero__lede">Este enlace es personal: solo tú has recibido este email para terminar el registro de tu plaza confirmada.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="registro-wrap">
+        <div id="registro-loading">Cargando…</div>
+
+        <div id="registro-content" style="display:none;">
+          <p id="registro-saludo" style="margin-top:0;"></p>
+
+          <div id="registro-success" class="form-success" role="status">
+            <p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente.</p>
+          </div>
+          <div id="registro-error" class="form-error" role="alert"></div>
+
+          <form id="registro-form" novalidate>
+            <h3 class="form-section-title">Datos de la jugadora</h3>
+            <div class="form-field">
+              <label for="r-jugadora-dni">DNI / NIE / Pasaporte</label>
+              <input type="text" id="r-jugadora-dni">
+            </div>
+            <div class="form-field">
+              <label for="r-talla">Talla aproximada de equipación</label>
+              <select id="r-talla">
+                <option value="">Selecciona…</option>
+                <option>6</option><option>8</option><option>10</option><option>12</option><option>14</option><option>16</option>
+                <option>S</option><option>M</option><option>L</option><option>XL</option>
+              </select>
+            </div>
+            <p class="form-section-note">Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.</p>
+
+            <h3 class="form-section-title">Dirección</h3>
+            <div class="form-field">
+              <label for="r-direccion">Dirección</label>
+              <input type="text" id="r-direccion" autocomplete="street-address">
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="r-poblacion">Población</label>
+                <input type="text" id="r-poblacion" autocomplete="address-level2">
+              </div>
+              <div class="form-field">
+                <label for="r-cp">Código postal</label>
+                <input type="text" id="r-cp" autocomplete="postal-code">
+              </div>
+            </div>
+
+            <h3 class="form-section-title">Madre / padre / tutor legal</h3>
+            <div class="form-field">
+              <label for="r-tutor-dni">DNI / NIE</label>
+              <input type="text" id="r-tutor-dni">
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="r-tutor-email">Correo electrónico *</label>
+                <input type="email" id="r-tutor-email" required autocomplete="email">
+              </div>
+              <div class="form-field">
+                <label for="r-tutor-email-confirm">Repite el correo electrónico *</label>
+                <input type="email" id="r-tutor-email-confirm" required autocomplete="email">
+              </div>
+            </div>
+            <p class="form-section-note">Vuelve a escribir tu email para asegurarnos de que no hay ninguna errata — es la dirección a la que enviamos toda la información importante.</p>
+
+            <h3 class="form-section-title">Madre / padre / tutor legal 2 (opcional)</h3>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="r-tutor2-nombre">Nombre completo</label>
+                <input type="text" id="r-tutor2-nombre" autocomplete="name">
+              </div>
+              <div class="form-field">
+                <label for="r-tutor2-dni">DNI / NIE</label>
+                <input type="text" id="r-tutor2-dni">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="r-tutor2-telefono">Teléfono</label>
+                <input type="tel" id="r-tutor2-telefono" autocomplete="tel">
+              </div>
+              <div class="form-field">
+                <label for="r-tutor2-email">Correo electrónico</label>
+                <input type="email" id="r-tutor2-email" autocomplete="email">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="registro-submit">Guardar registro</button>
+          </form>
+        </div>
+
+        <div id="registro-blocked" class="form-error" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="ft-v2">
+  <p>© <span data-year></span> <strong>Fútbol Femenino Santa Ponça</strong> · Calvià, Mallorca</p>
+  <a href="admin/index.html">Acceso club</a>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.classList.toggle('x', open);
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+(function highlightCurrentNav() {
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.fullnav-link[href], .hdr-nav a[href]').forEach((a) => {
+    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
+  });
+})();
+</script>
+<script>
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const loadingEl = document.getElementById("registro-loading");
+  const contentEl = document.getElementById("registro-content");
+  const blockedEl = document.getElementById("registro-blocked");
+  const successEl = document.getElementById("registro-success");
+  const errorEl = document.getElementById("registro-error");
+
+  function showBlocked(msg) {
+    loadingEl.style.display = "none";
+    contentEl.style.display = "none";
+    blockedEl.style.display = "block";
+    blockedEl.textContent = msg;
+  }
+
+  if (!id) {
+    showBlocked("Este enlace no es válido. Revisa que lo hayas abierto completo desde el email.");
+    return;
+  }
+
+  let datos;
+  try {
+    const res = await fetch("/.netlify/functions/get-registro?id=" + encodeURIComponent(id));
+    if (!res.ok) throw new Error(await res.text());
+    datos = await res.json();
+  } catch (err) {
+    showBlocked("No hemos podido cargar este registro. [" + (err && err.message ? err.message : "") + "]");
+    return;
+  }
+
+  if (!datos.confirmada_en) {
+    showBlocked("Todavía no hemos confirmado la plaza para esta solicitud, así que este formulario no está disponible aún. En cuanto la aceptemos, te avisaremos por email con este mismo enlace.");
+    return;
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+  document.getElementById("registro-saludo").textContent =
+    "Completa estos datos para terminar el registro de " + (datos.jugadora_nombre || "tu jugadora") + ".";
+  document.getElementById("r-tutor-email").value = datos.tutor_email || "";
+
+  if (datos.registro_completado_en) {
+    successEl.style.display = "block";
+    successEl.querySelector("p").textContent = "Ya habíamos recibido estos datos — si necesitas corregir algo, vuelve a enviar el formulario y lo actualizamos.";
+  }
+
+  const form = document.getElementById("registro-form");
+  const submitBtn = document.getElementById("registro-submit");
+
+  form.addEventListener("submit", async function (evt) {
+    evt.preventDefault();
+    successEl.style.display = "none";
+    errorEl.style.display = "none";
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const email = document.getElementById("r-tutor-email").value.trim();
+    const emailConfirm = document.getElementById("r-tutor-email-confirm").value.trim();
+    if (email.toLowerCase() !== emailConfirm.toLowerCase()) {
+      errorEl.textContent = "Los dos correos electrónicos no coinciden — revísalos e inténtalo de nuevo.";
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Guardando…";
+
+    try {
+      const res = await fetch("/.netlify/functions/submit-registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: id,
+          jugadora_dni: document.getElementById("r-jugadora-dni").value.trim(),
+          talla_equipacion: document.getElementById("r-talla").value || null,
+          direccion: document.getElementById("r-direccion").value.trim(),
+          poblacion: document.getElementById("r-poblacion").value.trim(),
+          codigo_postal: document.getElementById("r-cp").value.trim(),
+          tutor_dni: document.getElementById("r-tutor-dni").value.trim(),
+          tutor_email: email,
+          tutor_email_confirm: emailConfirm,
+          tutor2_nombre: document.getElementById("r-tutor2-nombre").value.trim(),
+          tutor2_dni: document.getElementById("r-tutor2-dni").value.trim(),
+          tutor2_telefono: document.getElementById("r-tutor2-telefono").value.trim(),
+          tutor2_email: document.getElementById("r-tutor2-email").value.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      successEl.style.display = "block";
+      successEl.querySelector("p").textContent = "¡Gracias! Hemos guardado los datos del registro correctamente.";
+      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      submitBtn.textContent = "Guardar registro";
+      submitBtn.disabled = false;
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Guardar registro";
+      errorEl.textContent = "No se ha podido guardar: " + (err && err.message ? err.message : "inténtalo de nuevo en unos minutos.");
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+})();
+</script>
+</body>
+</html>

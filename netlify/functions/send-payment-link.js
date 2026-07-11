@@ -2,12 +2,14 @@
   send-payment-link.js — Netlify Function
   ============================================================================
   Llamada desde Admin → Formularios de interés cuando el club decide que
-  ya toca pedir el pago (paso aparte y posterior a "Aceptar plaza"). Envía
-  un email SOLO al tutor/a de esa familia con el importe de la primera
-  cuota y el enlace personal a pago.html — una página que no aparece en
-  ningún menú y solo es accesible con ese enlace directo. No cobra nada
-  aquí mismo: el cobro ocurre cuando la familia entra al enlace y pulsa
-  pagar.
+  ya toca pedir el pago (paso aparte y posterior a "Aceptar plaza"). El
+  admin elige ahí mismo el plan (único / 2 / 4 cuotas, según lo que haya
+  hablado con la familia) — esta función (re)genera los plazos en
+  inscripcion_pagos según ese plan y envía un email SOLO al tutor/a de
+  esa familia con el importe de la primera cuota y el enlace personal a
+  pago.html — una página que no aparece en ningún menú y solo es
+  accesible con ese enlace directo. No cobra nada aquí mismo: el cobro
+  ocurre cuando la familia entra al enlace y pulsa pagar.
 
   Requiere que quien llama esté autenticado como admin (mismo esquema que
   confirm-inscripcion.js).
@@ -15,18 +17,34 @@
   Variables de entorno requeridas:
     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
     GMAIL_USER, GMAIL_APP_PASSWORD
-    URL   (la inyecta Netlify automáticamente)
+    PUBLIC_SITE_URL   (dominio público, p.ej. https://ffsp.info — si no
+                       está definida, se cae a la URL que inyecta Netlify
+                       automáticamente y luego a un valor fijo)
   ============================================================================
 */
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
+
+const PLAN_CUOTAS = {
+  unico: [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }],
+  "2_cuotas": [
+    { numero_cuota: 1, importe: 325, fecha_vencimiento: "2026-07-01" },
+    { numero_cuota: 2, importe: 325, fecha_vencimiento: "2026-10-01" },
+  ],
+  "4_cuotas": [
+    { numero_cuota: 1, importe: 245, fecha_vencimiento: "2026-07-01" },
+    { numero_cuota: 2, importe: 135, fecha_vencimiento: "2026-10-01" },
+    { numero_cuota: 3, importe: 135, fecha_vencimiento: "2026-12-01" },
+    { numero_cuota: 4, importe: 135, fecha_vencimiento: "2027-02-01" },
+  ],
+};
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, URL: SITE_URL } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
     return { statusCode: 500, body: "Faltan variables de entorno de Supabase" };
   }
@@ -54,9 +72,13 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-  const { inscripcion_id } = payload;
+  const { inscripcion_id, plan_pago } = payload;
   if (!inscripcion_id) {
     return { statusCode: 400, body: "Falta inscripcion_id" };
+  }
+  const cuotas = PLAN_CUOTAS[plan_pago];
+  if (!cuotas) {
+    return { statusCode: 400, body: "plan_pago no válido" };
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -70,17 +92,34 @@ exports.handler = async function (event) {
     return { statusCode: 404, body: "No se ha encontrado esa inscripción" };
   }
 
-  const { data: pagos, error: pagosError } = await supabase
+  // Elimina cualquier plazo pendiente ya creado (p.ej. el pago único por
+  // defecto del formulario de interés) para sustituirlo por el plan que
+  // ha elegido el admin. Los plazos ya marcados como pagados se respetan.
+  const { error: deleteError } = await supabase
     .from("inscripcion_pagos")
-    .select("*")
+    .delete()
     .eq("inscripcion_id", inscripcion_id)
+    .neq("estado", "pagado");
+  if (deleteError) {
+    return { statusCode: 500, body: "No se han podido preparar los plazos de pago: " + deleteError.message };
+  }
+
+  const { data: pagos, error: insertError } = await supabase
+    .from("inscripcion_pagos")
+    .insert(cuotas.map((c) => Object.assign({}, c, { inscripcion_id })))
+    .select()
     .order("numero_cuota");
-  if (pagosError || !pagos || !pagos.length) {
-    return { statusCode: 404, body: "Esta inscripción no tiene plazos de pago" };
+  if (insertError || !pagos || !pagos.length) {
+    return { statusCode: 500, body: "No se han podido crear los plazos de pago: " + (insertError ? insertError.message : "") };
   }
   const primerPago = pagos.find((p) => p.estado !== "pagado") || pagos[0];
 
-  const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
+  await supabase
+    .from("inscripciones")
+    .update({ plan_pago, cuota_total: cuotas.reduce((sum, c) => sum + c.importe, 0) })
+    .eq("id", inscripcion_id);
+
+  const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const pagoUrl = `${baseUrl}/pago.html?id=${primerPago.id}`;
 
   const transporter = nodemailer.createTransport({

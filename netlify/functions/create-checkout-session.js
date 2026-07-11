@@ -32,7 +32,7 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const { STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, URL: SITE_URL } = process.env;
+  const { STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
   if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return { statusCode: 500, body: "Faltan variables de entorno (STRIPE_SECRET_KEY / SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)" };
   }
@@ -66,7 +66,7 @@ exports.handler = async function (event) {
   }
 
   const stripe = Stripe(STRIPE_SECRET_KEY);
-  const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
+  const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const jugadoraNombre = pago.inscripciones ? pago.inscripciones.jugadora_nombre : "";
   const tutorEmail = pago.inscripciones ? pago.inscripciones.tutor_email : undefined;
 

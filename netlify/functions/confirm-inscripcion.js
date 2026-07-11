@@ -29,7 +29,7 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, URL: SITE_URL } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
     return { statusCode: 500, body: "Faltan variables de entorno de Supabase" };
   }
@@ -73,7 +73,7 @@ exports.handler = async function (event) {
     return { statusCode: 404, body: "No se ha encontrado esa inscripción" };
   }
 
-  const baseUrl = SITE_URL || "https://femeniniosantaponsa.netlify.app";
+  const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const registroUrl = `${baseUrl}/registro.html?id=${inscripcion_id}`;
   const transferenciaUrl = `${baseUrl}/pago-transferencia.html`;
 

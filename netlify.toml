@@ -12,6 +12,11 @@
 [functions."ffib-sync"]
   schedule = "0 */6 * * *"
 
+# Recordatorios automáticos de pago (un día antes del vencimiento de cada
+# cuota) — se ejecuta sola cada mañana, nadie del club tiene que enviarlos.
+[functions."payment-reminders"]
+  schedule = "0 8 * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]

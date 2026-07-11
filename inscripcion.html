@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formulario de interés — Fútbol Femenino Santa Ponça</title>
-<meta name="description" content="Formulario de interés del Fútbol Femenino Santa Ponça: déjanos tus datos de contacto y tu plan de pago preferido. Club de fútbol femenino de Calvià, Mallorca.">
+<meta name="description" content="Formulario de interés del Fútbol Femenino Santa Ponça: déjanos tus datos de contacto y nos pondremos en contacto contigo. Club de fútbol femenino de Calvià, Mallorca.">
 <link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Formulario de interés — Fútbol Femenino Santa Ponça">
-<meta property="og:description" content="Déjanos tus datos de contacto y tu plan de pago preferido.">
+<meta property="og:description" content="Déjanos tus datos de contacto y nos pondremos en contacto contigo.">
 <meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
 <meta property="og:locale" content="es_ES">
 <meta name="theme-color" content="#17151b">
@@ -22,17 +22,6 @@
   .form-section-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; margin: 2rem 0 1.1rem; }
   .form-section-title:first-child { margin-top: 0; }
   .form-section-note { font-size: 0.8rem; color: var(--text-on-cream-muted); margin: -0.8rem 0 1.2rem; }
-  .plan-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin-bottom: 0.6rem; }
-  @media (max-width: 620px) { .plan-pago-grid { grid-template-columns: 1fr; } }
-  .plan-pago-opt {
-    display: block; cursor: pointer;
-    border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md);
-    padding: 1rem 1.1rem; transition: border-color 0.2s, background 0.2s;
-  }
-  .plan-pago-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
-  .plan-pago-opt input { margin-right: 0.5em; }
-  .plan-pago-opt strong { font-family: var(--font-display); font-size: 0.88rem; text-transform: uppercase; letter-spacing: -0.01em; display: block; }
-  .plan-pago-opt span.plan-when { display: block; font-size: 0.76rem; color: var(--text-on-cream-muted); margin-top: 0.3em; }
   .consent-field { display: flex; align-items: flex-start; gap: 0.7em; margin: 1.4rem 0; }
   .consent-field input { margin-top: 0.3em; flex-shrink: 0; }
   .consent-field label { font-size: 0.84rem; color: var(--text-on-cream-muted); font-weight: 400; text-transform: none; letter-spacing: normal; }
@@ -43,11 +32,6 @@
     padding: 0.4em 0.9em; border-radius: var(--radius-pill); cursor: pointer; transition: all 0.2s;
   }
   .lang-switch button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .condiciones-details { margin: 0 0 1.4rem; border: 1px solid rgba(10,10,10,0.14); border-radius: var(--radius-md); padding: 0.9rem 1.1rem; }
-  .condiciones-details summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: -0.01em; }
-  .condiciones-body { margin-top: 1rem; font-size: 0.84rem; line-height: 1.7; color: var(--text-on-cream-muted); }
-  .condiciones-body p { margin: 0 0 0.9em; }
-  .condiciones-body strong { color: var(--text-on-cream); }
   [data-lang-content="en"] { display: none; }
   html[data-lang="en"] [data-lang-content="es"] { display: none; }
   html[data-lang="en"] [data-lang-content="en"] { display: block; }
@@ -102,7 +86,7 @@
     <div class="container hero__content">
       <span class="hero__tag" data-i18n="hero_tag">Pretemporada 2026/27 · Únete al club</span>
       <h1 class="hero__title" data-i18n="hero_title">Formulario de interés</h1>
-      <p class="hero__lede" data-i18n="hero_lede">Cuéntanos lo básico y tu plan de pago preferido. Nos pondremos en contacto contigo para confirmarlo todo.</p>
+      <p class="hero__lede" data-i18n="hero_lede">Cuéntanos lo básico y nos pondremos en contacto contigo para confirmarlo todo.</p>
       <p class="hero__lede" style="margin-top:0.6rem;font-size:0.9rem;">
         <span data-i18n="phone_alt">¿Prefieres hacerlo por teléfono? Llámanos al</span>
         <a href="tel:+34676040111" style="color:var(--accent-light);text-decoration:underline;">676 04 01 11</a>
@@ -159,68 +143,9 @@
             </div>
           </div>
 
-          <h3 class="form-section-title" data-i18n="section_plan">Plan de pago preferido</h3>
-          <p class="form-section-note" data-i18n="note_cuota" style="margin-top:-0.6rem;">No se te cobrará nada ahora. Esto es solo tu preferencia — el importe y el enlace de pago se envían por email únicamente si el club confirma tu plaza.</p>
-          <div class="plan-pago-grid" role="radiogroup" aria-label="Plan de pago">
-            <label class="plan-pago-opt">
-              <input type="radio" name="plan-pago" value="unico" checked>
-              <strong data-i18n="plan_unico_title">Pago único</strong>
-              <span class="plan-when" data-i18n="plan_unico_when">100% en julio 2026</span>
-            </label>
-            <label class="plan-pago-opt">
-              <input type="radio" name="plan-pago" value="2_cuotas">
-              <strong data-i18n="plan_2_title">2 cuotas</strong>
-              <span class="plan-when" data-i18n="plan_2_when">Julio y octubre 2026</span>
-            </label>
-            <label class="plan-pago-opt">
-              <input type="radio" name="plan-pago" value="4_cuotas">
-              <strong data-i18n="plan_4_title">4 cuotas</strong>
-              <span class="plan-when" data-i18n="plan_4_when">Julio, octubre y diciembre 2026, febrero 2027</span>
-            </label>
-          </div>
-          <p class="form-note" data-i18n="note_plan">La cuota incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.</p>
-
-          <details class="condiciones-details">
-            <summary data-i18n="condiciones_summary">Ver condiciones generales</summary>
-            <div class="condiciones-body">
-              <p style="font-style:italic;" data-lang-content="es">Modelo orientativo para revisar y adaptar antes de enviar a familias. Para condiciones legales definitivas, conviene revisarlo con el club/gestoría.</p>
-              <p style="font-style:italic;" data-lang-content="en">Draft model to review and adapt before sending to families. For definitive legal wording, it should be reviewed by the club/administrator.</p>
-
-              <div data-lang-content="es">
-                <p><strong>Formulario de interés y plaza:</strong> Enviar este formulario es una expresión de interés, no una plaza garantizada. El club lo revisa y confirma por email si hay plaza; la plaza queda reservada cuando, además, se recibe el primer pago correspondiente. Las licencias federativas quedan sujetas a la validación de la FFIB y a la entrega correcta de la documentación.</p>
-                <p><strong>Cuota de temporada:</strong> La cuota anual es de 650 €. Incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.</p>
-                <p><strong>Pagos:</strong> Las fechas de pago indicadas deben respetarse para permitir una planificación responsable del club. Cualquier dificultad puntual debe comunicarse con antelación y por privado.</p>
-                <p><strong>Material deportivo:</strong> El tallaje de ropa se realizará durante la primera quincena de julio. Una vez confirmado el pedido, los cambios dependerán de disponibilidad del proveedor.</p>
-                <p><strong>Compromiso deportivo:</strong> Pedimos asistencia, puntualidad y comunicación. El desarrollo de una jugadora necesita continuidad, paciencia y hábitos. El club se compromete a formar; la familia y la jugadora se comprometen a respetar el proceso.</p>
-                <p><strong>Convivencia y respeto:</strong> No se aceptarán faltas de respeto hacia compañeras, rivales, árbitros, entrenadores, familias o personal del club. Ganar importa, pero nunca por encima de los valores.</p>
-                <p><strong>Desarrollo de jugadoras:</strong> Las convocatorias, minutos y roles deportivos se decidirán por criterios técnicos, físicos, actitudinales y de compromiso. La comunicación será honesta y constructiva, siempre buscando el crecimiento de la jugadora.</p>
-                <p><strong>Salud, lesiones y seguros:</strong> Las familias deben informar al club de cualquier lesión, condición médica relevante o limitación. En caso de lesión, el regreso a la actividad será progresivo y responsable. La cobertura federativa dependerá de la licencia y normativa aplicable.</p>
-                <p><strong>Protección de menores:</strong> Todas las comunicaciones con menores se realizarán de forma adecuada y transparente. El club prioriza un entorno seguro, educativo e inclusivo.</p>
-                <p><strong>Imagen y comunicaciones:</strong> El uso de imágenes para fines deportivos, informativos o promocionales requerirá autorización familiar cuando proceda. Las comunicaciones oficiales se harán por los canales indicados por el club.</p>
-                <p><strong>Bajas y devoluciones:</strong> La cuota organiza una temporada completa. Las bajas voluntarias, cambios de decisión o ausencias prolongadas no garantizan devolución automática. Cualquier caso excepcional se estudiará de forma individual.</p>
-                <p><strong>Protección de datos:</strong> Los datos facilitados se utilizarán únicamente para fines deportivos, administrativos, federativos y de comunicación del club, conforme a la normativa aplicable.</p>
-              </div>
-
-              <div data-lang-content="en">
-                <p><strong>Interest form and place:</strong> Submitting this form is an expression of interest, not a guaranteed place. The club reviews it and confirms by email whether a place is available; the place is reserved once the club also receives the relevant first payment. Federative licences are subject to FFIB validation and correct documentation.</p>
-                <p><strong>Season fee:</strong> The annual fee is 650 €. It includes regular sporting activity for the season and ordinary club administration. It does not include exceptional expenses, special travel, additional tournaments or extra kit unless clearly communicated.</p>
-                <p><strong>Payments:</strong> The stated payment dates must be respected so the club can plan responsibly. Any temporary difficulty should be communicated in advance and privately.</p>
-                <p><strong>Club kit:</strong> Kit sizing will be carried out during the first fortnight of July. Once the order is confirmed, exchanges will depend on supplier availability.</p>
-                <p><strong>Sporting commitment:</strong> We ask for attendance, punctuality and communication. Player development needs continuity, patience and good habits. The club commits to coaching; the player and family commit to respecting the process.</p>
-                <p><strong>Respect and behaviour:</strong> Disrespect towards teammates, opponents, referees, coaches, families or club staff will not be accepted. Winning matters, but never above the values.</p>
-                <p><strong>Player development:</strong> Selections, minutes and sporting roles will be decided through technical, physical, attitudinal and commitment criteria. Communication will be honest and constructive, always focused on the player's growth.</p>
-                <p><strong>Health, injuries and insurance:</strong> Families must inform the club of any injury, relevant medical condition or limitation. Return to play after injury will be progressive and responsible. Federative cover depends on the licence and applicable regulations.</p>
-                <p><strong>Safeguarding minors:</strong> All communication with minors will be appropriate and transparent. The club prioritises a safe, educational and inclusive environment.</p>
-                <p><strong>Image and communications:</strong> Use of images for sporting, information or promotional purposes will require family authorisation where necessary. Official communications will be made through the channels indicated by the club.</p>
-                <p><strong>Withdrawals and refunds:</strong> The fee is organised around a full season. Voluntary withdrawals, changes of decision or extended absences do not guarantee automatic refund. Any exceptional case will be reviewed individually.</p>
-                <p><strong>Data protection:</strong> The information provided will be used only for sporting, administrative, federative and club communication purposes, in accordance with applicable regulations.</p>
-              </div>
-            </div>
-          </details>
-
           <div class="consent-field">
             <input type="checkbox" id="i-condiciones" required>
-            <label for="i-condiciones" data-i18n="label_condiciones">He leído y acepto las condiciones generales del club, la gestión de la licencia federativa si corresponde, y el uso de estos datos e imágenes de la jugadora según la normativa de protección de datos. *</label>
+            <label for="i-condiciones" data-i18n="label_condiciones">He leído y acepto que Fútbol Femenino Santa Ponça use estos datos para ponerse en contacto conmigo, según la normativa de protección de datos. *</label>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" id="inscripcion-submit" data-i18n="btn_submit">Enviar formulario de interés</button>
@@ -283,17 +208,7 @@ const I18N = {
     label_tutor_telefono: "Teléfono *",
     label_tutor_email: "Correo electrónico *",
     note_email: "Te avisaremos por email a esta dirección en cuanto revisemos tu formulario de interés, tanto si hay plaza como si no. Revisa también la carpeta de spam por si acaso.",
-    section_plan: "Plan de pago preferido",
-    note_cuota: "No se te cobrará nada ahora. Esto es solo tu preferencia — el importe y el enlace de pago se envían por email únicamente si el club confirma tu plaza.",
-    plan_unico_title: "Pago único",
-    plan_unico_when: "100% en julio 2026",
-    plan_2_title: "2 cuotas",
-    plan_2_when: "Julio y octubre 2026",
-    plan_4_title: "4 cuotas",
-    plan_4_when: "Julio, octubre y diciembre 2026, febrero 2027",
-    note_plan: "La cuota incluye la actividad deportiva regular de la temporada y la gestión ordinaria del club. No incluye gastos extraordinarios, desplazamientos especiales, torneos no previstos o material adicional salvo comunicación expresa.",
-    condiciones_summary: "Ver condiciones generales",
-    label_condiciones: "He leído y acepto las condiciones generales del club, la gestión de la licencia federativa si corresponde, y el uso de estos datos e imágenes de la jugadora según la normativa de protección de datos. *",
+    label_condiciones: "He leído y acepto que Fútbol Femenino Santa Ponça use estos datos para ponerse en contacto conmigo, según la normativa de protección de datos. *",
     btn_submit: "Enviar formulario de interés",
     btn_sending: "Enviando…",
     err_prefix: "No se ha podido enviar el formulario: ",
@@ -302,7 +217,7 @@ const I18N = {
   en: {
     hero_tag: "Pre-season 2026/27 · Join the club",
     hero_title: "Interest form",
-    hero_lede: "Tell us the basics and your preferred payment plan. We'll get in touch to confirm everything.",
+    hero_lede: "Tell us the basics and we'll get in touch to confirm everything.",
     phone_alt: "Prefer to do this by phone? Call us at",
     eyebrow_form: "Form",
     section_jugadora: "Player details",
@@ -313,17 +228,7 @@ const I18N = {
     label_tutor_telefono: "Phone *",
     label_tutor_email: "Email *",
     note_email: "We'll email you at this address as soon as we review your interest form, whether or not there's a place available. Please also check your spam folder just in case.",
-    section_plan: "Preferred payment plan",
-    note_cuota: "You won't be charged anything now. This is just your preference — the amount and payment link are only emailed to you if the club confirms your place.",
-    plan_unico_title: "Single payment",
-    plan_unico_when: "100% in July 2026",
-    plan_2_title: "2 payments",
-    plan_2_when: "July and October 2026",
-    plan_4_title: "4 payments",
-    plan_4_when: "July, October and December 2026, February 2027",
-    note_plan: "The fee includes regular sporting activity for the season and ordinary club administration. It does not include exceptional expenses, special travel, additional tournaments or extra kit unless clearly communicated.",
-    condiciones_summary: "View general terms",
-    label_condiciones: "I have read and accept the club's general terms, the federation licence process where applicable, and the use of this data and the player's images in line with data protection rules. *",
+    label_condiciones: "I have read and accept that Fútbol Femenino Santa Ponça will use this data to get in touch with me, in line with data protection rules. *",
     btn_submit: "Submit interest form",
     btn_sending: "Sending…",
     err_prefix: "The form could not be sent: ",
@@ -351,20 +256,10 @@ function applyLang(lang) {
 })();
 
 (async function () {
-  // Importes reales de supabase/schema.sql · dossier pretemporada 2026/27.
-  const PLAN_CUOTAS = {
-    unico: [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }],
-    "2_cuotas": [
-      { numero_cuota: 1, importe: 325, fecha_vencimiento: "2026-07-01" },
-      { numero_cuota: 2, importe: 325, fecha_vencimiento: "2026-10-01" },
-    ],
-    "4_cuotas": [
-      { numero_cuota: 1, importe: 245, fecha_vencimiento: "2026-07-01" },
-      { numero_cuota: 2, importe: 135, fecha_vencimiento: "2026-10-01" },
-      { numero_cuota: 3, importe: 135, fecha_vencimiento: "2026-12-01" },
-      { numero_cuota: 4, importe: 135, fecha_vencimiento: "2027-02-01" },
-    ],
-  };
+  // El plan de pago ya no se elige en el formulario (solo es el primer
+  // contacto) — se crea de entrada como pago único de la cuota anual;
+  // el club puede ajustarlo más adelante si hace falta.
+  const CUOTAS_DEFECTO = [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }];
 
   const form = document.getElementById("inscripcion-form");
   const successEl = document.getElementById("inscripcion-success");
@@ -381,15 +276,13 @@ function applyLang(lang) {
       return;
     }
 
-    const planPago = (form.querySelector('input[name="plan-pago"]:checked') || {}).value || "unico";
-
     const payload = {
       jugadora_nombre: document.getElementById("i-jugadora-nombre").value.trim(),
       jugadora_fecha_nacimiento: document.getElementById("i-jugadora-nacimiento").value || null,
       tutor_nombre: document.getElementById("i-tutor-nombre").value.trim(),
       tutor_telefono: document.getElementById("i-tutor-telefono").value.trim(),
       tutor_email: document.getElementById("i-tutor-email").value.trim(),
-      plan_pago: planPago,
+      plan_pago: "unico",
       cuota_total: 650,
       acepta_condiciones: document.getElementById("i-condiciones").checked,
     };
@@ -397,7 +290,7 @@ function applyLang(lang) {
     submitBtn.disabled = true;
     submitBtn.textContent = I18N[window.SPFC_LANG].btn_sending;
 
-    const { data, pagos, error } = await SPFC_DATA.submitInscripcion(payload, PLAN_CUOTAS[planPago]);
+    const { data, pagos, error } = await SPFC_DATA.submitInscripcion(payload, CUOTAS_DEFECTO);
 
     if (error) {
       submitBtn.disabled = false;

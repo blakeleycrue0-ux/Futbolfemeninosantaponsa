@@ -724,8 +724,8 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .sponsors-sec-v2 .tag-line::before { background: rgba(244,240,232,0.28); }
 .sponsors-sec-v2 .big-title-v2 { color: var(--text-on-dark); font-size: clamp(26px,6vw,52px); }
 .sponsor-logos-v2 { display: flex; align-items: stretch; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 50px 0 36px; }
-.sponsor-logos-v2 img { display: block; width: 176px; height: 88px; object-fit: contain; padding: 0.8rem 1.2rem; background: var(--cream); border-radius: var(--radius-md); filter: grayscale(1); opacity: 0.85; transition: filter 0.3s, opacity 0.3s, transform 0.3s; }
-.sponsor-logos-v2 img:hover { filter: none; opacity: 1; transform: scale(1.04); }
+.sponsor-logos-v2 img { display: block; width: 176px; height: 88px; object-fit: contain; background: var(--cream); border-radius: var(--radius-md); transition: transform 0.3s; }
+.sponsor-logos-v2 img:hover { transform: scale(1.04); }
 .soc-row { display: flex; align-items: center; justify-content: center; gap: 30px; flex-wrap: wrap; }
 .soc-a { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(244,240,232,0.3); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 3px; transition: color 0.3s, border-color 0.3s; }
 .soc-a:hover { color: var(--accent-light); border-color: var(--accent); }

@@ -31,7 +31,9 @@
       </div>
       <button type="submit" class="btn btn-primary btn-block" id="login-btn">Entrar</button>
     </form>
-    <p class="form-note" style="margin-top:1.2rem;"><a href="../index.html">← Volver a la web</a></p>
+    <div class="form-success" id="reset-sent" style="display:none;"></div>
+    <p class="form-note" style="margin-top:1rem;"><a href="#" id="forgot-link">¿Has olvidado la contraseña?</a></p>
+    <p class="form-note"><a href="../index.html">← Volver a la web</a></p>
   </div>
 </div>
 
@@ -68,6 +70,40 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   }
 
   location.href = "dashboard.html";
+});
+
+document.getElementById("forgot-link").addEventListener("click", async (e) => {
+  e.preventDefault();
+  const errorEl = document.getElementById("login-error");
+  const sentEl = document.getElementById("reset-sent");
+  errorEl.style.display = "none";
+  sentEl.style.display = "none";
+
+  if (!window.spfc) {
+    errorEl.textContent = "Supabase no está configurado en esta web.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  const email = document.getElementById("email").value.trim();
+  if (!email) {
+    errorEl.textContent = "Escribe primero tu email arriba y luego pulsa en \"¿Has olvidado la contraseña?\".";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  const { error } = await window.spfc.auth.resetPasswordForEmail(email, {
+    redirectTo: location.origin + location.pathname.replace(/index\.html$/, "") + "restablecer.html",
+  });
+
+  if (error) {
+    errorEl.textContent = "No se ha podido enviar el email: " + error.message;
+    errorEl.style.display = "block";
+    return;
+  }
+
+  sentEl.textContent = "Te hemos enviado un email a " + email + " con un enlace para elegir una contraseña nueva. Revisa también la carpeta de spam.";
+  sentEl.style.display = "block";
 });
 </script>
 </body>

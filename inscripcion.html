@@ -481,19 +481,6 @@ function applyLang(lang) {
   const errorEl = document.getElementById("inscripcion-error");
   const submitBtn = document.getElementById("inscripcion-submit");
 
-  async function goToCheckout(pagoId) {
-    sessionStorage.setItem("spfc_pending_pago_id", pagoId);
-    const res = await fetch("/.netlify/functions/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pago_id: pagoId }),
-    });
-    if (!res.ok) throw new Error(await res.text());
-    const json = await res.json();
-    if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
-    window.location.href = json.url;
-  }
-
   form.addEventListener("submit", async function (evt) {
     evt.preventDefault();
     successEl.style.display = "none";
@@ -542,72 +529,15 @@ function applyLang(lang) {
       return;
     }
 
-    const primerPago = (pagos || []).slice().sort((a, b) => a.numero_cuota - b.numero_cuota)[0];
-    if (!primerPago) {
-      // No debería pasar (siempre mandamos al menos 1 cuota), pero si pasa
-      // la inscripción ya está guardada — no la perdemos, solo avisamos.
-      form.reset();
-      form.style.display = "none";
-      successEl.style.display = "block";
-      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
-    try {
-      submitBtn.textContent = I18N[window.SPFC_LANG].btn_redirecting;
-      await goToCheckout(primerPago.id);
-      // si goToCheckout funciona, el navegador ya está navegando a Stripe.
-    } catch (err) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = I18N[window.SPFC_LANG].btn_submit;
-      errorEl.textContent = I18N[window.SPFC_LANG].err_checkout +
-        (err && err.message ? " [" + err.message + "]" : "");
-      errorEl.style.display = "block";
-      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    // La inscripción se guarda como solicitud pendiente. No se cobra nada
+    // todavía: el club la revisa y confirma desde el admin, y solo entonces
+    // se envía un email (solo a esta familia) con el enlace de pago.
+    form.reset();
+    form.style.display = "none";
+    successEl.style.display = "block";
+    successEl.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 
-  // Vuelta desde Stripe Checkout (éxito o cancelación).
-  (function handleReturnFromStripe() {
-    const params = new URLSearchParams(location.search);
-    const pago = params.get("pago");
-    if (!pago) return;
-
-    form.style.display = "none";
-    if (pago === "exito") {
-      sessionStorage.removeItem("spfc_pending_pago_id");
-      successEl.style.display = "block";
-      successEl.textContent = I18N[window.SPFC_LANG].pago_exito;
-      successEl.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else if (pago === "cancelado") {
-      errorEl.style.display = "block";
-      errorEl.innerHTML = "";
-      const msg = document.createElement("span");
-      msg.textContent = I18N[window.SPFC_LANG].pago_cancelado;
-      errorEl.appendChild(msg);
-      const pendingId = sessionStorage.getItem("spfc_pending_pago_id");
-      if (pendingId) {
-        const retryBtn = document.createElement("button");
-        retryBtn.type = "button";
-        retryBtn.className = "btn btn-outline btn-sm";
-        retryBtn.style.marginTop = "0.8rem";
-        retryBtn.style.display = "block";
-        retryBtn.textContent = I18N[window.SPFC_LANG].btn_retry;
-        retryBtn.addEventListener("click", async () => {
-          retryBtn.disabled = true;
-          try {
-            await goToCheckout(pendingId);
-          } catch (err) {
-            retryBtn.disabled = false;
-            msg.textContent = I18N[window.SPFC_LANG].pago_cancelado +
-              (err && err.message ? " [" + err.message + "]" : "");
-          }
-        });
-        errorEl.appendChild(retryBtn);
-      }
-      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  })();
 })();
 </script>
 </body>

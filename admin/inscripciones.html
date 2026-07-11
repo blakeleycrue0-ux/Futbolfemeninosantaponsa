@@ -37,14 +37,15 @@
       <h1>Inscripciones</h1>
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
-      Aquí llegan las inscripciones enviadas desde <span class="tag-fuente">inscripcion.html</span>.
-      El cobro por Stripe todavía no está conectado, así que marca manualmente el estado de cada una
-      según vayas gestionando el pago con la familia.
+      Aquí llegan las solicitudes enviadas desde <span class="tag-fuente">inscripcion.html</span>. Todavía
+      no se cobra nada al enviarlas: revisa los datos y dale a <strong>"Confirmar y enviar enlace de pago"</strong>
+      — solo entonces se manda un email a esa familia (y a nadie más) con el enlace para pagar.
     </p>
 
     <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
       <h2 id="detail-title">Inscripción</h2>
       <div id="detail-body" style="font-size:0.9rem;line-height:1.8;"></div>
+      <div id="confirmar-wrap" style="margin:1rem 0;"></div>
       <div class="form-row" style="margin-top:1.2rem;">
         <div class="form-field">
           <label for="i-estado">Estado</label>
@@ -69,8 +70,8 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="inscripciones-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Confirmada</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="inscripciones-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -123,6 +124,39 @@
     detailCard.style.display = "block";
     detailCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
+    const confirmarWrap = document.getElementById("confirmar-wrap");
+    if (item.confirmada_en) {
+      confirmarWrap.innerHTML = `<p style="font-size:0.86rem;"><span class="pill">Confirmada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — ya se envió el email con el enlace de pago a ${escapeHtml(item.tutor_email)}.</p>`;
+    } else {
+      confirmarWrap.innerHTML = `
+        <button type="button" class="btn btn-primary btn-sm" id="confirmar-btn">Confirmar y enviar enlace de pago</button>
+        <span id="confirmar-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
+      `;
+      document.getElementById("confirmar-btn").addEventListener("click", async () => {
+        const btn = document.getElementById("confirmar-btn");
+        const status = document.getElementById("confirmar-status");
+        btn.disabled = true;
+        status.textContent = "Enviando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/confirm-inscripcion", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + (session ? session.access_token : ""),
+            },
+            body: JSON.stringify({ inscripcion_id: item.id }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          status.textContent = "Email enviado ✓";
+          loadInscripciones();
+        } catch (err) {
+          btn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      });
+    }
+
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");
     const pagosEl = document.getElementById("detail-pagos");
     if (!pagos || !pagos.length) {
@@ -151,9 +185,9 @@
   async function loadInscripciones() {
     const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
     const body = document.getElementById("inscripciones-body");
-    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     inscripciones = data || [];
-    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay inscripciones.</td></tr>'; return; }
+    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay inscripciones.</td></tr>'; return; }
     body.innerHTML = inscripciones.map((i) => `
       <tr>
         <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>
@@ -161,6 +195,7 @@
         <td>${escapeHtml(teamName(i.team_id))}</td>
         <td>${escapeHtml(i.tutor_nombre)}</td>
         <td>${planLabels[i.plan_pago] || escapeHtml(i.plan_pago)}</td>
+        <td>${i.confirmada_en ? '<span class="pill">Sí</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">No</span>'}</td>
         <td>${estadoLabels[i.estado] || escapeHtml(i.estado)}</td>
         <td class="actions">
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>

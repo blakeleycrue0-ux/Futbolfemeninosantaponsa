@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formulario de interés — Fútbol Femenino Santa Ponça</title>
-<meta name="description" content="Formulario de interés del Fútbol Femenino Santa Ponça: rellena tus datos, indica tu talla y tu plan de pago preferido. Club de fútbol femenino de Calvià, Mallorca.">
+<meta name="description" content="Formulario de interés del Fútbol Femenino Santa Ponça: déjanos tus datos de contacto y tu plan de pago preferido. Club de fútbol femenino de Calvià, Mallorca.">
 <link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Formulario de interés — Fútbol Femenino Santa Ponça">
-<meta property="og:description" content="Rellena tus datos, indica tu talla y tu plan de pago preferido.">
+<meta property="og:description" content="Déjanos tus datos de contacto y tu plan de pago preferido.">
 <meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/inscripcion.html">
 <meta property="og:locale" content="es_ES">
 <meta name="theme-color" content="#17151b">
@@ -102,7 +102,7 @@
     <div class="container hero__content">
       <span class="hero__tag" data-i18n="hero_tag">Pretemporada 2026/27 · Únete al club</span>
       <h1 class="hero__title" data-i18n="hero_title">Formulario de interés</h1>
-      <p class="hero__lede" data-i18n="hero_lede">Rellena tus datos, indica tu talla y tu plan de pago preferido. Nos pondremos en contacto contigo para confirmarlo todo.</p>
+      <p class="hero__lede" data-i18n="hero_lede">Cuéntanos lo básico y tu plan de pago preferido. Nos pondremos en contacto contigo para confirmarlo todo.</p>
       <p class="hero__lede" style="margin-top:0.6rem;font-size:0.9rem;">
         <span data-i18n="phone_alt">¿Prefieres hacerlo por teléfono? Llámanos al</span>
         <a href="tel:+34676040111" style="color:var(--accent-light);text-decoration:underline;">676 04 01 11</a>
@@ -142,52 +142,15 @@
               <input type="date" id="i-jugadora-nacimiento">
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="i-jugadora-dni" data-i18n="label_jugadora_dni">DNI / NIE / Pasaporte</label>
-              <input type="text" id="i-jugadora-dni">
-            </div>
-            <div class="form-field">
-              <label for="i-equipo" data-i18n="label_equipo">Equipo / categoría</label>
-              <select id="i-equipo"><option value="" data-i18n="option_selecciona">Selecciona…</option></select>
-            </div>
-          </div>
           <div class="form-field">
-            <label for="i-talla" data-i18n="label_talla">Talla aproximada de equipación</label>
-            <select id="i-talla">
-              <option value="" data-i18n="option_selecciona">Selecciona…</option>
-              <option>6</option><option>8</option><option>10</option><option>12</option><option>14</option><option>16</option>
-              <option>S</option><option>M</option><option>L</option><option>XL</option>
-            </select>
-          </div>
-          <p class="form-section-note" data-i18n="note_talla">Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.</p>
-
-          <h3 class="form-section-title" data-i18n="section_direccion">Dirección</h3>
-          <div class="form-field">
-            <label for="i-direccion" data-i18n="label_direccion">Dirección</label>
-            <input type="text" id="i-direccion" autocomplete="street-address">
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="i-poblacion" data-i18n="label_poblacion">Población</label>
-              <input type="text" id="i-poblacion" autocomplete="address-level2">
-            </div>
-            <div class="form-field">
-              <label for="i-cp" data-i18n="label_cp">Código postal</label>
-              <input type="text" id="i-cp" autocomplete="postal-code">
-            </div>
+            <label for="i-equipo" data-i18n="label_equipo">Equipo / categoría</label>
+            <select id="i-equipo"><option value="" data-i18n="option_selecciona">Selecciona…</option></select>
           </div>
 
-          <h3 class="form-section-title" data-i18n="section_tutor1">Madre / padre / tutor legal 1</h3>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="i-tutor-nombre" data-i18n="label_tutor_nombre">Nombre completo *</label>
-              <input type="text" id="i-tutor-nombre" required autocomplete="name">
-            </div>
-            <div class="form-field">
-              <label for="i-tutor-dni" data-i18n="label_tutor_dni">DNI / NIE</label>
-              <input type="text" id="i-tutor-dni">
-            </div>
+          <h3 class="form-section-title" data-i18n="section_tutor1">Madre / padre / tutor legal</h3>
+          <div class="form-field">
+            <label for="i-tutor-nombre" data-i18n="label_tutor_nombre">Nombre completo *</label>
+            <input type="text" id="i-tutor-nombre" required autocomplete="name">
           </div>
           <div class="form-row">
             <div class="form-field">
@@ -198,28 +161,6 @@
               <label for="i-tutor-email" data-i18n="label_tutor_email">Correo electrónico *</label>
               <input type="email" id="i-tutor-email" required autocomplete="email">
               <span class="form-section-note" data-i18n="note_email" style="margin:0.4rem 0 0;">Te avisaremos por email a esta dirección en cuanto revisemos tu formulario de interés, tanto si hay plaza como si no. Revisa también la carpeta de spam por si acaso.</span>
-            </div>
-          </div>
-
-          <h3 class="form-section-title" data-i18n="section_tutor2">Madre / padre / tutor legal 2 (opcional)</h3>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="i-tutor2-nombre" data-i18n="label_tutor2_nombre">Nombre completo</label>
-              <input type="text" id="i-tutor2-nombre" autocomplete="name">
-            </div>
-            <div class="form-field">
-              <label for="i-tutor2-dni" data-i18n="label_tutor_dni">DNI / NIE</label>
-              <input type="text" id="i-tutor2-dni">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="i-tutor2-telefono" data-i18n="label_tutor2_telefono">Teléfono</label>
-              <input type="tel" id="i-tutor2-telefono" autocomplete="tel">
-            </div>
-            <div class="form-field">
-              <label for="i-tutor2-email" data-i18n="label_tutor2_email">Correo electrónico</label>
-              <input type="email" id="i-tutor2-email" autocomplete="email">
             </div>
           </div>
 
@@ -336,30 +277,18 @@ const I18N = {
   es: {
     hero_tag: "Pretemporada 2026/27 · Únete al club",
     hero_title: "Formulario de interés",
-    hero_lede: "Rellena tus datos, indica tu talla y tu plan de pago preferido. Nos pondremos en contacto contigo para confirmarlo todo.",
+    hero_lede: "Cuéntanos lo básico y tu plan de pago preferido. Nos pondremos en contacto contigo para confirmarlo todo.",
     phone_alt: "¿Prefieres hacerlo por teléfono? Llámanos al",
     eyebrow_form: "Formulario",
     section_jugadora: "Datos de la jugadora",
     label_jugadora_nombre: "Nombre completo *",
     label_jugadora_nacimiento: "Fecha de nacimiento",
-    label_jugadora_dni: "DNI / NIE / Pasaporte",
     label_equipo: "Equipo / categoría",
     option_selecciona: "Selecciona…",
-    label_talla: "Talla aproximada de equipación",
-    note_talla: "Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.",
-    section_direccion: "Dirección",
-    label_direccion: "Dirección",
-    label_poblacion: "Población",
-    label_cp: "Código postal",
-    section_tutor1: "Madre / padre / tutor legal 1",
-    section_tutor2: "Madre / padre / tutor legal 2 (opcional)",
+    section_tutor1: "Madre / padre / tutor legal",
     label_tutor_nombre: "Nombre completo *",
-    label_tutor_dni: "DNI / NIE",
     label_tutor_telefono: "Teléfono *",
     label_tutor_email: "Correo electrónico *",
-    label_tutor2_nombre: "Nombre completo",
-    label_tutor2_telefono: "Teléfono",
-    label_tutor2_email: "Correo electrónico",
     note_email: "Te avisaremos por email a esta dirección en cuanto revisemos tu formulario de interés, tanto si hay plaza como si no. Revisa también la carpeta de spam por si acaso.",
     section_plan: "Plan de pago preferido",
     note_cuota: "No se te cobrará nada ahora. Esto es solo tu preferencia — el importe y el enlace de pago se envían por email únicamente si el club confirma tu plaza.",
@@ -380,30 +309,18 @@ const I18N = {
   en: {
     hero_tag: "Pre-season 2026/27 · Join the club",
     hero_title: "Interest form",
-    hero_lede: "Fill in your details, tell us your kit size and your preferred payment plan. We'll get in touch to confirm everything.",
+    hero_lede: "Tell us the basics and your preferred payment plan. We'll get in touch to confirm everything.",
     phone_alt: "Prefer to do this by phone? Call us at",
     eyebrow_form: "Form",
     section_jugadora: "Player details",
     label_jugadora_nombre: "Full name *",
     label_jugadora_nacimiento: "Date of birth",
-    label_jugadora_dni: "DNI / NIE / Passport",
     label_equipo: "Team / category",
     option_selecciona: "Select…",
-    label_talla: "Approximate kit size",
-    note_talla: "Indicative only: official kit sizing will take place in person during the first fortnight of July. Exact date, time and location will follow.",
-    section_direccion: "Address",
-    label_direccion: "Address",
-    label_poblacion: "Town / city",
-    label_cp: "Postal code",
-    section_tutor1: "Parent / guardian 1",
-    section_tutor2: "Parent / guardian 2 (optional)",
+    section_tutor1: "Parent / guardian",
     label_tutor_nombre: "Full name *",
-    label_tutor_dni: "DNI / NIE",
     label_tutor_telefono: "Phone *",
     label_tutor_email: "Email *",
-    label_tutor2_nombre: "Full name",
-    label_tutor2_telefono: "Phone",
-    label_tutor2_email: "Email",
     note_email: "We'll email you at this address as soon as we review your interest form, whether or not there's a place available. Please also check your spam folder just in case.",
     section_plan: "Preferred payment plan",
     note_cuota: "You won't be charged anything now. This is just your preference — the amount and payment link are only emailed to you if the club confirms your place.",
@@ -485,20 +402,10 @@ function applyLang(lang) {
     const payload = {
       jugadora_nombre: document.getElementById("i-jugadora-nombre").value.trim(),
       jugadora_fecha_nacimiento: document.getElementById("i-jugadora-nacimiento").value || null,
-      jugadora_dni: document.getElementById("i-jugadora-dni").value.trim() || null,
       team_id: document.getElementById("i-equipo").value || null,
-      talla_equipacion: document.getElementById("i-talla").value || null,
       tutor_nombre: document.getElementById("i-tutor-nombre").value.trim(),
-      tutor_dni: document.getElementById("i-tutor-dni").value.trim() || null,
       tutor_telefono: document.getElementById("i-tutor-telefono").value.trim(),
       tutor_email: document.getElementById("i-tutor-email").value.trim(),
-      direccion: document.getElementById("i-direccion").value.trim() || null,
-      poblacion: document.getElementById("i-poblacion").value.trim() || null,
-      codigo_postal: document.getElementById("i-cp").value.trim() || null,
-      tutor2_nombre: document.getElementById("i-tutor2-nombre").value.trim() || null,
-      tutor2_dni: document.getElementById("i-tutor2-dni").value.trim() || null,
-      tutor2_telefono: document.getElementById("i-tutor2-telefono").value.trim() || null,
-      tutor2_email: document.getElementById("i-tutor2-email").value.trim() || null,
       plan_pago: planPago,
       cuota_total: 650,
       acepta_condiciones: document.getElementById("i-condiciones").checked,

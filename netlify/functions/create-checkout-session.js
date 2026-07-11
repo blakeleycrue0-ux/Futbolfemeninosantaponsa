@@ -92,8 +92,8 @@ exports.handler = async function (event) {
       pago_id: pago.id,
       numero_cuota: String(pago.numero_cuota),
     },
-    success_url: `${baseUrl}/inscripcion.html?pago=exito`,
-    cancel_url: `${baseUrl}/inscripcion.html?pago=cancelado`,
+    success_url: `${baseUrl}/pago.html?id=${pago.id}&resultado=exito`,
+    cancel_url: `${baseUrl}/pago.html?id=${pago.id}&resultado=cancelado`,
   });
 
   return {

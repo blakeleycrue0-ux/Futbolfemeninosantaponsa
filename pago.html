@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pago de inscripción — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .pago-wrap { max-width: 560px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; text-align: center; }
+  @media (max-width: 620px) { .pago-wrap { padding: 1.6rem; } }
+  .pago-jugadora { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; margin: 0.6rem 0 0.2rem; }
+  .pago-importe { font-family: var(--font-display); font-size: 2.6rem; font-weight: 900; color: var(--accent-dark); margin: 0.6rem 0; }
+  .pago-meta { color: var(--text-on-cream-muted); font-size: 0.9rem; margin-bottom: 1.6rem; }
+  .pago-estado-pagado { color: var(--win); font-weight: 700; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Inscribirme</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+    <a href="inscripcion.html" class="fullnav-link">Inscripción</a>
+  </div>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook</a>
+    <a href="admin/index.html">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Pago de inscripción</h1>
+      <p class="hero__lede">Este enlace es personal: solo tú has recibido este email para completar el pago de la inscripción.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="pago-wrap">
+        <div id="pago-loading">Cargando…</div>
+        <div id="pago-content" style="display:none;">
+          <span class="eyebrow" id="pago-cuota-label">Cuota</span>
+          <div class="pago-jugadora" id="pago-jugadora"></div>
+          <div class="pago-importe" id="pago-importe"></div>
+          <p class="pago-meta" id="pago-meta"></p>
+          <button type="button" class="btn btn-primary btn-block" id="pago-btn">Pagar ahora</button>
+          <p id="pago-status" style="margin-top:1rem;font-size:0.86rem;"></p>
+        </div>
+        <div id="pago-error" class="form-error" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="ft-v2">
+  <p>© <span data-year></span> <strong>Fútbol Femenino Santa Ponça</strong> · Calvià, Mallorca</p>
+  <a href="admin/index.html">Acceso club</a>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.classList.toggle('x', open);
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+(function highlightCurrentNav() {
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.fullnav-link[href], .hdr-nav a[href]').forEach((a) => {
+    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
+  });
+})();
+</script>
+<script>
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const pagoId = params.get("id");
+  const resultado = params.get("resultado");
+  const loadingEl = document.getElementById("pago-loading");
+  const contentEl = document.getElementById("pago-content");
+  const errorEl = document.getElementById("pago-error");
+  const btn = document.getElementById("pago-btn");
+  const statusEl = document.getElementById("pago-status");
+
+  function showError(msg) {
+    loadingEl.style.display = "none";
+    contentEl.style.display = "none";
+    errorEl.style.display = "block";
+    errorEl.textContent = msg;
+  }
+
+  if (!pagoId) {
+    showError("Este enlace no es válido. Revisa que lo hayas abierto completo desde el email.");
+    return;
+  }
+
+  let pago;
+  try {
+    const res = await fetch("/.netlify/functions/get-pago?id=" + encodeURIComponent(pagoId));
+    if (!res.ok) throw new Error(await res.text());
+    pago = await res.json();
+  } catch (err) {
+    showError("No hemos podido cargar los datos de este pago. [" + (err && err.message ? err.message : "") + "]");
+    return;
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+  document.getElementById("pago-cuota-label").textContent = "Cuota " + pago.numero_cuota;
+  document.getElementById("pago-jugadora").textContent = pago.jugadora_nombre || "";
+  document.getElementById("pago-importe").textContent = pago.importe + " €";
+  document.getElementById("pago-meta").textContent = pago.fecha_vencimiento
+    ? "Vencimiento: " + new Date(pago.fecha_vencimiento + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
+    : "";
+
+  if (pago.estado === "pagado") {
+    btn.style.display = "none";
+    statusEl.innerHTML = '<span class="pago-estado-pagado">Esta cuota ya está pagada. ¡Gracias!</span>';
+    return;
+  }
+
+  if (resultado === "exito") {
+    statusEl.innerHTML = '<span class="pago-estado-pagado">¡Pago completado correctamente! Gracias.</span>';
+    btn.style.display = "none";
+    return;
+  }
+  if (resultado === "cancelado") {
+    statusEl.textContent = "El pago no se ha completado. Puedes intentarlo de nuevo cuando quieras con el botón de arriba.";
+  }
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    btn.textContent = "Redirigiendo al pago…";
+    statusEl.textContent = "";
+    try {
+      const res = await fetch("/.netlify/functions/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pago_id: pagoId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
+      window.location.href = json.url;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Pagar ahora";
+      statusEl.textContent = "No hemos podido abrir la pasarela de pago. Inténtalo de nuevo o escríbenos a secretariaspfc@gmail.com. [" + (err && err.message ? err.message : "") + "]";
+    }
+  });
+})();
+</script>
+</body>
+</html>

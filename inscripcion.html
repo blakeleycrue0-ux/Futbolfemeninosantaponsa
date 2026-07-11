@@ -32,7 +32,6 @@
   .plan-pago-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
   .plan-pago-opt input { margin-right: 0.5em; }
   .plan-pago-opt strong { font-family: var(--font-display); font-size: 0.88rem; text-transform: uppercase; letter-spacing: -0.01em; display: block; }
-  .plan-pago-opt .plan-amount { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; color: var(--accent-dark); margin-top: 0.3em; }
   .plan-pago-opt span.plan-when { display: block; font-size: 0.76rem; color: var(--text-on-cream-muted); margin-top: 0.3em; }
   .consent-field { display: flex; align-items: flex-start; gap: 0.7em; margin: 1.4rem 0; }
   .consent-field input { margin-top: 0.3em; flex-shrink: 0; }
@@ -198,6 +197,7 @@
             <div class="form-field">
               <label for="i-tutor-email" data-i18n="label_tutor_email">Correo electrónico *</label>
               <input type="email" id="i-tutor-email" required autocomplete="email">
+              <span class="form-section-note" data-i18n="note_email" style="margin:0.4rem 0 0;">Te avisaremos por email a esta dirección en cuanto revisemos la solicitud, si es aceptada o no. Revisa también la carpeta de spam por si acaso.</span>
             </div>
           </div>
 
@@ -223,25 +223,22 @@
             </div>
           </div>
 
-          <h3 class="form-section-title" data-i18n="section_plan">Cuota de temporada y plan de pago</h3>
-          <p class="form-section-note" data-i18n="note_cuota" style="margin-top:-0.6rem;">Cuota anual: 650 €</p>
+          <h3 class="form-section-title" data-i18n="section_plan">Plan de pago preferido</h3>
+          <p class="form-section-note" data-i18n="note_cuota" style="margin-top:-0.6rem;">No se te cobrará nada ahora. Esto es solo tu preferencia — el importe y el enlace de pago se envían por email únicamente si el club acepta la solicitud.</p>
           <div class="plan-pago-grid" role="radiogroup" aria-label="Plan de pago">
             <label class="plan-pago-opt">
               <input type="radio" name="plan-pago" value="unico" checked>
               <strong data-i18n="plan_unico_title">Pago único</strong>
-              <span class="plan-amount">650 €</span>
               <span class="plan-when" data-i18n="plan_unico_when">100% en julio 2026</span>
             </label>
             <label class="plan-pago-opt">
               <input type="radio" name="plan-pago" value="2_cuotas">
               <strong data-i18n="plan_2_title">2 cuotas</strong>
-              <span class="plan-amount">325 € + 325 €</span>
               <span class="plan-when" data-i18n="plan_2_when">Julio y octubre 2026</span>
             </label>
             <label class="plan-pago-opt">
               <input type="radio" name="plan-pago" value="4_cuotas">
               <strong data-i18n="plan_4_title">4 cuotas</strong>
-              <span class="plan-amount">245 € + 135 € + 135 € + 135 €</span>
               <span class="plan-when" data-i18n="plan_4_when">Julio, octubre y diciembre 2026, febrero 2027</span>
             </label>
           </div>
@@ -363,8 +360,9 @@ const I18N = {
     label_tutor2_nombre: "Nombre completo",
     label_tutor2_telefono: "Teléfono",
     label_tutor2_email: "Correo electrónico",
-    section_plan: "Cuota de temporada y plan de pago",
-    note_cuota: "Cuota anual: 650 €",
+    note_email: "Te avisaremos por email a esta dirección en cuanto revisemos la solicitud, si es aceptada o no. Revisa también la carpeta de spam por si acaso.",
+    section_plan: "Plan de pago preferido",
+    note_cuota: "No se te cobrará nada ahora. Esto es solo tu preferencia — el importe y el enlace de pago se envían por email únicamente si el club acepta la solicitud.",
     plan_unico_title: "Pago único",
     plan_unico_when: "100% en julio 2026",
     plan_2_title: "2 cuotas",
@@ -406,8 +404,9 @@ const I18N = {
     label_tutor2_nombre: "Full name",
     label_tutor2_telefono: "Phone",
     label_tutor2_email: "Email",
-    section_plan: "Season fee and payment plan",
-    note_cuota: "Annual fee: 650 €",
+    note_email: "We'll email you at this address as soon as we review the request, whether it's accepted or not. Please also check your spam folder just in case.",
+    section_plan: "Preferred payment plan",
+    note_cuota: "You won't be charged anything now. This is just your preference — the amount and payment link are only emailed to you if the club accepts the request.",
     plan_unico_title: "Single payment",
     plan_unico_when: "100% in July 2026",
     plan_2_title: "2 payments",

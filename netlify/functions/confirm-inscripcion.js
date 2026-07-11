@@ -76,10 +76,10 @@ exports.handler = async function (event) {
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  const asunto = `Solicitud de inscripción aceptada — ${inscripcion.jugadora_nombre}`;
+  const asunto = `Solicitud aceptada — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>¡Buenas noticias! Hemos aceptado la solicitud de inscripción de <strong>${inscripcion.jugadora_nombre}</strong> en el Fútbol Femenino Santa Ponça.</p>
+    <p>¡Buenas noticias! Hemos aceptado la solicitud de <strong>${inscripcion.jugadora_nombre}</strong> para el Fútbol Femenino Santa Ponça.</p>
     <p>En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido cómo completar el pago.</p>
     <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
     <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

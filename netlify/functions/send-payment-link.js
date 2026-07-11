@@ -88,11 +88,11 @@ exports.handler = async function (event) {
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  const asunto = `Pago de la inscripción — ${inscripcion.jugadora_nombre}`;
+  const asunto = `Pago de la solicitud — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>Para completar la inscripción de <strong>${inscripcion.jugadora_nombre}</strong>, falta el pago de la primera cuota (${primerPago.importe} €). Puedes hacerlo de forma segura desde este enlace personal:</p>
-    <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Pagar cuota de inscripción</a></p>
+    <p>Para completar la inscripción de <strong>${inscripcion.jugadora_nombre}</strong> tras la aceptación de su solicitud, falta el pago de la primera cuota (${primerPago.importe} €). Puedes hacerlo de forma segura desde este enlace personal:</p>
+    <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Pagar cuota</a></p>
     <p>O copia y pega este enlace en el navegador:<br>${pagoUrl}</p>
     <p>Este enlace es personal e intransferible — no lo compartas.</p>
     <p>Si tienes cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

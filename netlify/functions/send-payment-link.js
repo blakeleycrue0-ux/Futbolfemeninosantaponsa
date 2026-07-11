@@ -1,9 +1,9 @@
 /*
   send-payment-link.js — Netlify Function
   ============================================================================
-  Llamada desde Admin → Inscripciones cuando el club decide que ya toca
-  pedir el pago (paso aparte y posterior a "Aceptar solicitud"). Envía un
-  email SOLO al tutor/a de esa inscripción con el importe de la primera
+  Llamada desde Admin → Formularios de interés cuando el club decide que
+  ya toca pedir el pago (paso aparte y posterior a "Aceptar plaza"). Envía
+  un email SOLO al tutor/a de esa familia con el importe de la primera
   cuota y el enlace personal a pago.html — una página que no aparece en
   ningún menú y solo es accesible con ese enlace directo. No cobra nada
   aquí mismo: el cobro ocurre cuando la familia entra al enlace y pulsa
@@ -88,10 +88,10 @@ exports.handler = async function (event) {
     auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  const asunto = `Pago de la solicitud — ${inscripcion.jugadora_nombre}`;
+  const asunto = `Pago de la plaza — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>Para completar la inscripción de <strong>${inscripcion.jugadora_nombre}</strong> tras la aceptación de su solicitud, falta el pago de la primera cuota (${primerPago.importe} €). Puedes hacerlo de forma segura desde este enlace personal:</p>
+    <p>Para confirmar la plaza de <strong>${inscripcion.jugadora_nombre}</strong>, falta el pago de la primera cuota (${primerPago.importe} €). Puedes hacerlo de forma segura desde este enlace personal:</p>
     <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Pagar cuota</a></p>
     <p>O copia y pega este enlace en el navegador:<br>${pagoUrl}</p>
     <p>Este enlace es personal e intransferible — no lo compartas.</p>

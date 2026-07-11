@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solicitudes — Panel club</title>
+<title>Formularios de interés — Panel club</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="../assets/css/variables.css">
 <link rel="stylesheet" href="../assets/css/base.css">
@@ -24,7 +24,7 @@
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
-      <a href="inscripciones.html">Solicitudes</a>
+      <a href="inscripciones.html">Formularios de interés</a>
     </nav>
     <div class="admin-sidebar-foot">
       <span data-admin-email>—</span>
@@ -34,17 +34,17 @@
 
   <main class="admin-main">
     <div class="admin-topbar">
-      <h1>Solicitudes</h1>
+      <h1>Formularios de interés</h1>
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
-      Aquí llegan las solicitudes enviadas desde <span class="tag-fuente">inscripcion.html</span>. Todavía
-      no se cobra nada al enviarlas. Son dos pasos, cada uno con su email (solo a esa familia, nadie más):
-      primero <strong>"Aceptar solicitud y enviar confirmación"</strong> (sin precio, solo avisa de que está
-      aceptada), y más adelante, cuando decidáis, <strong>"Enviar enlace de pago"</strong>.
+      Aquí llegan los formularios de interés enviados desde <span class="tag-fuente">inscripcion.html</span>. Todavía
+      no se cobra nada al enviarlos. Son dos pasos, cada uno con su email (solo a esa familia, nadie más):
+      primero <strong>"Aceptar plaza y enviar confirmación"</strong> (sin precio, solo avisa de que hay
+      plaza), y más adelante, cuando decidáis, <strong>"Enviar enlace de pago"</strong>.
     </p>
 
     <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
-      <h2 id="detail-title">Solicitud</h2>
+      <h2 id="detail-title">Formulario de interés</h2>
       <div id="detail-body" style="font-size:0.9rem;line-height:1.8;"></div>
       <div id="confirmar-wrap" style="margin:1rem 0;"></div>
       <div class="form-row" style="margin-top:1.2rem;">
@@ -153,7 +153,7 @@
     if (!item.confirmada_en) {
       html += `
         <p style="font-size:0.86rem;">
-          <button type="button" class="btn btn-primary btn-sm" id="aceptar-btn">Aceptar solicitud y enviar confirmación</button>
+          <button type="button" class="btn btn-primary btn-sm" id="aceptar-btn">Aceptar plaza y enviar confirmación</button>
           <span id="aceptar-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
         </p>`;
     } else {
@@ -211,7 +211,7 @@
     const body = document.getElementById("inscripciones-body");
     if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     inscripciones = data || [];
-    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay solicitudes.</td></tr>'; return; }
+    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay formularios de interés.</td></tr>'; return; }
     body.innerHTML = inscripciones.map((i) => `
       <tr>
         <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>

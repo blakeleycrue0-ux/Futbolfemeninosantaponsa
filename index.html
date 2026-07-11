@@ -36,9 +36,9 @@
 
 <!-- ═══ LOADER ═══ -->
 <div id="loader">
-  <div class="ld-word" id="ldWord"><span>F</span><span>S</span><span>P</span></div>
-  <div class="ld-bar-bg"><div class="ld-bar" id="lbar"></div></div>
-  <div class="ld-pct" id="lpct">0%</div>
+  <video id="loaderVideo" autoplay muted playsinline webkit-playsinline preload="auto">
+    <source src="assets/video/loader-escudo.mp4" type="video/mp4">
+  </video>
 </div>
 
 <!-- ═══ HEADER ═══ -->
@@ -273,21 +273,21 @@
 <script>
 /* ── LOADER ── */
 (function () {
-  const chars = document.querySelectorAll('#ldWord span');
-  chars.forEach((c, i) => setTimeout(() => c.classList.add('show'), i * 100));
-  const bar = document.getElementById('lbar');
-  const pct = document.getElementById('lpct');
-  let p = 0;
-  const iv = setInterval(() => {
-    p += Math.random() * 20;
-    if (p >= 100) { p = 100; clearInterval(iv); }
-    bar.style.width = p + '%';
-    pct.textContent = Math.floor(p) + '%';
-    if (p === 100) setTimeout(() => {
-      document.getElementById('loader').classList.add('done');
-      startHero();
-    }, 320);
-  }, 80);
+  const loader = document.getElementById('loader');
+  const video = document.getElementById('loaderVideo');
+  let finished = false;
+  function finish() {
+    if (finished) return;
+    finished = true;
+    loader.classList.add('done');
+    startHero();
+  }
+  if (video) {
+    video.addEventListener('ended', finish);
+    video.play().catch(() => {}); // si el autoplay falla, la red de seguridad de abajo cierra el loader igualmente
+  }
+  // Red de seguridad: si el vídeo no carga/reproduce, no dejar la web tapada.
+  setTimeout(finish, 4500);
 })();
 
 /* ── HERO ANIMATION ── */
@@ -306,11 +306,6 @@ function startHero() {
   animWord('w3', 560);
   setTimeout(() => { const el = document.getElementById('heroSub'); if (el) el.classList.add('in'); }, 1100);
 }
-// Red de seguridad: si algo falla en el loader, no dejar la web tapada.
-setTimeout(() => {
-  document.getElementById('loader').classList.add('done');
-  if (!document.getElementById('w1').style.opacity) startHero();
-}, 2600);
 
 /* ── HEADER SCROLL ── */
 window.addEventListener('scroll', () => {

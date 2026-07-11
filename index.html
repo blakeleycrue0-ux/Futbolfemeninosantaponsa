@@ -335,9 +335,9 @@ function countUp(el, target, suffix) {
   }
 
   function crestHtml(esClub, rival, rivalEscudoUrl) {
-    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:6px;">`;
-    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:6px;">`;
-    return "";
+    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
+    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
+    return `<span>${(rival || "").trim().slice(0, 2).toUpperCase() || "--"}</span>`;
   }
 
   /* Destacado */
@@ -422,13 +422,19 @@ function countUp(el, target, suffix) {
       const marcador = m._jugado && m.goles_equipo != null
         ? `<div class="mc-score">${esLocal ? m.goles_equipo : m.goles_rival} - ${esLocal ? m.goles_rival : m.goles_equipo}</div>`
         : `<div class="mc-div"></div>`;
-      return `<a class="mc" href="${m._jugado ? "partido.html?id=" + (m.id || "") : "partido.html?id=" + (m.id || "")}">
+      return `<a class="mc" href="partido.html?id=${m.id || ""}">
         <div class="mc-top">
           <span class="mc-badge ${m._jugado ? "past" : "prox"}">${m._jugado ? "Jugado" : "Próximo"}</span>
           <div class="mc-vs-row">
-            <div class="mc-tn">${localEscudo}${escapeHtml(local)}</div>
+            <div class="mc-team">
+              <div class="mc-crest">${localEscudo}</div>
+              <div class="mc-tn">${escapeHtml(local)}</div>
+            </div>
             ${marcador}
-            <div class="mc-tn away">${escapeHtml(visitante)}${visitanteEscudo}</div>
+            <div class="mc-team">
+              <div class="mc-crest">${visitanteEscudo}</div>
+              <div class="mc-tn">${escapeHtml(visitante)}</div>
+            </div>
           </div>
         </div>
         <div class="mc-foot">

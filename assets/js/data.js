@@ -157,14 +157,22 @@ const SPFC_DATA = (function () {
     async submitInscripcion(payload, cuotas) {
       const c = client();
       if (!c) return { error: { message: "Supabase no está configurado en esta web." } };
-      const { data, error } = await c.from("inscripciones").insert(payload).select().single();
+      // Generamos el id en el cliente y no encadenamos .select() en los
+      // inserts: quien rellena el formulario no está autenticado, y las
+      // políticas RLS de lectura de "inscripciones"/"inscripcion_pagos"
+      // son solo para admin — pedir de vuelta la fila insertada (RETURNING)
+      // fallaría con "new row violates row-level security policy" aunque
+      // el insert en sí esté permitido.
+      const inscripcionId = crypto.randomUUID();
+      const { error } = await c.from("inscripciones").insert(Object.assign({ id: inscripcionId }, payload));
       if (error) return { error };
+      const data = { id: inscripcionId };
       let pagos = [];
       if (cuotas && cuotas.length) {
-        const rows = cuotas.map((cu) => Object.assign({}, cu, { inscripcion_id: data.id }));
-        const { data: pagosData, error: pagosError } = await c.from("inscripcion_pagos").insert(rows).select();
+        const rows = cuotas.map((cu) => Object.assign({ id: crypto.randomUUID() }, cu, { inscripcion_id: inscripcionId }));
+        const { error: pagosError } = await c.from("inscripcion_pagos").insert(rows);
         if (pagosError) return { data, error: pagosError };
-        pagos = pagosData || [];
+        pagos = rows;
       }
       return { data, pagos };
     },

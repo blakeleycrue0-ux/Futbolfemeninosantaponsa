@@ -34,15 +34,6 @@
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
-<!-- ═══ LOADER ═══ -->
-<div id="loader">
-  <div class="loader-inner">
-    <div class="loader-ring"></div>
-    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="loader-crest">
-    <div class="loader-name">Fútbol Femenino<span>Santa Ponça</span></div>
-  </div>
-</div>
-
 <!-- ═══ HEADER ═══ -->
 <header class="hdr" id="hdr">
   <a href="index.html" class="logo-wrap">
@@ -273,15 +264,6 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
-/* ── LOADER ── */
-(function () {
-  const loader = document.getElementById('loader');
-  setTimeout(() => {
-    loader.classList.add('done');
-    startHero();
-  }, 1500);
-})();
-
 /* ── HERO ANIMATION ── */
 function animWord(id, delay) {
   setTimeout(() => {
@@ -298,6 +280,7 @@ function startHero() {
   animWord('w3', 560);
   setTimeout(() => { const el = document.getElementById('heroSub'); if (el) el.classList.add('in'); }, 1100);
 }
+startHero();
 
 /* ── HEADER SCROLL ── */
 window.addEventListener('scroll', () => {

@@ -470,63 +470,6 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
    .site-footer, .hero, etc. en cada página una a una.
    ===================================================================== */
 
-/* ─── Loader ─── */
-#loader {
-  position: fixed; inset: 0; z-index: 10000;
-  background: var(--dark);
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-#loader.done { opacity: 0; visibility: hidden; }
-.loader-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
-.loader-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 140px; height: 140px;
-  margin: -70px 0 0 -70px;
-  border: 1.5px solid var(--accent);
-  border-radius: 50%;
-  opacity: 0;
-  animation: loader-ring-pulse 1.3s var(--ease-out) forwards;
-}
-.loader-crest {
-  width: 88px; height: 88px;
-  object-fit: contain;
-  opacity: 0;
-  transform: scale(0.6);
-  filter: drop-shadow(0 0 22px rgba(168,85,247,0.5));
-  animation: loader-crest-in 0.65s var(--ease-out) 0.1s forwards;
-}
-.loader-name {
-  margin-top: 1.1rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-on-dark);
-  text-align: center;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: loader-text-in 0.55s var(--ease-out) 0.5s forwards;
-}
-.loader-name span {
-  display: block;
-  color: var(--accent-light);
-  font-weight: 400;
-  font-size: 0.6rem;
-  letter-spacing: 0.32em;
-  margin-top: 4px;
-}
-@keyframes loader-crest-in { to { opacity: 1; transform: scale(1); } }
-@keyframes loader-text-in { to { opacity: 1; transform: translateY(0); } }
-@keyframes loader-ring-pulse {
-  0% { opacity: 0; transform: scale(0.7); }
-  40% { opacity: 0.55; }
-  100% { opacity: 0; transform: scale(1.4); }
-}
-
 /* ─── Header v2 ─── */
 .hdr {
   position: fixed; top: 0; left: 0; right: 0; height: 72px;

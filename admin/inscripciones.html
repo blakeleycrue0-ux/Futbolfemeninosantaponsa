@@ -185,13 +185,44 @@
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");
     const pagosEl = document.getElementById("detail-pagos");
     if (!pagos || !pagos.length) {
-      pagosEl.innerHTML = "<p><strong>Plazos:</strong> —</p>";
+      pagosEl.innerHTML = "<p><strong>Plazos:</strong> — (la familia elige el plan al abrir su enlace de pago)</p>";
       return;
     }
     const pagoEstadoLabels = { pendiente: "Pendiente", pagado: "Pagado", fallido: "Fallido" };
+    const hayPagado = pagos.some((p) => p.estado === "pagado");
     pagosEl.innerHTML = `<p><strong>Plazos:</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +
       pagos.map((p) => `<li>Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}</li>`).join("") +
-      `</ul>`;
+      `</ul>` +
+      (hayPagado
+        ? `<p class="form-note">Ya hay alguna cuota pagada, así que el plan no se puede reiniciar desde aquí.</p>`
+        : `<p style="margin-top:0.6rem;">
+             <button type="button" class="btn btn-outline btn-sm" id="reset-plan-btn">Cambiar plan (borrar plazos actuales)</button>
+             <span id="reset-plan-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
+           </p>`);
+
+    const resetBtn = document.getElementById("reset-plan-btn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", async () => {
+        if (!confirm("¿Borrar los plazos actuales? La familia volverá a ver el selector de plan (único / 2 / 4 cuotas) la próxima vez que abra su enlace de pago.")) return;
+        const status = document.getElementById("reset-plan-status");
+        resetBtn.disabled = true;
+        status.textContent = "Borrando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/reset-plan-pago", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({ inscripcion_id: item.id }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          status.textContent = "Plan reiniciado ✓";
+          openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+        } catch (err) {
+          resetBtn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      });
+    }
   }
 
   document.getElementById("close-btn").addEventListener("click", () => (detailCard.style.display = "none"));

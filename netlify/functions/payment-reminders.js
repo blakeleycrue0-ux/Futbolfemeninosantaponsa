@@ -64,7 +64,7 @@ exports.handler = async function () {
     const cuerpoHtml = `
       <p>Hola ${inscripcion.tutor_nombre || ""},</p>
       <p>Recordatorio: mañana vence el pago de la cuota ${pago.numero_cuota} (${pago.importe} €) de <strong>${inscripcion.jugadora_nombre}</strong>.</p>
-      <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Pagar ahora</a></p>
+      <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Ver datos de pago</a></p>
       <p>O copia y pega este enlace en el navegador:<br>${pagoUrl}</p>
       <p>Si ya la has pagado, ignora este mensaje.</p>
       <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

@@ -117,9 +117,12 @@
           <div class="pago-jugadora" id="pago-jugadora"></div>
           <div class="pago-importe" id="pago-importe"></div>
           <p class="pago-meta" id="pago-meta"></p>
-          <button type="button" class="btn btn-primary btn-block" id="pago-btn">Pagar ahora</button>
+          <div id="pago-transferencia-info" style="text-align:left;background:var(--cream-deep);border-radius:var(--radius-md);padding:1.2rem 1.3rem;margin-top:0.4rem;">
+            <p style="margin:0 0 0.7rem;font-weight:700;">Pago por transferencia bancaria</p>
+            <p style="margin:0 0 0.7rem;">Llámanos al <a href="tel:+34676040111">676 04 01 11</a> o escríbenos a <a href="mailto:ffsp2026@gmail.com" id="pago-mailto">ffsp2026@gmail.com</a> y te damos el número de cuenta y la referencia exacta que debes indicar en la transferencia.</p>
+            <p style="margin:0;font-size:0.86rem;color:var(--text-on-cream-muted);">En cuanto recibamos el ingreso, lo marcamos como pagado y te lo confirmamos.</p>
+          </div>
           <p id="pago-status" style="margin-top:1rem;font-size:0.86rem;"></p>
-          <p style="margin-top:1.2rem;font-size:0.82rem;"><a href="pago-transferencia.html">¿Prefieres pagar por transferencia?</a></p>
         </div>
         <div id="pago-error" class="form-error" style="display:none;"></div>
       </div>
@@ -194,12 +197,11 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 (async function () {
   const params = new URLSearchParams(location.search);
   const inscripcionId = params.get("id");
-  const resultado = params.get("resultado");
   const loadingEl = document.getElementById("pago-loading");
   const pickerEl = document.getElementById("plan-picker");
   const contentEl = document.getElementById("pago-content");
   const errorEl = document.getElementById("pago-error");
-  const btn = document.getElementById("pago-btn");
+  const transferenciaInfoEl = document.getElementById("pago-transferencia-info");
   const statusEl = document.getElementById("pago-status");
 
   function showError(msg) {
@@ -246,40 +248,13 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
       : "";
 
     if (pago.estado === "pagado") {
-      btn.style.display = "none";
+      transferenciaInfoEl.style.display = "none";
       statusEl.innerHTML = '<span class="pago-estado-pagado">Esta cuota ya está pagada. ¡Gracias!</span>';
       return;
     }
 
-    if (resultado === "exito") {
-      statusEl.innerHTML = '<span class="pago-estado-pagado">¡Pago completado correctamente! Gracias.</span>';
-      btn.style.display = "none";
-      return;
-    }
-    if (resultado === "cancelado") {
-      statusEl.textContent = "El pago no se ha completado. Puedes intentarlo de nuevo cuando quieras con el botón de arriba.";
-    }
-
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      btn.textContent = "Redirigiendo al pago…";
-      statusEl.textContent = "";
-      try {
-        const res = await fetch("/.netlify/functions/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pago_id: pago.id }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const json = await res.json();
-        if (!json.url) throw new Error("Stripe no devolvió una URL de pago.");
-        window.location.href = json.url;
-      } catch (err) {
-        btn.disabled = false;
-        btn.textContent = "Pagar ahora";
-        statusEl.textContent = "No hemos podido abrir la pasarela de pago. Inténtalo de nuevo o escríbenos a ffsp2026@gmail.com. [" + (err && err.message ? err.message : "") + "]";
-      }
-    });
+    const asunto = encodeURIComponent("Datos de pago — " + (estado.jugadora_nombre || "") + " (cuota " + pago.numero_cuota + ")");
+    document.getElementById("pago-mailto").href = "mailto:ffsp2026@gmail.com?subject=" + asunto;
   }
 
   if (estado.pagos && estado.pagos.length) {

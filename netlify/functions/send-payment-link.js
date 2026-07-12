@@ -84,8 +84,8 @@ exports.handler = async function (event) {
   const asunto = `Pago de la plaza — ${inscripcion.jugadora_nombre}`;
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
-    <p>Para confirmar la plaza de <strong>${inscripcion.jugadora_nombre}</strong>, ya puedes completar el pago. Elige el plan que prefieras (pago único, 2 cuotas o 4 cuotas) y paga de forma segura desde este enlace personal:</p>
-    <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Ir al pago</a></p>
+    <p>Para confirmar la plaza de <strong>${inscripcion.jugadora_nombre}</strong>, ya puedes completar el pago. Elige el plan que prefieras (pago único, 2 cuotas o 4 cuotas) y te damos los datos para pagar por transferencia bancaria desde este enlace personal:</p>
+    <p><a href="${pagoUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Ver datos de pago</a></p>
     <p>O copia y pega este enlace en el navegador:<br>${pagoUrl}</p>
     <p>Este enlace es personal e intransferible — no lo compartas.</p>
     <p>Si tienes cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>

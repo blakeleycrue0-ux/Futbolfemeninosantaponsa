@@ -190,8 +190,15 @@
     }
     const pagoEstadoLabels = { pendiente: "Pendiente", pagado: "Pagado", fallido: "Fallido" };
     const hayPagado = pagos.some((p) => p.estado === "pagado");
-    pagosEl.innerHTML = `<p><strong>Plazos:</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +
-      pagos.map((p) => `<li>Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}</li>`).join("") +
+    pagosEl.innerHTML = `<p><strong>Plazos (pago por transferencia):</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +
+      pagos.map((p) => `
+        <li style="margin-bottom:0.3rem;">
+          Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}
+          ${p.estado !== "pagado" ? `
+            <button type="button" class="btn btn-outline btn-sm" style="margin-left:0.6rem;" data-mark-pago="${p.id}">Marcar como pagada</button>
+            <span data-mark-status="${p.id}" style="margin-left:0.4rem;font-size:0.82rem;"></span>
+          ` : ""}
+        </li>`).join("") +
       `</ul>` +
       (hayPagado
         ? `<p class="form-note">Ya hay alguna cuota pagada, así que el plan no se puede reiniciar desde aquí.</p>`
@@ -199,6 +206,31 @@
              <button type="button" class="btn btn-outline btn-sm" id="reset-plan-btn">Cambiar plan (borrar plazos actuales)</button>
              <span id="reset-plan-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
            </p>`);
+
+    pagosEl.querySelectorAll("[data-mark-pago]").forEach((markBtn) => {
+      markBtn.addEventListener("click", async () => {
+        if (!confirm("¿Confirmas que ha llegado la transferencia de esta cuota?")) return;
+        const pagoId = markBtn.dataset.markPago;
+        const status = pagosEl.querySelector(`[data-mark-status="${pagoId}"]`);
+        markBtn.disabled = true;
+        status.textContent = "Guardando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/mark-pago-pagado", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({ pago_id: pagoId }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          status.textContent = "Marcada ✓";
+          openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+          loadInscripciones();
+        } catch (err) {
+          markBtn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      });
+    });
 
     const resetBtn = document.getElementById("reset-plan-btn");
     if (resetBtn) {

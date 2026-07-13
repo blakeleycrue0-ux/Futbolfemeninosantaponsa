@@ -43,6 +43,30 @@
       plaza), y más adelante, cuando decidáis, <strong>"Enviar enlace de pago"</strong>.
     </p>
 
+    <div class="admin-stat-grid" id="insc-stat-grid">
+      <div class="admin-stat"><strong id="stat-total">—</strong><span>Total</span></div>
+      <div class="admin-stat"><strong id="stat-sin-confirmar">—</strong><span>Sin confirmar</span></div>
+      <div class="admin-stat"><strong id="stat-confirmadas">—</strong><span>Confirmadas</span></div>
+      <div class="admin-stat"><strong id="stat-pago-pendiente">—</strong><span>Pago pendiente</span></div>
+      <div class="admin-stat"><strong id="stat-pagadas">—</strong><span>Pagadas</span></div>
+    </div>
+
+    <div class="admin-search-bar">
+      <input type="search" id="buscador" placeholder="Buscar por jugadora, tutor/a o equipo…">
+      <select id="filtro-estado">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="pago_parcial">Pago parcial</option>
+        <option value="pagado">Pagado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+      <select id="filtro-confirmada">
+        <option value="">Aceptada y sin aceptar</option>
+        <option value="si">Solo aceptadas</option>
+        <option value="no">Solo sin aceptar</option>
+      </select>
+    </div>
+
     <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
       <h2 id="detail-title">Formulario de interés</h2>
       <div id="detail-body" style="font-size:0.9rem;line-height:1.8;"></div>
@@ -270,21 +294,51 @@
     loadInscripciones();
   });
 
-  async function loadInscripciones() {
-    const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
+  const estadoPillClass = { pendiente: "pill-warn", pago_parcial: "pill-warn", pagado: "pill-ok", cancelado: "pill-bad" };
+
+  function updateStats() {
+    document.getElementById("stat-total").textContent = inscripciones.length;
+    document.getElementById("stat-sin-confirmar").textContent = inscripciones.filter((i) => !i.confirmada_en).length;
+    document.getElementById("stat-confirmadas").textContent = inscripciones.filter((i) => i.confirmada_en).length;
+    document.getElementById("stat-pago-pendiente").textContent = inscripciones.filter((i) => i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado").length;
+    document.getElementById("stat-pagadas").textContent = inscripciones.filter((i) => i.estado === "pagado").length;
+  }
+
+  function renderTable() {
     const body = document.getElementById("inscripciones-body");
-    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    inscripciones = data || [];
-    if (!inscripciones.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay formularios de interés.</td></tr>'; return; }
-    body.innerHTML = inscripciones.map((i) => `
+    const q = document.getElementById("buscador").value.trim().toLowerCase();
+    const estadoFiltro = document.getElementById("filtro-estado").value;
+    const confirmadaFiltro = document.getElementById("filtro-confirmada").value;
+
+    const filtradas = inscripciones.filter((i) => {
+      if (estadoFiltro && i.estado !== estadoFiltro) return false;
+      if (confirmadaFiltro === "si" && !i.confirmada_en) return false;
+      if (confirmadaFiltro === "no" && i.confirmada_en) return false;
+      if (q) {
+        const haystack = [i.jugadora_nombre, i.tutor_nombre, teamName(i.team_id)].join(" ").toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if (!inscripciones.length) {
+      body.innerHTML = '<tr><td colspan="8">Todavía no hay formularios de interés.</td></tr>';
+      return;
+    }
+    if (!filtradas.length) {
+      body.innerHTML = `<tr><td colspan="8" class="admin-search-empty">Ninguna inscripción coincide con la búsqueda.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = filtradas.map((i) => `
       <tr>
         <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>
-        <td>${escapeHtml(i.jugadora_nombre)}</td>
+        <td><strong>${escapeHtml(i.jugadora_nombre)}</strong></td>
         <td>${escapeHtml(teamName(i.team_id))}</td>
         <td>${escapeHtml(i.tutor_nombre)}</td>
         <td>${planLabels[i.plan_pago] || escapeHtml(i.plan_pago)}</td>
-        <td>${i.confirmada_en ? '<span class="pill">Sí</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">No</span>'}</td>
-        <td>${estadoLabels[i.estado] || escapeHtml(i.estado)}</td>
+        <td>${i.confirmada_en ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">No</span>'}</td>
+        <td><span class="pill ${estadoPillClass[i.estado] || ""}">${estadoLabels[i.estado] || escapeHtml(i.estado)}</span></td>
         <td class="actions">
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
           <button class="btn-icon danger" data-del="${i.id}" type="button">✕</button>
@@ -300,6 +354,19 @@
         loadInscripciones();
       }));
   }
+
+  async function loadInscripciones() {
+    const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
+    const body = document.getElementById("inscripciones-body");
+    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    inscripciones = data || [];
+    updateStats();
+    renderTable();
+  }
+
+  document.getElementById("buscador").addEventListener("input", renderTable);
+  document.getElementById("filtro-estado").addEventListener("change", renderTable);
+  document.getElementById("filtro-confirmada").addEventListener("change", renderTable);
 
   await loadTeams();
   await loadInscripciones();

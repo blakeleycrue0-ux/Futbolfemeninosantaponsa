@@ -54,7 +54,7 @@
   </nav>
   <div style="display:flex;align-items:center;gap:14px;">
     <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
-    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
   </div>
 </header>
 
@@ -211,7 +211,7 @@ function toggleNav() {
   const burger = document.getElementById('burger');
   const nav = document.getElementById('fullnav');
   const open = nav.classList.toggle('open');
-  burger.classList.toggle('x', open);
+  burger.textContent = open ? 'Cerrar' : 'Menú';
   burger.setAttribute('aria-expanded', String(open));
   document.body.style.overflow = open ? 'hidden' : '';
 }

@@ -116,6 +116,19 @@
   }
   const planLabels = { unico: "Pago único", "2_cuotas": "2 cuotas", "4_cuotas": "4 cuotas" };
   const estadoLabels = { pendiente: "Pendiente", pago_parcial: "Pago parcial", pagado: "Pagado", cancelado: "Cancelado" };
+  const imagenCanales = [
+    ["imagen_redes_sociales", "Redes sociales"],
+    ["imagen_web", "Web"],
+    ["imagen_prensa", "Prensa"],
+    ["imagen_material_promocional", "Material promocional"],
+  ];
+
+  function imagenConsentSummary(item) {
+    if (!item.registro_completado_en) return `<span class="pill pill-warn">Pendiente de completar el registro</span>`;
+    return imagenCanales.map(([key, label]) =>
+      `<span class="pill ${item[key] ? "pill-ok" : "pill-bad"}" style="margin-right:0.4rem;">${label}: ${item[key] ? "Sí" : "No"}</span>`
+    ).join("");
+  }
 
   let teams = [];
   let inscripciones = [];
@@ -140,6 +153,7 @@
       <p><strong>Dirección:</strong> ${escapeHtml(item.direccion || "—")} ${escapeHtml(item.poblacion || "")} ${escapeHtml(item.codigo_postal || "")}</p>
       <p><strong>Tutor/a 1:</strong> ${escapeHtml(item.tutor_nombre)}${item.tutor_dni ? " · " + escapeHtml(item.tutor_dni) : ""} · <a href="tel:${escapeHtml(item.tutor_telefono)}">${escapeHtml(item.tutor_telefono)}</a> · <a href="mailto:${escapeHtml(item.tutor_email)}">${escapeHtml(item.tutor_email)}</a></p>
       ${item.tutor2_nombre ? `<p><strong>Tutor/a 2:</strong> ${escapeHtml(item.tutor2_nombre)}${item.tutor2_dni ? " · " + escapeHtml(item.tutor2_dni) : ""}${item.tutor2_telefono ? " · " + escapeHtml(item.tutor2_telefono) : ""}${item.tutor2_email ? " · " + escapeHtml(item.tutor2_email) : ""}</p>` : ""}
+      <p><strong>Autorización de imagen:</strong> ${imagenConsentSummary(item)}</p>
       <p><strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago} &nbsp; <strong>Cuota total:</strong> ${item.cuota_total != null ? item.cuota_total + " €" : "—"}</p>
       <div id="detail-pagos">Cargando plazos…</div>
     `;

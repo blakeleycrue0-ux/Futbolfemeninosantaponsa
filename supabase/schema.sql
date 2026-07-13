@@ -227,6 +227,14 @@ create table if not exists inscripciones (
   plan_pago text not null default 'unico' check (plan_pago in ('unico','2_cuotas','4_cuotas')),
   cuota_total numeric,
   acepta_condiciones boolean not null default false,
+  -- autorización de derechos de imagen, un booleano por canal (se rellena
+  -- junto con el resto del registro en registro.html, mismo esquema que la
+  -- "AUTORIZACIÓN DE DERECHOS DE IMAGEN" en papel del club). false = no
+  -- autoriza / todavía no ha completado el registro.
+  imagen_redes_sociales boolean not null default false,
+  imagen_web boolean not null default false,
+  imagen_prensa boolean not null default false,
+  imagen_material_promocional boolean not null default false,
   notas text,
   estado text not null default 'pendiente' check (estado in ('pendiente','pago_parcial','pagado','cancelado')),
   -- se rellena cuando el club acepta la solicitud desde el admin y se envía

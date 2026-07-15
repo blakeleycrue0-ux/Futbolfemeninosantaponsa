@@ -45,10 +45,12 @@
 
     <div class="admin-stat-grid" id="insc-stat-grid">
       <div class="admin-stat"><strong id="stat-total">—</strong><span>Total</span></div>
-      <div class="admin-stat"><strong id="stat-sin-confirmar">—</strong><span>Sin confirmar</span></div>
-      <div class="admin-stat"><strong id="stat-confirmadas">—</strong><span>Confirmadas</span></div>
-      <div class="admin-stat"><strong id="stat-pago-pendiente">—</strong><span>Pago pendiente</span></div>
-      <div class="admin-stat"><strong id="stat-pagadas">—</strong><span>Pagadas</span></div>
+      <div class="admin-stat admin-stat--warn"><strong id="stat-sin-confirmar">—</strong><span>Sin confirmar</span></div>
+      <div class="admin-stat admin-stat--ok"><strong id="stat-confirmadas">—</strong><span>Confirmadas</span></div>
+      <div class="admin-stat admin-stat--warn"><strong id="stat-pago-pendiente">—</strong><span>Pago pendiente</span></div>
+      <div class="admin-stat admin-stat--ok"><strong id="stat-pagadas">—</strong><span>Pagadas</span></div>
+      <div class="admin-stat admin-stat--warn"><strong id="stat-registro-pendiente">—</strong><span>Registro sin completar</span></div>
+      <div class="admin-stat admin-stat--accent"><strong id="stat-recaudado">—</strong><span>Recaudado</span></div>
     </div>
 
     <div class="admin-search-bar">
@@ -65,6 +67,7 @@
         <option value="si">Solo aceptadas</option>
         <option value="no">Solo sin aceptar</option>
       </select>
+      <button type="button" class="btn btn-outline btn-sm" id="export-csv-btn">Exportar CSV</button>
     </div>
 
     <div class="admin-card admin-form-toggle" id="detail-card" style="display:none;">
@@ -132,6 +135,7 @@
 
   let teams = [];
   let inscripciones = [];
+  let filtradasActuales = [];
 
   async function loadTeams() {
     const { data } = await window.spfc.from("teams").select("*");
@@ -310,12 +314,17 @@
 
   const estadoPillClass = { pendiente: "pill-warn", pago_parcial: "pill-warn", pagado: "pill-ok", cancelado: "pill-bad" };
 
-  function updateStats() {
+  async function updateStats() {
     document.getElementById("stat-total").textContent = inscripciones.length;
     document.getElementById("stat-sin-confirmar").textContent = inscripciones.filter((i) => !i.confirmada_en).length;
     document.getElementById("stat-confirmadas").textContent = inscripciones.filter((i) => i.confirmada_en).length;
     document.getElementById("stat-pago-pendiente").textContent = inscripciones.filter((i) => i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado").length;
     document.getElementById("stat-pagadas").textContent = inscripciones.filter((i) => i.estado === "pagado").length;
+    document.getElementById("stat-registro-pendiente").textContent = inscripciones.filter((i) => i.confirmada_en && !i.registro_completado_en).length;
+
+    const { data: pagosPagados } = await window.spfc.from("inscripcion_pagos").select("importe").eq("estado", "pagado");
+    const recaudado = (pagosPagados || []).reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+    document.getElementById("stat-recaudado").textContent = recaudado.toLocaleString("es-ES") + " €";
   }
 
   function renderTable() {
@@ -334,6 +343,7 @@
       }
       return true;
     });
+    filtradasActuales = filtradas;
 
     if (!inscripciones.length) {
       body.innerHTML = '<tr><td colspan="8">Todavía no hay formularios de interés.</td></tr>';
@@ -377,6 +387,46 @@
     updateStats();
     renderTable();
   }
+
+  function csvCell(v) {
+    const s = v === null || v === undefined ? "" : String(v);
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  function exportarCSV() {
+    const columnas = [
+      ["creado_en", "Fecha solicitud"], ["jugadora_nombre", "Jugadora"], ["jugadora_fecha_nacimiento", "Fecha nacimiento"],
+      ["jugadora_dni", "DNI jugadora"], ["equipo", "Equipo"], ["talla_equipacion", "Talla"],
+      ["tutor_nombre", "Tutor/a 1"], ["tutor_dni", "DNI tutor/a 1"], ["tutor_telefono", "Teléfono"], ["tutor_email", "Email"],
+      ["direccion", "Dirección"], ["poblacion", "Población"], ["codigo_postal", "CP"],
+      ["plan_pago", "Plan de pago"], ["cuota_total", "Cuota total"], ["estado", "Estado"],
+      ["confirmada_en", "Aceptada el"], ["pago_solicitado_en", "Pago solicitado el"], ["registro_completado_en", "Registro completado el"],
+      ["imagen_redes_sociales", "Autoriza redes sociales"], ["imagen_web", "Autoriza web"],
+      ["imagen_prensa", "Autoriza prensa"], ["imagen_material_promocional", "Autoriza material promocional"],
+      ["notas", "Notas"],
+    ];
+    const filas = filtradasActuales.map((i) => {
+      const row = Object.assign({}, i, { equipo: teamName(i.team_id) });
+      return columnas.map(([key]) => {
+        const v = row[key];
+        if (typeof v === "boolean") return v ? "Sí" : "No";
+        return v;
+      });
+    });
+    const csv = [columnas.map(([, label]) => label), ...filas]
+      .map((row) => row.map(csvCell).join(";"))
+      .join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inscripciones-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+  document.getElementById("export-csv-btn").addEventListener("click", exportarCSV);
 
   document.getElementById("buscador").addEventListener("input", renderTable);
   document.getElementById("filtro-estado").addEventListener("change", renderTable);

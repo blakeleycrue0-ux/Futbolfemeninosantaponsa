@@ -15,6 +15,14 @@
   .form-section-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; margin: 2rem 0 1.1rem; }
   .form-section-title:first-child { margin-top: 0; }
   .form-section-note { font-size: 0.8rem; color: var(--text-on-cream-muted); margin: -0.8rem 0 1.2rem; }
+  .imagen-consent-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    padding: 0.9rem 0; border-bottom: 1px solid rgba(10,10,10,0.08);
+  }
+  .imagen-consent-row:last-child { border-bottom: none; }
+  .imagen-consent-row span.canal { flex: 1 1 240px; font-size: 0.88rem; }
+  .imagen-consent-choices { display: flex; gap: 1.2rem; flex-shrink: 0; }
+  .imagen-consent-choices label { display: flex; align-items: center; gap: 0.4em; font-size: 0.84rem; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -33,7 +41,7 @@
   </nav>
   <div style="display:flex;align-items:center;gap:14px;">
     <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
-    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
   </div>
 </header>
 
@@ -49,12 +57,12 @@
     <a href="club.html" class="fullnav-link">Club</a>
     <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
     <a href="contacto.html" class="fullnav-link">Contacto</a>
-    <a href="inscripcion.html" class="fullnav-link">Formulario de interés</a>
   </div>
+  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
   <div class="fullnav-foot">
-    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener">Instagram</a>
-    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook</a>
-    <a href="admin/index.html">Acceso club</a>
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
   </div>
 </nav>
 
@@ -152,7 +160,45 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block" id="registro-submit">Guardar registro</button>
+            <h3 class="form-section-title">Autorización de derechos de imagen</h3>
+            <p class="form-section-note">
+              Autorizo al club a captar, reproducir y publicar la imagen de la jugadora (fotos y vídeos de
+              entrenamientos, partidos, torneos y actividades del club) según lo que marque en cada canal — sin
+              ninguna contraprestación económica, solo con fines informativos y promocionales del club, conforme
+              al RGPD y la LOPDGDD. Puedo revocarlo cuando quiera escribiendo a ffsp2026@gmail.com, sin efecto
+              retroactivo sobre lo ya publicado. Al enviar este formulario en nombre de la jugadora, confirmo que
+              soy su madre, padre o tutor/a legal (o que ella es mayor de edad) y que actúo en su representación.
+            </p>
+            <div class="imagen-consent-row">
+              <span class="canal">Redes sociales del club — Instagram, TikTok, Facebook, X, YouTube</span>
+              <div class="imagen-consent-choices">
+                <label><input type="radio" name="img-redes" value="si" required> Sí autorizo</label>
+                <label><input type="radio" name="img-redes" value="no"> No autorizo</label>
+              </div>
+            </div>
+            <div class="imagen-consent-row">
+              <span class="canal">Página web oficial del club</span>
+              <div class="imagen-consent-choices">
+                <label><input type="radio" name="img-web" value="si" required> Sí autorizo</label>
+                <label><input type="radio" name="img-web" value="no"> No autorizo</label>
+              </div>
+            </div>
+            <div class="imagen-consent-row">
+              <span class="canal">Prensa y medios de comunicación locales</span>
+              <div class="imagen-consent-choices">
+                <label><input type="radio" name="img-prensa" value="si" required> Sí autorizo</label>
+                <label><input type="radio" name="img-prensa" value="no"> No autorizo</label>
+              </div>
+            </div>
+            <div class="imagen-consent-row">
+              <span class="canal">Material promocional del club — carteles, folletos, calendarios, vídeos de temporada</span>
+              <div class="imagen-consent-choices">
+                <label><input type="radio" name="img-material" value="si" required> Sí autorizo</label>
+                <label><input type="radio" name="img-material" value="no"> No autorizo</label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="registro-submit" style="margin-top:1.6rem;">Guardar registro</button>
           </form>
         </div>
 
@@ -213,7 +259,7 @@ function toggleNav() {
   const burger = document.getElementById('burger');
   const nav = document.getElementById('fullnav');
   const open = nav.classList.toggle('open');
-  burger.classList.toggle('x', open);
+  burger.textContent = open ? 'Cerrar' : 'Menú';
   burger.setAttribute('aria-expanded', String(open));
   document.body.style.overflow = open ? 'hidden' : '';
 }
@@ -316,6 +362,10 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
           tutor2_dni: document.getElementById("r-tutor2-dni").value.trim(),
           tutor2_telefono: document.getElementById("r-tutor2-telefono").value.trim(),
           tutor2_email: document.getElementById("r-tutor2-email").value.trim(),
+          imagen_redes_sociales: (document.querySelector('input[name="img-redes"]:checked') || {}).value === "si",
+          imagen_web: (document.querySelector('input[name="img-web"]:checked') || {}).value === "si",
+          imagen_prensa: (document.querySelector('input[name="img-prensa"]:checked') || {}).value === "si",
+          imagen_material_promocional: (document.querySelector('input[name="img-material"]:checked') || {}).value === "si",
         }),
       });
       if (!res.ok) throw new Error(await res.text());

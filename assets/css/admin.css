@@ -42,9 +42,15 @@ table.admin-table td.actions { white-space: nowrap; text-align: right; }
 table.admin-table td.actions button { margin-left: 0.4rem; }
 
 .admin-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
-.admin-stat { background: var(--paper); border-radius: var(--radius-md); padding: 1.2rem; box-shadow: var(--shadow-sm); }
+.admin-stat { background: var(--paper); border-radius: var(--radius-md); padding: 1.2rem; box-shadow: var(--shadow-sm); border-top: 3px solid var(--accent); }
 .admin-stat strong { display: block; font-family: var(--font-display); font-size: 1.8rem; color: var(--accent); }
 .admin-stat span { font-size: 0.76rem; color: var(--text-on-cream-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.admin-stat--ok { border-top-color: #22c55e; }
+.admin-stat--ok strong { color: #15803d; }
+.admin-stat--warn { border-top-color: #eab308; }
+.admin-stat--warn strong { color: #92660a; }
+.admin-stat--accent { border-top-color: var(--accent); }
+.admin-stat--accent strong { color: var(--accent); }
 
 .pill-ok { background: rgba(34,197,94,0.14); color: #15803d; }
 .pill-warn { background: rgba(234,179,8,0.16); color: #92660a; }

@@ -67,6 +67,10 @@ exports.handler = async function (event) {
     tutor2_dni: (payload.tutor2_dni || "").trim() || null,
     tutor2_telefono: (payload.tutor2_telefono || "").trim() || null,
     tutor2_email: (payload.tutor2_email || "").trim() || null,
+    imagen_redes_sociales: payload.imagen_redes_sociales === true,
+    imagen_web: payload.imagen_web === true,
+    imagen_prensa: payload.imagen_prensa === true,
+    imagen_material_promocional: payload.imagen_material_promocional === true,
     registro_completado_en: new Date().toISOString(),
   };
 

@@ -38,3 +38,12 @@
   from = "/api/ffib-sync"
   to = "/.netlify/functions/ffib-sync"
   status = 200
+
+# Fuerza HTTPS siempre — por si alguien llega por un enlace o marcador
+# antiguo en http:// (Chrome avisa de "no seguro" en formularios servidos
+# así). Cinturón de seguridad además de la config de dominio de Netlify.
+[[redirects]]
+  from = "http://ffsp.info/*"
+  to = "https://ffsp.info/:splat"
+  status = 301
+  force = true

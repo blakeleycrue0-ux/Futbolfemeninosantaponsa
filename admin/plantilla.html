@@ -119,8 +119,8 @@
       <h2>Jugadoras</h2>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th></th></tr></thead>
-          <tbody id="players-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+          <thead><tr><th></th><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th></th></tr></thead>
+          <tbody id="players-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -241,12 +241,13 @@
   async function loadPlayers() {
     const { data, error } = await window.spfc.from("players").select("*").order("dorsal");
     const body = document.getElementById("players-body");
-    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     players = data || [];
-    if (!players.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay jugadoras.</td></tr>'; return; }
+    if (!players.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay jugadoras.</td></tr>'; return; }
     body.innerHTML = players.map((p) => {
       const team = teams.find((t) => t.id === p.team_id);
       return `<tr>
+        <td>${p.foto_url ? `<img src="${escapeHtml(p.foto_url)}" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;display:block;">` : `<span style="display:block;width:34px;height:34px;border-radius:8px;background:var(--cream-deep);"></span>`}</td>
         <td>${p.dorsal ?? "-"}</td>
         <td>${escapeHtml(p.nombre)}</td>
         <td>${team ? escapeHtml(team.nombre) : "-"}</td>

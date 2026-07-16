@@ -364,7 +364,7 @@
 @media (max-width: 980px) { .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 620px) { .grid-3, .grid-4, .grid-2 { grid-template-columns: 1fr; } }
 
-/* ===================== Player card (no photo — dorsal-led layout) ===================== */
+/* ===================== Player card (dorsal-led layout, foto cuadrada opcional) ===================== */
 .player-card {
   background: var(--dark-2);
   border-radius: var(--radius-lg);
@@ -377,6 +377,14 @@
   padding: 1.5rem 1.4rem 1.6rem;
 }
 .player-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+.player-card__photo {
+  width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-md); object-fit: cover; object-position: center top;
+  display: block; margin-bottom: 1rem; background: rgba(244,240,232,0.06);
+}
+.player-card__photo--sin-foto {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 900; font-size: 2.4rem; color: rgba(244,240,232,0.25);
+}
 .player-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; }
 .player-card__number { font-family: var(--font-display); font-weight: 900; font-size: 2.2rem; color: var(--accent-light); line-height: 1; }
 .player-card__pos { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-on-dark-muted); font-weight: 700; background: rgba(244,240,232,0.08); border: 1px solid rgba(244,240,232,0.14); padding: 0.35em 0.7em; border-radius: var(--radius-pill); white-space: nowrap; }

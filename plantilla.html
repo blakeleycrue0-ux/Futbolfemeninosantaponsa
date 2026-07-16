@@ -189,6 +189,9 @@ document.querySelectorAll('.sr,.sr-l').forEach((el) => roChrome.observe(el));
     }
     grid.innerHTML = list.map((p) => `
       <a href="jugadora.html?id=${encodeURIComponent(p.id)}" class="player-card">
+        ${p.foto_url
+          ? `<img class="player-card__photo" src="${p.foto_url}" alt="">`
+          : `<span class="player-card__photo player-card__photo--sin-foto" aria-hidden="true">${(p.nombre || "?").trim().charAt(0).toUpperCase()}</span>`}
         <div class="player-card__top">
           <span class="player-card__number">${p.dorsal != null ? p.dorsal : "-"}</span>
           <span class="player-card__pos">${p.posicion || ""}</span>
@@ -236,5 +239,6 @@ document.querySelectorAll('.sr,.sr-l').forEach((el) => roChrome.observe(el));
 <script src="/assets/js/pwa-register.js" defer></script>
 <script src="/assets/js/install-banner.js" defer></script>
 <script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
 </body>
 </html>

@@ -42,7 +42,25 @@
       <div class="admin-stat"><strong>—</strong><span>Noticias</span></div>
       <div class="admin-stat"><strong>—</strong><span>Jugadoras</span></div>
       <div class="admin-stat"><strong>—</strong><span>Partidos</span></div>
-      <div class="admin-stat"><strong>—</strong><span>Formularios de interés</span></div>
+      <div class="admin-stat admin-stat--warn"><strong>—</strong><span>Formularios de interés</span></div>
+    </div>
+
+    <div class="admin-card" id="proximo-partido-card">
+      <h2>Próximo partido</h2>
+      <div id="proximo-partido-body" style="font-size:0.9rem;color:var(--text-on-cream-muted);">Cargando…</div>
+    </div>
+
+    <div class="admin-card" id="pendientes-card">
+      <h2>Pendiente de gestionar</h2>
+      <ul id="pendientes-list" style="margin:0;padding-left:1.2rem;font-size:0.88rem;line-height:2;"></ul>
+    </div>
+
+    <div class="admin-card" id="noticias-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="margin-bottom:0;">Últimas noticias</h2>
+        <a href="noticias.html" class="btn btn-outline btn-sm">Gestionar noticias</a>
+      </div>
+      <ul id="noticias-list" style="margin:1rem 0 0;padding:0;list-style:none;font-size:0.88rem;"></ul>
     </div>
 
     <div class="admin-card">
@@ -75,6 +93,10 @@
 (async function () {
   if (!window.spfc) return;
 
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
   async function count(table, filter) {
     let q = window.spfc.from(table).select("*", { count: "exact", head: true });
     if (filter) q = filter(q);
@@ -92,6 +114,59 @@
   const stats = [news, players, matches, inscripciones];
   document.querySelectorAll("#stat-grid strong").forEach((el, i) => (el.textContent = stats[i]));
 
+  /* Próximo partido */
+  const hoy = new Date().toISOString().slice(0, 10);
+  const { data: teams } = await window.spfc.from("teams").select("id, nombre");
+  const teamName = (id) => (teams || []).find((t) => t.id === id)?.nombre || "—";
+
+  const { data: proximos } = await window.spfc
+    .from("matches")
+    .select("*")
+    .gte("fecha", hoy)
+    .eq("estado", "programado")
+    .order("fecha", { ascending: true })
+    .order("hora", { ascending: true })
+    .limit(1);
+
+  const partidoBody = document.getElementById("proximo-partido-body");
+  if (proximos && proximos.length) {
+    const m = proximos[0];
+    const fechaFmt = new Date(m.fecha + "T00:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long" });
+    partidoBody.innerHTML = `
+      <p style="margin:0 0 0.4rem;font-size:1.05rem;color:var(--text-on-cream);">
+        <strong>${teamName(m.team_id)}</strong> ${m.condicion === "local" ? "vs" : "@"} <strong>${escapeHtml(m.rival)}</strong>
+      </p>
+      <p style="margin:0;">${fechaFmt}${m.hora ? " · " + m.hora.slice(0, 5) + "h" : ""}${m.campo ? " · " + escapeHtml(m.campo) : ""}${m.competicion ? " · " + escapeHtml(m.competicion) : ""}</p>
+    `;
+  } else {
+    partidoBody.textContent = "No hay ningún partido programado todavía.";
+  }
+
+  /* Pendientes */
+  const { data: inscData } = await window.spfc.from("inscripciones").select("confirmada_en, registro_completado_en, estado");
+  const lista = inscData || [];
+  const sinConfirmar = lista.filter((i) => !i.confirmada_en).length;
+  const registroSinCompletar = lista.filter((i) => i.confirmada_en && !i.registro_completado_en).length;
+  const pagoPendiente = lista.filter((i) => i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado").length;
+
+  const pendientesList = document.getElementById("pendientes-list");
+  const items = [];
+  if (sinConfirmar) items.push(`<a href="inscripciones.html">${sinConfirmar} formulario${sinConfirmar === 1 ? "" : "s"} de interés sin aceptar</a>`);
+  if (registroSinCompletar) items.push(`<a href="inscripciones.html">${registroSinCompletar} familia${registroSinCompletar === 1 ? "" : "s"} sin completar el registro (DNI, autorización de imagen…)</a>`);
+  if (pagoPendiente) items.push(`<a href="inscripciones.html">${pagoPendiente} plaza${pagoPendiente === 1 ? "" : "s"} confirmada${pagoPendiente === 1 ? "" : "s"} con el pago sin cerrar</a>`);
+  pendientesList.innerHTML = items.length ? items.map((i) => `<li>${i}</li>`).join("") : "<li>Todo al día — no hay nada pendiente ahora mismo.</li>";
+
+  /* Últimas noticias */
+  const { data: ultimasNoticias } = await window.spfc.from("news").select("titulo, fecha, publicado").order("fecha", { ascending: false }).limit(4);
+  const noticiasList = document.getElementById("noticias-list");
+  noticiasList.innerHTML = (ultimasNoticias && ultimasNoticias.length)
+    ? ultimasNoticias.map((n) => `
+      <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.6rem 0;border-bottom:1px solid rgba(10,10,10,0.08);">
+        <span>${escapeHtml(n.titulo)}</span>
+        <span style="color:var(--text-on-cream-muted);white-space:nowrap;">${n.publicado ? "" : "<span class=\"pill pill-warn\" style=\"margin-right:0.5rem;\">Borrador</span>"}${new Date(n.fecha).toLocaleDateString("es-ES")}</span>
+      </li>`).join("")
+    : `<li style="color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</li>`;
+
   async function loadLog() {
     const { data } = await window.spfc.from("ffib_sync_log").select("*").order("ejecutado_en", { ascending: false }).limit(8);
     const body = document.getElementById("sync-log-body");
@@ -102,7 +177,7 @@
     body.innerHTML = data.map((r) => `
       <tr>
         <td>${new Date(r.ejecutado_en).toLocaleString("es-ES")}</td>
-        <td>${r.ok ? '<span class="pill">OK</span>' : '<span class="pill" style="background:rgba(239,68,68,0.12);color:#b91c1c;">Error</span>'}</td>
+        <td>${r.ok ? '<span class="pill pill-ok">OK</span>' : '<span class="pill pill-bad">Error</span>'}</td>
         <td>${r.mensaje || ""}</td>
       </tr>`).join("");
   }

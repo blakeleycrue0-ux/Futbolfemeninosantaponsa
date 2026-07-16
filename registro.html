@@ -34,20 +34,23 @@
   .condiciones-box strong { color: var(--ink); }
   .condiciones-check { display: flex; align-items: flex-start; gap: 0.6em; font-size: 0.86rem; margin-top: 0.9rem; cursor: pointer; }
   .condiciones-check input { margin-top: 0.2em; flex-shrink: 0; }
-  .bienvenida-box {
-    text-align: center; background: var(--cream-deep); border-radius: var(--radius-lg);
-    padding: 2rem 1.8rem; margin-bottom: 2rem;
+  .bienvenida-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: var(--dark, #0a0a0a); color: var(--text-on-dark, #f4f0e8); padding: 5rem 1.5rem 3.5rem;
   }
-  .bienvenida-escudo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 0.6rem; }
+  .bienvenida-box { max-width: 640px; margin: 0 auto; text-align: center; }
+  .bienvenida-escudo { width: 76px; height: 76px; object-fit: contain; margin-bottom: 1rem; }
   .bienvenida-titulo {
-    font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; text-transform: uppercase;
-    letter-spacing: -0.02em; margin: 0.2rem 0 0.6rem;
+    font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 900; text-transform: uppercase;
+    letter-spacing: -0.02em; margin: 0.3rem 0 0.9rem; color: #fff;
   }
-  .bienvenida-lema { font-style: italic; color: var(--accent-dark); font-weight: 600; }
-  .bienvenida-box p { text-align: left; font-size: 0.9rem; line-height: 1.6; }
-  .bienvenida-box p.bienvenida-lema { text-align: center; }
-  .bienvenida-subtitulo { font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; text-align: left; margin: 1.4rem 0 0.7rem; }
-  .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.88rem; line-height: 1.8; }
+  .bienvenida-lema { font-style: italic; color: var(--accent-light); font-weight: 600; }
+  .bienvenida-box p { text-align: left; font-size: 0.95rem; line-height: 1.7; color: rgba(244,240,232,0.82); }
+  .bienvenida-box p.bienvenida-lema { text-align: center; font-size: 1.05rem; }
+  .bienvenida-subtitulo { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; text-align: left; margin: 1.6rem 0 0.8rem; color: #fff; }
+  .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.92rem; line-height: 1.9; color: rgba(244,240,232,0.82); }
+  .bienvenida-valores strong { color: #fff; }
+  .bienvenida-btn { margin-top: 2.2rem; }
 </style>
 </head>
 <body>
@@ -92,7 +95,12 @@
 </nav>
 
 <main id="main">
-  <section class="hero hero--sub">
+  <div id="page-loading" style="padding:7rem 1.5rem;text-align:center;color:var(--text-on-cream-muted);">Cargando…</div>
+  <div class="container">
+    <div id="registro-blocked" class="form-error" style="display:none;margin:3rem auto;max-width:640px;"></div>
+  </div>
+
+  <section class="hero hero--sub" id="registro-hero" style="display:none;">
     <div class="hero__media" aria-hidden="true"></div>
     <div class="container hero__content">
       <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
@@ -101,33 +109,34 @@
     </div>
   </section>
 
-  <section class="section">
+  <div id="bienvenida-screen" class="bienvenida-screen" style="display:none;">
+    <div class="bienvenida-box">
+      <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="bienvenida-escudo">
+      <span class="eyebrow">Bienvenidos</span>
+      <h2 class="bienvenida-titulo">Fútbol Femenino Santa Ponça</h2>
+      <p class="bienvenida-lema">Un nuevo club. Un nuevo camino. Una oportunidad para construir algo especial.</p>
+      <p>Familias y jugadoras, bienvenidas a Fútbol Femenino Santa Ponça. Nace un nuevo club y empieza un camino que queremos construir juntas: con humildad, trabajo serio y una idea clara de lo que debe ser el fútbol femenino.</p>
+      <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo. No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</p>
+      <h3 class="bienvenida-subtitulo">Nuestros valores</h3>
+      <ul class="bienvenida-valores">
+        <li><strong>Respeto:</strong> hacia una misma, las compañeras, rivales, árbitros, familias y entrenadores.</li>
+        <li><strong>Inclusión:</strong> todas las jugadoras deben sentirse vistas, escuchadas y parte del grupo.</li>
+        <li><strong>Confianza:</strong> crear seguridad para aprender, competir, equivocarse y volver a intentarlo.</li>
+        <li><strong>Compromiso:</strong> asistencia, actitud, puntualidad y responsabilidad.</li>
+        <li><strong>Honestidad:</strong> comunicación clara, directa y siempre constructiva.</li>
+        <li><strong>Desarrollo:</strong> formar jugadoras con fundamentos, criterio, carácter y amor por el juego.</li>
+      </ul>
+      <p>Queremos estándares, pero no miedo. Queremos ambición, pero nunca arrogancia. Queremos que cada jugadora se sienta valorada y retada de la manera correcta.</p>
+      <p class="bienvenida-lema">Gracias por confiar en el inicio de este camino. Juntas podemos construir algo con identidad, valores y futuro.</p>
+      <button type="button" class="btn btn-primary bienvenida-btn" id="bienvenida-btn">Comenzar inscripción</button>
+    </div>
+  </div>
+
+  <section class="section" id="registro-form-section" style="display:none;">
     <div class="container">
       <div class="registro-wrap">
-        <div id="registro-loading">Cargando…</div>
-
-        <div id="registro-content" style="display:none;">
+        <div id="registro-content">
           <p id="registro-saludo" style="margin-top:0;"></p>
-
-          <div class="bienvenida-box">
-            <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="bienvenida-escudo">
-            <span class="eyebrow">Bienvenidos</span>
-            <h2 class="bienvenida-titulo">Fútbol Femenino Santa Ponça</h2>
-            <p class="bienvenida-lema">Un nuevo club. Un nuevo camino. Una oportunidad para construir algo especial.</p>
-            <p>Familias y jugadoras, bienvenidas a Fútbol Femenino Santa Ponça. Nace un nuevo club y empieza un camino que queremos construir juntas: con humildad, trabajo serio y una idea clara de lo que debe ser el fútbol femenino.</p>
-            <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo. No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</p>
-            <h3 class="bienvenida-subtitulo">Nuestros valores</h3>
-            <ul class="bienvenida-valores">
-              <li><strong>Respeto:</strong> hacia una misma, las compañeras, rivales, árbitros, familias y entrenadores.</li>
-              <li><strong>Inclusión:</strong> todas las jugadoras deben sentirse vistas, escuchadas y parte del grupo.</li>
-              <li><strong>Confianza:</strong> crear seguridad para aprender, competir, equivocarse y volver a intentarlo.</li>
-              <li><strong>Compromiso:</strong> asistencia, actitud, puntualidad y responsabilidad.</li>
-              <li><strong>Honestidad:</strong> comunicación clara, directa y siempre constructiva.</li>
-              <li><strong>Desarrollo:</strong> formar jugadoras con fundamentos, criterio, carácter y amor por el juego.</li>
-            </ul>
-            <p>Queremos estándares, pero no miedo. Queremos ambición, pero nunca arrogancia. Queremos que cada jugadora se sienta valorada y retada de la manera correcta.</p>
-            <p class="bienvenida-lema">Gracias por confiar en el inicio de este camino. Juntas podemos construir algo con identidad, valores y futuro.</p>
-          </div>
 
           <div id="registro-success" class="form-success" role="status">
             <p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente.</p>
@@ -266,8 +275,6 @@
             <button type="submit" class="btn btn-primary btn-block" id="registro-submit" style="margin-top:1.6rem;">Guardar y continuar al pago</button>
           </form>
         </div>
-
-        <div id="registro-blocked" class="form-error" style="display:none;"></div>
       </div>
     </div>
   </section>
@@ -340,15 +347,17 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 (async function () {
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
-  const loadingEl = document.getElementById("registro-loading");
+  const pageLoadingEl = document.getElementById("page-loading");
+  const heroEl = document.getElementById("registro-hero");
+  const bienvenidaEl = document.getElementById("bienvenida-screen");
+  const formSectionEl = document.getElementById("registro-form-section");
   const contentEl = document.getElementById("registro-content");
   const blockedEl = document.getElementById("registro-blocked");
   const successEl = document.getElementById("registro-success");
   const errorEl = document.getElementById("registro-error");
 
   function showBlocked(msg) {
-    loadingEl.style.display = "none";
-    contentEl.style.display = "none";
+    pageLoadingEl.style.display = "none";
     blockedEl.style.display = "block";
     blockedEl.textContent = msg;
   }
@@ -373,8 +382,15 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     return;
   }
 
-  loadingEl.style.display = "none";
-  contentEl.style.display = "block";
+  pageLoadingEl.style.display = "none";
+  bienvenidaEl.style.display = "flex";
+  document.getElementById("bienvenida-btn").addEventListener("click", () => {
+    bienvenidaEl.style.display = "none";
+    heroEl.style.display = "block";
+    formSectionEl.style.display = "block";
+    formSectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
   document.getElementById("registro-saludo").textContent =
     "Completa estos datos para terminar el registro de " + (datos.jugadora_nombre || "tu jugadora") + ".";
   document.getElementById("r-tutor-email").value = datos.tutor_email || "";

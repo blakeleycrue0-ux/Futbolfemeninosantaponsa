@@ -33,7 +33,7 @@ exports.handler = async function (event) {
 
   const { data: inscripcion, error } = await supabase
     .from("inscripciones")
-    .select("jugadora_nombre, confirmada_en, pago_solicitado_en")
+    .select("jugadora_nombre, jugadora_fecha_nacimiento, confirmada_en, pago_solicitado_en")
     .eq("id", id)
     .single();
   if (error || !inscripcion) {
@@ -42,7 +42,7 @@ exports.handler = async function (event) {
 
   const { data: pagos } = await supabase
     .from("inscripcion_pagos")
-    .select("id, numero_cuota, importe, estado, fecha_vencimiento")
+    .select("id, numero_cuota, importe, estado, fecha_vencimiento, comprobante_url, comprobante_subido_en")
     .eq("inscripcion_id", id)
     .order("numero_cuota");
 
@@ -51,6 +51,7 @@ exports.handler = async function (event) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       jugadora_nombre: inscripcion.jugadora_nombre,
+      jugadora_fecha_nacimiento: inscripcion.jugadora_fecha_nacimiento,
       confirmada_en: inscripcion.confirmada_en,
       pago_solicitado_en: inscripcion.pago_solicitado_en,
       pagos: pagos || [],

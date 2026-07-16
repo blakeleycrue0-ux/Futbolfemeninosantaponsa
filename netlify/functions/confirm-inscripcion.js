@@ -2,12 +2,14 @@
   confirm-inscripcion.js — Netlify Function
   ============================================================================
   Llamada desde Admin → Formularios de interés cuando el club revisa un
-  formulario y le da a "Aceptar plaza y enviar confirmación". Marca la
-  inscripción como confirmada y envía un email SOLO al tutor/a de esa
-  familia avisando de que hay plaza — sin precio todavía. Incluye el enlace
-  personal a registro.html para que completen el resto de datos (DNI,
-  dirección, talla, segundo tutor/a), con verificación de email. El pago se
-  pide después, como paso aparte, con send-payment-link.js.
+  formulario y le da a "Aceptar plaza y enviar email". Marca la inscripción
+  como confirmada y envía UN ÚNICO email al tutor/a de esa familia con el
+  enlace personal a registro.html, donde en un solo sitio completan el
+  registro (DNI, dirección, talla, segundo tutor/a, condiciones generales),
+  eligen plan de pago y suben el justificante de la transferencia. Antes
+  esto eran dos pasos y dos emails (éste + send-payment-link.js); ahora es
+  uno solo porque el pago ya no depende de un paso aparte del club, sino de
+  que la familia rellene su enlace de principio a fin.
 
   Requiere que quien llama esté autenticado como admin: recibe el JWT del
   usuario en el header Authorization y comprueba is_app_admin() en Supabase
@@ -75,7 +77,6 @@ exports.handler = async function (event) {
 
   const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const registroUrl = `${baseUrl}/registro.html?id=${inscripcion_id}`;
-  const transferenciaUrl = `${baseUrl}/pago-transferencia.html`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -86,11 +87,11 @@ exports.handler = async function (event) {
   const cuerpoHtml = `
     <p>Hola ${inscripcion.tutor_nombre || ""},</p>
     <p>¡Buenas noticias! Hay plaza para <strong>${inscripcion.jugadora_nombre}</strong> en el Fútbol Femenino Santa Ponça.</p>
-    <p>Nos falta terminar de completar tus datos (DNI, dirección, talla y, si aplica, un segundo tutor/a). Puedes hacerlo desde este enlace personal:</p>
-    <p><a href="${registroUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Completar registro</a></p>
+    <p>Solo queda un paso: entra en este enlace personal y ahí mismo vas a poder completar todo de una vez — tus datos (DNI, dirección, talla, segundo tutor/a si aplica), las condiciones generales, el plan de pago que prefieras (único, 2 o 4 cuotas) y, al final, subir la foto del justificante de tu transferencia:</p>
+    <p><a href="${registroUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Completar registro y pago</a></p>
     <p>O copia y pega este enlace en el navegador:<br>${registroUrl}</p>
     <p>Este enlace es personal e intransferible — no lo compartas.</p>
-    <p>El pago se realiza por transferencia bancaria — <a href="${transferenciaUrl}">consulta cómo aquí</a>. En los próximos días nos pondremos en contacto contigo con los siguientes pasos, incluido el enlace y los datos para completar el pago.</p>
+    <p>El pago se hace por transferencia bancaria — al elegir tu plan en el propio enlace te daremos el número de cuenta y la referencia exacta que hay que poner. En cuanto recibamos el ingreso y el justificante, te lo confirmamos.</p>
     <p>Si no ves nuestros próximos emails en la bandeja de entrada, revisa también la carpeta de <strong>spam / correo no deseado</strong>, por si acaso.</p>
     <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>
     <p>¡Bienvenidas al club!<br>Fútbol Femenino Santa Ponça</p>
@@ -107,9 +108,10 @@ exports.handler = async function (event) {
     return { statusCode: 502, body: "No se ha podido enviar el email: " + err.message };
   }
 
+  const ahora = new Date().toISOString();
   const { error: updateError } = await supabase
     .from("inscripciones")
-    .update({ confirmada_en: new Date().toISOString() })
+    .update({ confirmada_en: ahora, pago_solicitado_en: ahora })
     .eq("id", inscripcion_id);
   if (updateError) {
     return { statusCode: 200, body: JSON.stringify({ ok: true, warning: "Email enviado, pero no se pudo marcar como confirmada: " + updateError.message }) };

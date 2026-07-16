@@ -202,6 +202,14 @@
         </p>`;
     } else {
       html += `<p style="font-size:0.86rem;"><span class="pill">Aceptada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — se envió el email con el enlace a ${escapeHtml(item.tutor_email)}.</p>`;
+      if (!item.pago_solicitado_en) {
+        html += `
+          <p style="font-size:0.86rem;">
+            <button type="button" class="btn btn-outline btn-sm" id="activar-pago-btn">Activar pago</button>
+            <span id="activar-pago-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
+          </p>
+          <p class="form-note" style="margin-top:-0.4rem;">Esta solicitud se aceptó antes de unificar el flujo — actívala para que su enlace de pago funcione.</p>`;
+      }
     }
     confirmarWrap.innerHTML = html;
 
@@ -209,6 +217,23 @@
     if (aceptarBtn) {
       aceptarBtn.addEventListener("click", () =>
         callAdminFunction("confirm-inscripcion", aceptarBtn, document.getElementById("aceptar-status")));
+    }
+    const activarPagoBtn = document.getElementById("activar-pago-btn");
+    if (activarPagoBtn) {
+      activarPagoBtn.addEventListener("click", async () => {
+        const status = document.getElementById("activar-pago-status");
+        activarPagoBtn.disabled = true;
+        status.textContent = "Guardando…";
+        const { error } = await window.spfc.from("inscripciones").update({ pago_solicitado_en: new Date().toISOString() }).eq("id", item.id);
+        if (error) {
+          activarPagoBtn.disabled = false;
+          status.textContent = "Error: " + error.message;
+          return;
+        }
+        status.textContent = "Activado ✓";
+        openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+        loadInscripciones();
+      });
     }
 
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");

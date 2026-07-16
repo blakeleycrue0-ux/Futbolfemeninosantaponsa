@@ -34,6 +34,20 @@
   .condiciones-box strong { color: var(--ink); }
   .condiciones-check { display: flex; align-items: flex-start; gap: 0.6em; font-size: 0.86rem; margin-top: 0.9rem; cursor: pointer; }
   .condiciones-check input { margin-top: 0.2em; flex-shrink: 0; }
+  .bienvenida-box {
+    text-align: center; background: var(--cream-deep); border-radius: var(--radius-lg);
+    padding: 2rem 1.8rem; margin-bottom: 2rem;
+  }
+  .bienvenida-escudo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 0.6rem; }
+  .bienvenida-titulo {
+    font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: -0.02em; margin: 0.2rem 0 0.6rem;
+  }
+  .bienvenida-lema { font-style: italic; color: var(--accent-dark); font-weight: 600; }
+  .bienvenida-box p { text-align: left; font-size: 0.9rem; line-height: 1.6; }
+  .bienvenida-box p.bienvenida-lema { text-align: center; }
+  .bienvenida-subtitulo { font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; text-align: left; margin: 1.4rem 0 0.7rem; }
+  .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.88rem; line-height: 1.8; }
 </style>
 </head>
 <body>
@@ -94,6 +108,26 @@
 
         <div id="registro-content" style="display:none;">
           <p id="registro-saludo" style="margin-top:0;"></p>
+
+          <div class="bienvenida-box">
+            <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="bienvenida-escudo">
+            <span class="eyebrow">Bienvenidos</span>
+            <h2 class="bienvenida-titulo">Fútbol Femenino Santa Ponça</h2>
+            <p class="bienvenida-lema">Un nuevo club. Un nuevo camino. Una oportunidad para construir algo especial.</p>
+            <p>Familias y jugadoras, bienvenidas a Fútbol Femenino Santa Ponça. Nace un nuevo club y empieza un camino que queremos construir juntas: con humildad, trabajo serio y una idea clara de lo que debe ser el fútbol femenino.</p>
+            <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo. No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</p>
+            <h3 class="bienvenida-subtitulo">Nuestros valores</h3>
+            <ul class="bienvenida-valores">
+              <li><strong>Respeto:</strong> hacia una misma, las compañeras, rivales, árbitros, familias y entrenadores.</li>
+              <li><strong>Inclusión:</strong> todas las jugadoras deben sentirse vistas, escuchadas y parte del grupo.</li>
+              <li><strong>Confianza:</strong> crear seguridad para aprender, competir, equivocarse y volver a intentarlo.</li>
+              <li><strong>Compromiso:</strong> asistencia, actitud, puntualidad y responsabilidad.</li>
+              <li><strong>Honestidad:</strong> comunicación clara, directa y siempre constructiva.</li>
+              <li><strong>Desarrollo:</strong> formar jugadoras con fundamentos, criterio, carácter y amor por el juego.</li>
+            </ul>
+            <p>Queremos estándares, pero no miedo. Queremos ambición, pero nunca arrogancia. Queremos que cada jugadora se sienta valorada y retada de la manera correcta.</p>
+            <p class="bienvenida-lema">Gracias por confiar en el inicio de este camino. Juntas podemos construir algo con identidad, valores y futuro.</p>
+          </div>
 
           <div id="registro-success" class="form-success" role="status">
             <p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente.</p>
@@ -427,5 +461,6 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 <script src="/assets/js/pwa-register.js" defer></script>
 <script src="/assets/js/install-banner.js" defer></script>
 <script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
 </body>
 </html>

@@ -113,6 +113,19 @@ const SPFC_DATA = (function () {
     async sponsors() {
       return safe((c) => c.from("sponsors").select("*").order("nivel"), window.SPFC_FALLBACK.sponsors);
     },
+    // Buscador del header: noticias + jugadoras + partidos que coincidan
+    // con el texto, unos pocos resultados de cada uno.
+    async search(q) {
+      const c = client();
+      if (!c || !q || !q.trim()) return { news: [], players: [], matches: [] };
+      const term = `%${q.trim()}%`;
+      const [news, players, matches] = await Promise.all([
+        safe((c2) => c2.from("news").select("id,titulo,resumen,fecha").eq("publicado", true).ilike("titulo", term).order("fecha", { ascending: false }).limit(5), []),
+        safe((c2) => c2.from("players").select("id,nombre,dorsal,team_id,foto_url").ilike("nombre", term).limit(5), []),
+        safe((c2) => c2.from("matches").select("id,rival,fecha,team_id").ilike("rival", term).order("fecha", { ascending: false }).limit(5), []),
+      ]);
+      return { news: news || [], players: players || [], matches: matches || [] };
+    },
     async destacado() {
       const list = await safe(
         (c) => c.from("destacado").select("*").eq("activo", true).order("actualizado_en", { ascending: false }).limit(1),

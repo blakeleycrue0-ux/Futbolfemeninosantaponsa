@@ -61,10 +61,18 @@ create table if not exists players (
   tarjetas_amarillas int not null default 0,
   tarjetas_rojas int not null default 0,
   activa boolean not null default true,
+  -- si esta jugadora se dio de alta sola al completar el pago (ver
+  -- mark-pago-pagado.js), aquí queda el id de la inscripción de origen —
+  -- evita añadirla dos veces si se vuelve a marcar como pagada por error.
+  -- Sin clave foránea porque `inscripciones` se define más abajo en este
+  -- mismo archivo (players va antes) — incluso lo trata como token de
+  -- referencia, igual que el resto de la app.
+  inscripcion_id uuid,
   creado_en timestamptz not null default now()
 );
 
 create index if not exists players_team_idx on players(team_id);
+create unique index if not exists players_inscripcion_idx on players(inscripcion_id) where inscripcion_id is not null;
 
 -- ----------------------------------------------------------------------------
 -- matches
@@ -416,6 +424,17 @@ values
   ('Cadete Juvenil Femenino', 'Cadete Juvenil', '2025/26', 'cadete-juvenil', 1),
   ('Infantil Femenino', 'Infantil', '2025/26', 'infantil', 2),
   ('Alevín Femenino', 'Alevín', '2025/26', 'alevin', 3)
+on conflict do nothing;
+
+-- Categorías nuevas para la 2026/27 (Benjamín, y Cadete/Juvenil ya
+-- separados) para que la asignación automática por edad de Plantilla
+-- tenga equipo donde encajar a cada jugadora. No se toca ni se borra
+-- "Cadete Juvenil Femenino" por si ya tiene jugadoras asignadas.
+insert into teams (nombre, categoria, temporada, slug, orden)
+values
+  ('Benjamín Femenino', 'Benjamín', '2026/27', 'benjamin', -1),
+  ('Cadete Femenino', 'Cadete', '2026/27', 'cadete', 4),
+  ('Juvenil Femenino', 'Juvenil', '2026/27', 'juvenil', 5)
 on conflict do nothing;
 
 -- Recuerda añadir tu email de administrador, p.ej.:

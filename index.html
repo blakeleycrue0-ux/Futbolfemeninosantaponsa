@@ -42,10 +42,14 @@
     font-size: 14px; line-height: 1.6; color: rgba(244,240,232,0.75); max-width: 520px; margin: 0 0 20px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
+  .news-slider-loading {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: rgba(244,240,232,0.35); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
   .news-slider-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
     background: rgba(10,10,10,0.5); border: 1px solid rgba(244,240,232,0.25); color: #fff;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 3;
+    display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 3;
     transition: background 0.25s, border-color 0.25s; font-size: 20px; line-height: 1;
   }
   .news-slider-arrow:hover { background: var(--accent); border-color: var(--accent); }
@@ -136,8 +140,12 @@
 <main id="main">
 
   <!-- ═══ CARRUSEL DE NOTICIAS ═══ -->
-  <section class="news-slider" id="newsSlider" style="display:none;" aria-label="Últimas noticias">
-    <div class="news-slider-track" id="newsSliderTrack"></div>
+  <!-- Sin display:none: el hueco (alto fijo por CSS) se reserva desde el
+       primer render para que no haya salto de maquetación mientras se
+       cargan las noticias — antes el bloque aparecía en 0 y empujaba todo
+       hacia abajo de golpe en cuanto llegaban los datos. -->
+  <section class="news-slider" id="newsSlider" aria-label="Últimas noticias">
+    <div class="news-slider-track" id="newsSliderTrack"><div class="news-slider-loading">Cargando…</div></div>
     <button type="button" class="news-slider-arrow news-slider-arrow--prev" id="newsPrev" aria-label="Noticia anterior">‹</button>
     <button type="button" class="news-slider-arrow news-slider-arrow--next" id="newsNext" aria-label="Noticia siguiente">›</button>
     <div class="news-slider-dots" id="newsDots"></div>
@@ -336,8 +344,8 @@
       </${tag}>`;
     }).join('');
     if (slideCount > 1) {
-      prevBtn.style.display = '';
-      nextBtn.style.display = '';
+      prevBtn.style.display = 'flex';
+      nextBtn.style.display = 'flex';
       dotsWrap.innerHTML = items.map((_, i) => `<button type="button" class="news-slider-dot${i === 0 ? ' active' : ''}" data-i="${i}" aria-label="Ir a la diapositiva ${i + 1}"></button>`).join('');
       dotsWrap.querySelectorAll('.news-slider-dot').forEach((d) => d.addEventListener('click', () => { goTo(+d.dataset.i); restartAutoplay(); }));
     } else {
@@ -345,7 +353,6 @@
       nextBtn.style.display = 'none';
       dotsWrap.innerHTML = '';
     }
-    wrap.style.display = '';
     restartAutoplay();
   };
 

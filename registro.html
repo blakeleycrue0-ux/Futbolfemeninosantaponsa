@@ -26,6 +26,14 @@
   .imagen-consent-row span.canal { flex: 1 1 240px; font-size: 0.88rem; }
   .imagen-consent-choices { display: flex; gap: 1.2rem; flex-shrink: 0; }
   .imagen-consent-choices label { display: flex; align-items: center; gap: 0.4em; font-size: 0.84rem; cursor: pointer; }
+  .condiciones-box {
+    max-height: 220px; overflow-y: auto; border: 1px solid rgba(10,10,10,0.14); border-radius: var(--radius-md);
+    padding: 1rem 1.1rem; font-size: 0.82rem; line-height: 1.6; color: var(--text-on-cream-muted); background: var(--cream-deep);
+  }
+  .condiciones-box p { margin: 0 0 0.8rem; }
+  .condiciones-box strong { color: var(--ink); }
+  .condiciones-check { display: flex; align-items: flex-start; gap: 0.6em; font-size: 0.86rem; margin-top: 0.9rem; cursor: pointer; }
+  .condiciones-check input { margin-top: 0.2em; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -106,7 +114,7 @@
                 <option>S</option><option>M</option><option>L</option><option>XL</option>
               </select>
             </div>
-            <p class="form-section-note">Orientativa: el tallaje oficial se hará en persona durante la primera quincena de julio. Se informará del día, hora y lugar exactos.</p>
+            <p class="form-section-note">Orientativa: el tallaje oficial se hará en persona durante la segunda quincena de julio. Se informará del día, hora y lugar exactos.</p>
 
             <h3 class="form-section-title">Dirección</h3>
             <div class="form-field">
@@ -201,7 +209,27 @@
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block" id="registro-submit" style="margin-top:1.6rem;">Guardar registro</button>
+            <h3 class="form-section-title">Condiciones generales</h3>
+            <div class="condiciones-box" id="condicionesBox">
+              <p><strong>Inscripción y plaza:</strong> La plaza queda reservada cuando el club recibe la ficha de información completa, las autorizaciones requeridas y el primer pago correspondiente. Las licencias federativas quedan sujetas a la validación de la FFIB y a la documentación correcta.</p>
+              <p><strong>Cuota de temporada:</strong> La cuota anual es de 650 €. Incluye la actividad deportiva ordinaria de la temporada y la gestión administrativa habitual del club. No incluye gastos extraordinarios, viajes especiales, torneos adicionales ni ropa extra salvo comunicación expresa.</p>
+              <p><strong>Pagos:</strong> Las fechas de pago establecidas deben respetarse para que el club pueda planificar con responsabilidad. Cualquier dificultad puntual debe comunicarse con antelación y de forma privada.</p>
+              <p><strong>Ropa del club:</strong> El tallaje se realizará durante la segunda quincena de julio. Una vez confirmado el pedido, los cambios dependerán de la disponibilidad del proveedor.</p>
+              <p><strong>Compromiso deportivo:</strong> Pedimos asistencia, puntualidad y comunicación. El desarrollo de la jugadora necesita continuidad, paciencia y buenos hábitos. El club se compromete a formar; la jugadora y la familia, a respetar el proceso.</p>
+              <p><strong>Respeto y comportamiento:</strong> No se aceptará falta de respeto hacia compañeras, rivales, árbitros, entrenadores, familias o personal del club. Ganar importa, pero nunca por encima de los valores.</p>
+              <p><strong>Desarrollo de la jugadora:</strong> Las convocatorias, minutos y roles deportivos se decidirán según criterios técnicos, físicos, actitudinales y de compromiso. La comunicación será honesta y constructiva, siempre enfocada en el crecimiento de la jugadora.</p>
+              <p><strong>Salud, lesiones y seguro:</strong> Las familias deben informar al club de cualquier lesión, condición médica relevante o limitación. La vuelta a la actividad tras lesión será progresiva y responsable. La cobertura federativa dependerá de la licencia y de la normativa aplicable.</p>
+              <p><strong>Protección de menores:</strong> Toda comunicación con menores será adecuada, transparente y respetuosa. El club prioriza un entorno seguro, educativo e inclusivo.</p>
+              <p><strong>Imagen y comunicaciones:</strong> El uso de imágenes con fines deportivos, informativos o promocionales requerirá la autorización familiar cuando sea necesaria (ver arriba). Las comunicaciones oficiales se harán por los canales indicados por el club.</p>
+              <p><strong>Bajas y devoluciones:</strong> La cuota está organizada sobre una temporada completa. Las bajas voluntarias, cambios de decisión o ausencias prolongadas no garantizan devolución automática. Cualquier caso excepcional se valorará individualmente.</p>
+              <p style="margin-bottom:0;"><strong>Protección de datos:</strong> La información facilitada se utilizará exclusivamente para fines deportivos, administrativos, federativos y de comunicación del club, de acuerdo con la normativa aplicable.</p>
+            </div>
+            <label class="condiciones-check">
+              <input type="checkbox" id="r-condiciones" required>
+              Confirmo que he leído y acepto las condiciones generales de Fútbol Femenino Santa Ponça para la temporada 2026/27. *
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-block" id="registro-submit" style="margin-top:1.6rem;">Guardar y continuar al pago</button>
           </form>
         </div>
 
@@ -319,7 +347,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
   if (datos.registro_completado_en) {
     successEl.style.display = "block";
-    successEl.querySelector("p").textContent = "Ya habíamos recibido estos datos — si necesitas corregir algo, vuelve a enviar el formulario y lo actualizamos.";
+    successEl.innerHTML = '<p style="margin:0 0 0.6rem;">Ya habíamos recibido estos datos — si necesitas corregir algo, vuelve a enviar el formulario y lo actualizamos.</p><a href="pago.html?id=' + encodeURIComponent(id) + '" class="btn btn-primary btn-sm">Ir al pago</a>';
   }
 
   const form = document.getElementById("registro-form");
@@ -332,6 +360,12 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
     if (!form.checkValidity()) {
       form.reportValidity();
+      return;
+    }
+    if (!document.getElementById("r-condiciones").checked) {
+      errorEl.textContent = "Tienes que leer y aceptar las condiciones generales para continuar.";
+      errorEl.style.display = "block";
+      errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -369,17 +403,20 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
           imagen_web: (document.querySelector('input[name="img-web"]:checked') || {}).value === "si",
           imagen_prensa: (document.querySelector('input[name="img-prensa"]:checked') || {}).value === "si",
           imagen_material_promocional: (document.querySelector('input[name="img-material"]:checked') || {}).value === "si",
+          acepta_condiciones_generales: true,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
       successEl.style.display = "block";
-      successEl.querySelector("p").textContent = "¡Gracias! Hemos guardado los datos del registro correctamente.";
+      successEl.innerHTML = '<p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente. Ahora vamos a llevarte al pago…</p>';
       successEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      submitBtn.textContent = "Guardar registro";
-      submitBtn.disabled = false;
+      submitBtn.textContent = "Redirigiendo…";
+      setTimeout(function () {
+        location.href = "pago.html?id=" + encodeURIComponent(id);
+      }, 1400);
     } catch (err) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Guardar registro";
+      submitBtn.textContent = "Guardar y continuar al pago";
       errorEl.textContent = "No se ha podido guardar: " + (err && err.message ? err.message : "inténtalo de nuevo en unos minutos.");
       errorEl.style.display = "block";
       errorEl.scrollIntoView({ behavior: "smooth", block: "center" });

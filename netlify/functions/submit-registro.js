@@ -71,6 +71,8 @@ exports.handler = async function (event) {
     imagen_web: payload.imagen_web === true,
     imagen_prensa: payload.imagen_prensa === true,
     imagen_material_promocional: payload.imagen_material_promocional === true,
+    acepta_condiciones_generales: payload.acepta_condiciones_generales === true,
+    condiciones_generales_aceptadas_en: payload.acepta_condiciones_generales === true ? new Date().toISOString() : null,
     registro_completado_en: new Date().toISOString(),
   };
 

@@ -227,6 +227,12 @@ create table if not exists inscripciones (
   plan_pago text not null default 'unico' check (plan_pago in ('unico','2_cuotas','4_cuotas')),
   cuota_total numeric,
   acepta_condiciones boolean not null default false,
+  -- aceptación de las "Condiciones generales" completas del dossier del
+  -- club (no confundir con acepta_condiciones, que es el consentimiento
+  -- corto de protección de datos del formulario de interés) — se rellena
+  -- junto con el resto del registro en registro.html.
+  acepta_condiciones_generales boolean not null default false,
+  condiciones_generales_aceptadas_en timestamptz,
   -- autorización de derechos de imagen, un booleano por canal (se rellena
   -- junto con el resto del registro en registro.html, mismo esquema que la
   -- "AUTORIZACIÓN DE DERECHOS DE IMAGEN" en papel del club). false = no
@@ -267,6 +273,11 @@ create table if not exists inscripcion_pagos (
   estado text not null default 'pendiente' check (estado in ('pendiente','pagado','fallido')),
   stripe_payment_intent_id text,
   recordatorio_enviado boolean not null default false,
+  -- foto/captura del justificante de la transferencia bancaria, subida por
+  -- la familia desde pago.html (ver upload-comprobante.js) — el club la
+  -- revisa antes de marcar la cuota como pagada.
+  comprobante_url text,
+  comprobante_subido_en timestamptz,
   creado_en timestamptz not null default now()
 );
 
@@ -381,6 +392,19 @@ create policy "spfc_media_admin_update" on storage.objects
 
 create policy "spfc_media_admin_delete" on storage.objects
   for delete using (bucket_id = 'spfc-media' and is_app_admin());
+
+-- ============================================================================
+-- Storage: bucket público para los justificantes de transferencia que suben
+-- las familias desde pago.html. Solo lo escribe upload-comprobante.js, que
+-- usa la service_role key (salta RLS) — por eso no hace falta política de
+-- insert, solo la de lectura (para que el admin pueda abrir el enlace).
+-- ============================================================================
+insert into storage.buckets (id, name, public)
+values ('comprobantes', 'comprobantes', true)
+on conflict (id) do nothing;
+
+create policy "comprobantes_public_read" on storage.objects
+  for select using (bucket_id = 'comprobantes');
 
 -- ============================================================================
 -- Semilla: categorías reales del club. Ajustar/ampliar desde el panel admin

@@ -9,7 +9,7 @@
   a mano, no borrar el historial de un cobro real.
 
   Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js / send-payment-link.js).
+  confirm-inscripcion.js).
 
   Variables de entorno requeridas:
     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY

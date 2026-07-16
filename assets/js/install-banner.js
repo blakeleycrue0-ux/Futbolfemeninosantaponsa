@@ -15,7 +15,13 @@
 */
 (function () {
   const yaInstalada = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  if (yaInstalada || localStorage.getItem("spfc_install_dismissed")) return;
+  // El cierre se recuerda solo 14 días (no para siempre) — si alguien lo
+  // cierra sin querer, o queremos volver a probarlo, reaparece solo pasado
+  // ese tiempo en vez de quedar apagado en ese navegador para siempre.
+  const CATORCE_DIAS_MS = 14 * 24 * 60 * 60 * 1000;
+  const dismissedAt = Number(localStorage.getItem("spfc_install_dismissed_at"));
+  const dismissedRecently = dismissedAt && (Date.now() - dismissedAt) < CATORCE_DIAS_MS;
+  if (yaInstalada || dismissedRecently) return;
 
   let deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
@@ -83,7 +89,7 @@
 
     function dismiss() {
       banner.classList.remove("show");
-      localStorage.setItem("spfc_install_dismissed", "1");
+      localStorage.setItem("spfc_install_dismissed_at", String(Date.now()));
       setTimeout(() => banner.remove(), 400);
     }
     banner.querySelector(".spfc-ib-close").addEventListener("click", dismiss);
@@ -113,7 +119,7 @@
   }
 
   window.SPFC_SHOW_INSTALL_BANNER = function () {
-    if (document.getElementById("spfcInstallBanner") || localStorage.getItem("spfc_install_dismissed")) return;
+    if (document.getElementById("spfcInstallBanner") || dismissedRecently) return;
     buildBanner();
   };
 

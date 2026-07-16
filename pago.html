@@ -117,6 +117,7 @@
 
         <div id="pago-content" style="display:none;">
           <span class="eyebrow" id="pago-cuota-label">Cuota</span>
+          <p id="pago-plan-note" style="display:none;margin:0.3rem 0 0;font-size:0.82rem;color:var(--text-on-cream-muted);">Ya habías elegido este plan de pago — aquí tienes los datos para completarlo.</p>
           <div class="pago-jugadora" id="pago-jugadora"></div>
           <div class="pago-importe" id="pago-importe"></div>
           <p class="pago-meta" id="pago-meta"></p>
@@ -322,11 +323,12 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     comprobanteReemplazarBtnEl.addEventListener("click", mostrarPendiente);
   }
 
-  function mostrarPago(pago) {
+  function mostrarPago(pago, yaExistia) {
     loadingEl.style.display = "none";
     pickerEl.style.display = "none";
     contentEl.style.display = "block";
     document.getElementById("pago-cuota-label").textContent = "Cuota " + pago.numero_cuota;
+    document.getElementById("pago-plan-note").style.display = yaExistia ? "block" : "none";
     document.getElementById("pago-jugadora").textContent = estado.jugadora_nombre || "";
     document.getElementById("pago-importe").textContent = pago.importe + " €";
     document.getElementById("pago-meta").textContent = pago.fecha_vencimiento
@@ -351,7 +353,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
   if (estado.pagos && estado.pagos.length) {
     const primerPago = estado.pagos.find((p) => p.estado !== "pagado") || estado.pagos[0];
-    mostrarPago(primerPago);
+    mostrarPago(primerPago, true);
     return;
   }
 

@@ -421,7 +421,10 @@ function countUp(el, target, suffix) {
     return `<span>${(rival || "").trim().slice(0, 2).toUpperCase() || "--"}</span>`;
   }
 
-  /* Destacado — ahora en forma de popup, aparece a los 10s de entrar */
+  /* Destacado — ahora en forma de popup, aparece a los 10s de entrar.
+     El aviso de "instalar app" sale justo después de este popup (o solo,
+     si no hay destacado activo) — se controla aquí para que no salgan
+     los dos avisos a la vez. */
   const destacado = await SPFC_DATA.destacado();
   if (destacado && (destacado.titulo || destacado.texto)) {
     document.getElementById("destacadoModalTitle").textContent = destacado.titulo || "";
@@ -442,11 +445,16 @@ function countUp(el, target, suffix) {
       setTimeout(() => {
         document.getElementById("destacadoModal").style.display = "flex";
       }, 10000);
+    } else {
+      setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 3000);
     }
+  } else {
+    setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 12000);
   }
   function cerrarDestacadoModal() {
     document.getElementById("destacadoModal").style.display = "none";
     sessionStorage.setItem("spfc_destacado_visto", "1");
+    setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 1200);
   }
   document.getElementById("destacadoModalClose").addEventListener("click", cerrarDestacadoModal);
   document.getElementById("destacadoModalBackdrop").addEventListener("click", cerrarDestacadoModal);
@@ -557,6 +565,8 @@ function countUp(el, target, suffix) {
     : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
 })();
 </script>
+<script>window.SPFC_INSTALL_BANNER_MANUAL = true;</script>
 <script src="/assets/js/pwa-register.js" defer></script>
+<script src="/assets/js/install-banner.js" defer></script>
 </body>
 </html>

@@ -14,10 +14,21 @@
   la fila exista de antemano (la crea select-plan-pago.js). Si ya había un
   justificante subido, este lo sustituye (por si se equivocaron de foto).
 
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+  En cuanto se sube, avisa por email al club (GMAIL_USER) para que alguien
+  entre a revisarlo y, si está bien, lo marque como pagado desde el admin —
+  si no se avisa, nadie se entera de que hay un justificante nuevo esperando
+  revisión. Si el email de aviso falla, no se considera un error: el
+  justificante ya se ha guardado bien, que es lo importante.
+
+  Variables de entorno requeridas:
+    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales — si faltan, se sigue
+                                       guardando el justificante pero sin
+                                       aviso por email)
   ============================================================================
 */
 const { createClient } = require("@supabase/supabase-js");
+const nodemailer = require("nodemailer");
 
 const TIPOS_PERMITIDOS = {
   "image/jpeg": "jpg",
@@ -64,7 +75,7 @@ exports.handler = async function (event) {
 
   const { data: pago, error: pagoError } = await supabase
     .from("inscripcion_pagos")
-    .select("id, inscripcion_id, numero_cuota")
+    .select("id, inscripcion_id, numero_cuota, importe, inscripciones(jugadora_nombre, tutor_nombre, tutor_email)")
     .eq("id", pago_id)
     .single();
   if (pagoError || !pago) {
@@ -88,6 +99,31 @@ exports.handler = async function (event) {
     .eq("id", pago_id);
   if (updateError) {
     return { statusCode: 500, body: "El archivo se subió pero no se ha podido guardar el enlace: " + updateError.message };
+  }
+
+  const { GMAIL_USER, GMAIL_APP_PASSWORD, PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
+  if (GMAIL_USER && GMAIL_APP_PASSWORD) {
+    try {
+      const inscripcion = pago.inscripciones || {};
+      const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+      });
+      await transporter.sendMail({
+        from: `"Fútbol Femenino Santa Ponça" <${GMAIL_USER}>`,
+        to: GMAIL_USER,
+        subject: `Justificante recibido — ${inscripcion.jugadora_nombre || "jugadora"} (cuota ${pago.numero_cuota})`,
+        html: `
+          <p>${inscripcion.tutor_nombre || "La familia"} ha subido el justificante de la cuota ${pago.numero_cuota} (${pago.importe} €) de <strong>${inscripcion.jugadora_nombre || ""}</strong>.</p>
+          <p><a href="${comprobanteUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Ver justificante</a></p>
+          <p>Revísalo y, si está correcto, márcalo como pagado desde <a href="${baseUrl}/admin/inscripciones.html">el panel de Formularios de interés</a>.</p>
+        `,
+      });
+    } catch (err) {
+      // El justificante ya se guardó bien — que falle el aviso no debe
+      // impedir que la familia vea la subida como correcta.
+    }
   }
 
   return {

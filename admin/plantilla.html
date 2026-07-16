@@ -67,6 +67,7 @@
           <div class="form-field">
             <label for="p-team">Equipo</label>
             <select id="p-team" required></select>
+            <span id="p-team-hint" style="display:block;font-size:0.76rem;color:var(--text-on-cream-muted);margin-top:0.3em;"></span>
           </div>
         </div>
         <div class="form-row">
@@ -142,6 +143,38 @@
 
   let teams = [];
   let players = [];
+  let modoNuevaJugadora = true;
+
+  // Categorías por año de nacimiento (temporada 2026/27), tal como las usa
+  // el club — cada jugadora nueva se asigna sola a su equipo según esto.
+  const CATEGORIA_POR_ANIO = [
+    { min: 2017, max: 2018, categoria: "Benjamín" },
+    { min: 2015, max: 2016, categoria: "Alevín" },
+    { min: 2013, max: 2014, categoria: "Infantil" },
+    { min: 2011, max: 2012, categoria: "Cadete" },
+    { min: 2008, max: 2010, categoria: "Juvenil" },
+    { min: -Infinity, max: 2007, categoria: "Amateur" },
+  ];
+  function categoriaPorAnio(anio) {
+    const rango = CATEGORIA_POR_ANIO.find((r) => anio >= r.min && anio <= r.max);
+    return rango ? rango.categoria : null;
+  }
+  document.getElementById("p-nacimiento").addEventListener("change", () => {
+    const val = document.getElementById("p-nacimiento").value;
+    const hintEl = document.getElementById("p-team-hint");
+    if (!val) { hintEl.textContent = ""; return; }
+    const categoria = categoriaPorAnio(Number(val.slice(0, 4)));
+    if (!categoria) { hintEl.textContent = ""; return; }
+    const equipo = teams.find((t) =>
+      (t.categoria || "").toLowerCase().includes(categoria.toLowerCase()) ||
+      (t.nombre || "").toLowerCase().includes(categoria.toLowerCase()));
+    if (equipo) {
+      if (modoNuevaJugadora) document.getElementById("p-team").value = equipo.id;
+      hintEl.textContent = `Por su fecha de nacimiento le corresponde ${categoria}${modoNuevaJugadora ? " — equipo seleccionado automáticamente." : "."}`;
+    } else {
+      hintEl.textContent = `Por su fecha de nacimiento le corresponde ${categoria}, pero todavía no hay ningún equipo con esa categoría — créalo arriba en "Equipos" si hace falta.`;
+    }
+  });
 
   async function loadTeams() {
     const { data } = await window.spfc.from("teams").select("*").order("orden");
@@ -180,6 +213,8 @@
 
   function openForm(item) {
     form.reset();
+    modoNuevaJugadora = !item;
+    document.getElementById("p-team-hint").textContent = "";
     document.getElementById("form-title").textContent = item ? "Editar jugadora" : "Nueva jugadora";
     document.getElementById("player-id").value = item ? item.id : "";
     document.getElementById("p-nombre").value = item ? item.nombre : "";

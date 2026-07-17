@@ -97,9 +97,6 @@
             <option value="">Todas las familias</option>
             ${CATEGORIAS.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}
           </select>
-          <label style="display:none;font-size:0.78rem;margin-top:0.3rem;" data-cita-wrap="${n.id}">
-            <input type="checkbox" data-cita="${n.id}"> Incluir enlace para reservar hora
-          </label>
         </td>
         <td style="font-size:0.82rem;color:var(--text-on-cream-muted);">${n.email_enviado_en ? "Enviada el " + new Date(n.email_enviado_en).toLocaleDateString("es-ES") : "Todavía no enviada"}</td>
         <td class="actions">
@@ -108,19 +105,11 @@
         </td>
       </tr>`).join("");
 
-    body.querySelectorAll("[data-categoria]").forEach((select) =>
-      select.addEventListener("change", () => {
-        const wrap = body.querySelector(`[data-cita-wrap="${select.dataset.categoria}"]`);
-        wrap.style.display = select.value ? "block" : "none";
-        if (!select.value) wrap.querySelector("input").checked = false;
-      }));
-
     body.querySelectorAll("[data-send]").forEach((btn) =>
       btn.addEventListener("click", async () => {
         const noticia = data.find((n) => n.id === btn.dataset.send);
         const yaEnviada = noticia && noticia.email_enviado_en;
         const categoria = body.querySelector(`[data-categoria="${btn.dataset.send}"]`).value;
-        const enlaceCita = body.querySelector(`[data-cita="${btn.dataset.send}"]`).checked;
         const destino = categoria ? `las familias de la categoría ${categoria}` : "todas las familias registradas";
         if (!confirm(yaEnviada
           ? `Esta noticia ya se envió por email antes. ¿Volver a enviarla a ${destino}?`
@@ -133,7 +122,7 @@
           const res = await fetch("/.netlify/functions/send-noticia-email", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
-            body: JSON.stringify({ noticia_id: btn.dataset.send, categoria: categoria || undefined, enlace_cita: enlaceCita }),
+            body: JSON.stringify({ noticia_id: btn.dataset.send, categoria: categoria || undefined }),
           });
           if (!res.ok) throw new Error(await res.text());
           const json = await res.json();

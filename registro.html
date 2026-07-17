@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,900;1,500;1,600&display=swap" rel="stylesheet">
 <style>
   .registro-wrap { max-width: 720px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; }
   @media (max-width: 620px) { .registro-wrap { padding: 1.5rem; } }
@@ -37,20 +39,21 @@
   .bienvenida-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
     background: var(--dark, #0a0a0a); color: var(--text-on-dark, #f4f0e8); padding: 5rem 1.5rem 3.5rem;
+    font-family: "Playfair Display", Georgia, serif;
   }
   .bienvenida-box { max-width: 640px; margin: 0 auto; text-align: center; }
   .bienvenida-escudo { width: 76px; height: 76px; object-fit: contain; margin-bottom: 1rem; }
   .bienvenida-titulo {
-    font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 900; text-transform: uppercase;
-    letter-spacing: -0.02em; margin: 0.3rem 0 0.9rem; color: #fff;
+    font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 900; text-transform: uppercase;
+    letter-spacing: -0.01em; margin: 0.3rem 0 0.6rem; color: #fff;
   }
   .bienvenida-lema { font-style: italic; color: var(--accent-light); font-weight: 600; }
-  .bienvenida-box p { text-align: left; font-size: 0.95rem; line-height: 1.7; color: rgba(244,240,232,0.82); }
-  .bienvenida-box p.bienvenida-lema { text-align: center; font-size: 1.05rem; }
-  .bienvenida-subtitulo { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; text-align: left; margin: 1.6rem 0 0.8rem; color: #fff; }
-  .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.92rem; line-height: 1.9; color: rgba(244,240,232,0.82); }
+  .bienvenida-box p { text-align: left; font-size: 1rem; line-height: 1.75; color: rgba(244,240,232,0.86); }
+  .bienvenida-box p.bienvenida-lema { text-align: center; font-size: 1.15rem; margin: 1.4rem 0 2rem; }
+  .bienvenida-subtitulo { font-family: "Playfair Display", Georgia, serif; font-size: 1.3rem; font-weight: 700; text-align: left; margin: 1.6rem 0 0.9rem; color: #fff; }
+  .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.98rem; line-height: 1.95; color: rgba(244,240,232,0.86); }
   .bienvenida-valores strong { color: #fff; }
-  .bienvenida-btn { margin-top: 2.2rem; }
+  .bienvenida-btn { margin-top: 2.2rem; font-family: var(--font-display); }
   .plan-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 0 0 1.2rem; text-align: left; }
   @media (max-width: 620px) { .plan-pago-grid { grid-template-columns: 1fr; } }
   .plan-pago-opt {
@@ -130,9 +133,13 @@
       <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="bienvenida-escudo">
       <span class="eyebrow">Bienvenidos</span>
       <h2 class="bienvenida-titulo">Fútbol Femenino Santa Ponça</h2>
+      <p class="bienvenida-subtitulo" style="text-align:center;margin-top:0;">Dossier de pretemporada 2026/27</p>
       <p class="bienvenida-lema">Un nuevo club. Un nuevo camino. Una oportunidad para construir algo especial.</p>
       <p>Familias y jugadoras, bienvenidas a Fútbol Femenino Santa Ponça. Nace un nuevo club y empieza un camino que queremos construir juntas: con humildad, trabajo serio y una idea clara de lo que debe ser el fútbol femenino.</p>
-      <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo. No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</p>
+      <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo.</p>
+      <p><em>No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</em></p>
+      <p class="bienvenida-lema">Más allá de los límites.</p>
+
       <h3 class="bienvenida-subtitulo">Nuestros valores</h3>
       <ul class="bienvenida-valores">
         <li><strong>Respeto:</strong> hacia una misma, las compañeras, rivales, árbitros, familias y entrenadores.</li>
@@ -142,8 +149,25 @@
         <li><strong>Honestidad:</strong> comunicación clara, directa y siempre constructiva.</li>
         <li><strong>Desarrollo:</strong> formar jugadoras con fundamentos, criterio, carácter y amor por el juego.</li>
       </ul>
-      <p>Queremos estándares, pero no miedo. Queremos ambición, pero nunca arrogancia. Queremos que cada jugadora se sienta valorada y retada de la manera correcta.</p>
-      <p class="bienvenida-lema">Gracias por confiar en el inicio de este camino. Juntas podemos construir algo con identidad, valores y futuro.</p>
+
+      <h3 class="bienvenida-subtitulo">Lo que representa este club</h3>
+      <p>Este proyecto está pensado para niñas y mujeres que quieren disfrutar del fútbol, mejorar de verdad y sentirse parte de un entorno serio pero cercano. Queremos estándares, pero no miedo. Queremos ambición, pero nunca arrogancia. Queremos que cada jugadora se sienta valorada y retada de la manera correcta.</p>
+      <p class="bienvenida-lema">Crecer con confianza.</p>
+
+      <h3 class="bienvenida-subtitulo">Objetivos de la temporada</h3>
+      <ul class="bienvenida-valores">
+        <li>Construir una identidad de club fuerte, femenina, competitiva y familiar.</li>
+        <li>Desarrollar jugadoras con una metodología común y coherente en todas las edades.</li>
+        <li>Crear un ambiente donde la exigencia no quite confianza, sino que la construya.</li>
+        <li>Competir con ambición, sin perder educación, respeto ni humildad.</li>
+        <li>Acompañar a cada jugadora en su proceso individual, según su edad, nivel y necesidades.</li>
+        <li>Crear una cultura de club donde familias, jugadoras y entrenadores entiendan que el desarrollo requiere tiempo, constancia y confianza.</li>
+      </ul>
+
+      <h3 class="bienvenida-subtitulo">Nuestro mensaje</h3>
+      <p><em>Este es un club nuevo y un camino nuevo. Juntas, con paciencia y valores claros, podemos construir algo realmente especial para el fútbol femenino en Santa Ponça, Calvià y Mallorca.</em></p>
+      <p class="bienvenida-lema">Un nuevo club. Un camino compartido.</p>
+
       <button type="button" class="btn btn-primary bienvenida-btn" id="bienvenida-btn">Comenzar inscripción</button>
     </div>
   </div>

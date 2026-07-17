@@ -15,8 +15,10 @@
   resto de categorías. Sin `categoria`, se manda a todas las familias
   registradas, como antes.
 
-  Si se manda `enlace_cita: true` junto con `categoria`, se añade al
-  email un botón con el enlace a citas.html para esa categoría.
+  Si la noticia tiene un botón configurado (boton_texto / boton_url,
+  p.ej. el enlace a citas.html?categoria=... para reservar hora — ver
+  admin/noticias.html), ese mismo botón aparece también en el email,
+  igual que en la página de la noticia.
 
   No se puede reenviar sin querer sin darse cuenta: se guarda
   email_enviado_en en la noticia y el admin ve el aviso en pantalla, pero
@@ -84,7 +86,7 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-  const { noticia_id, categoria, enlace_cita } = payload;
+  const { noticia_id, categoria } = payload;
   if (!noticia_id) {
     return { statusCode: 400, body: "Falta noticia_id" };
   }
@@ -93,7 +95,7 @@ exports.handler = async function (event) {
 
   const { data: noticia, error: noticiaError } = await supabase
     .from("news")
-    .select("id, titulo, resumen, imagen_url, publicado")
+    .select("id, titulo, resumen, imagen_url, publicado, boton_texto, boton_url")
     .eq("id", noticia_id)
     .single();
   if (noticiaError || !noticia) {
@@ -130,7 +132,6 @@ exports.handler = async function (event) {
 
   const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const noticiaUrl = `${baseUrl}/noticia.html?id=${noticia_id}`;
-  const citaUrl = categoria ? `${baseUrl}/citas.html?categoria=${encodeURIComponent(categoria)}` : null;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -142,7 +143,7 @@ exports.handler = async function (event) {
     <h2 style="margin:0 0 0.6rem;">${noticia.titulo}</h2>
     ${noticia.resumen ? `<p>${noticia.resumen}</p>` : ""}
     <p><a href="${noticiaUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Leer la noticia completa</a></p>
-    ${enlace_cita && citaUrl ? `<p><a href="${citaUrl}" style="display:inline-block;background:#17151b;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Reservar hora para probar la equipación</a></p>` : ""}
+    ${noticia.boton_url ? `<p><a href="${noticia.boton_url}" style="display:inline-block;background:#17151b;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">${noticia.boton_texto || "Más información"}</a></p>` : ""}
     <p style="font-size:0.86rem;color:#666;">Recibes este email porque tu familia está registrada en Fútbol Femenino Santa Ponça.</p>
   `;
 

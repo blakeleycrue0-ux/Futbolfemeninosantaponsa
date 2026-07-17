@@ -143,6 +143,11 @@ create table if not exists news (
   -- registradas (ver send-noticia-email.js) — null = todavía no se ha
   -- enviado por email (solo está en la web).
   email_enviado_en timestamptz,
+  -- botón opcional en la noticia (p.ej. "Reservar hora para probar la
+  -- equipación" enlazando a citas.html?categoria=...) — se muestra en la
+  -- página de la noticia y, si se manda por email, también en el email.
+  boton_texto text,
+  boton_url text,
   creado_en timestamptz not null default now()
 );
 

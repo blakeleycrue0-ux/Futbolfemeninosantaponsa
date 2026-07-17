@@ -77,6 +77,17 @@
           <label for="contenido">Contenido</label>
           <textarea id="contenido" rows="8"></textarea>
         </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="boton_texto">Texto del botón (opcional)</label>
+            <input type="text" id="boton_texto" placeholder="Reservar hora para probar la equipación">
+          </div>
+          <div class="form-field">
+            <label for="boton_url">Enlace del botón (opcional)</label>
+            <input type="url" id="boton_url" placeholder="https://…">
+          </div>
+        </div>
+        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Para el enlace de reserva de hora, cógelo de <a href="citas.html">Citas → Enlaces para compartir</a> (uno por categoría). Se muestra como botón en la noticia y, si la mandas por email, también en el email.</p>
         <div class="form-field" style="flex-direction:row;align-items:center;gap:0.6rem;">
           <input type="checkbox" id="publicado" style="width:auto;" checked>
           <label for="publicado" style="margin:0;">Publicada</label>
@@ -126,6 +137,8 @@
     document.getElementById("imagen_url").value = item ? (item.imagen_url || "") : "";
     document.getElementById("resumen").value = item ? (item.resumen || "") : "";
     document.getElementById("contenido").value = item ? (item.contenido || "") : "";
+    document.getElementById("boton_texto").value = item ? (item.boton_texto || "") : "";
+    document.getElementById("boton_url").value = item ? (item.boton_url || "") : "";
     document.getElementById("publicado").checked = item ? !!item.publicado : true;
     formCard.style.display = "block";
     formCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -171,6 +184,8 @@
       imagen_url: document.getElementById("imagen_url").value.trim() || null,
       resumen: document.getElementById("resumen").value.trim(),
       contenido: document.getElementById("contenido").value,
+      boton_texto: document.getElementById("boton_texto").value.trim() || null,
+      boton_url: document.getElementById("boton_url").value.trim() || null,
       publicado: document.getElementById("publicado").checked,
     };
     const { error } = id

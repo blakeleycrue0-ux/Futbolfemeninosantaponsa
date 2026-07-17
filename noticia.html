@@ -226,6 +226,7 @@
   contentEl.innerHTML = `
     <div class="article-media">${noticia.imagen_url ? `<img src="${escapeHtml(noticia.imagen_url)}" alt="${escapeHtml(noticia.titulo)}">` : ""}</div>
     <div class="article-body">${bodyHtml}</div>
+    ${noticia.boton_url ? `<p><a href="${escapeHtml(noticia.boton_url)}" class="btn btn-primary">${escapeHtml(noticia.boton_texto || "Más información")}</a></p>` : ""}
     <div class="article-share">
       <span class="eyebrow">Compartir</span>
       <a href="mailto:?subject=${encodeURIComponent(noticia.titulo)}&body=${encodeURIComponent(shareUrl)}" class="btn btn-outline btn-sm">Compartir por email</a>

@@ -77,14 +77,18 @@
     <div class="admin-card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.8rem;">
         <h2 style="margin:0;">Horarios creados</h2>
-        <select id="filtro-categoria" style="max-width:220px;">
-          <option value="">Todas las categorías</option>
-          <option value="Amateur">Amateur</option>
-          <option value="Cadete Juvenil">Cadete Juvenil</option>
-          <option value="Infantil">Infantil</option>
-          <option value="Benjamín Alevín">Benjamín Alevín</option>
-        </select>
+        <div style="display:flex;gap:0.6rem;align-items:center;">
+          <select id="filtro-categoria" style="max-width:220px;">
+            <option value="">Todas las categorías</option>
+            <option value="Amateur">Amateur</option>
+            <option value="Cadete Juvenil">Cadete Juvenil</option>
+            <option value="Infantil">Infantil</option>
+            <option value="Benjamín Alevín">Benjamín Alevín</option>
+          </select>
+          <button type="button" class="btn btn-outline btn-sm" id="vaciar-btn">Eliminar todos estos</button>
+        </div>
       </div>
+      <p class="form-note" style="margin:-0.4rem 0 0.8rem;">"Eliminar todos estos" borra los horarios de la categoría elegida arriba (o todos, si no filtras) — útil para quitar pruebas antes de tener claros los días definitivos. Si alguno ya está reservado, se cancela también esa reserva.</p>
       <div class="admin-table-wrap">
         <table class="admin-table">
           <thead><tr><th>Categoría</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Reservado por</th><th>Jugadora</th><th></th></tr></thead>
@@ -228,6 +232,17 @@
   }
 
   document.getElementById("filtro-categoria").addEventListener("change", loadCitas);
+
+  document.getElementById("vaciar-btn").addEventListener("click", async () => {
+    const filtro = document.getElementById("filtro-categoria").value;
+    const destino = filtro ? `todos los horarios de ${filtro}` : "TODOS los horarios de TODAS las categorías";
+    if (!confirm(`¿Eliminar ${destino}? Esto no se puede deshacer.`)) return;
+    let query = window.spfc.from("citas_horario").delete();
+    query = filtro ? query.eq("categoria", filtro) : query.not("id", "is", null);
+    const { error } = await query;
+    if (error) { alert("Error al eliminar: " + error.message); return; }
+    loadCitas();
+  });
 
   loadCitas();
 })();

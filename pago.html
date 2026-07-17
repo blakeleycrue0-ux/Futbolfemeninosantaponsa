@@ -95,16 +95,16 @@
             <label class="plan-pago-opt">
               <input type="radio" name="plan-pago" value="unico" checked>
               <strong>Pago único</strong>
-              <span class="plan-amount">650 €</span>
+              <span class="plan-amount" id="pp-unico-amount">650 €</span>
               <span class="plan-when">100% en julio 2026</span>
             </label>
             <label class="plan-pago-opt">
               <input type="radio" name="plan-pago" value="2_cuotas">
               <strong>2 cuotas</strong>
-              <span class="plan-amount">325 € + 325 €</span>
+              <span class="plan-amount" id="pp-2-amount">325 € + 325 €</span>
               <span class="plan-when">Julio y octubre 2026</span>
             </label>
-            <label class="plan-pago-opt">
+            <label class="plan-pago-opt" id="pp-4-option">
               <input type="radio" name="plan-pago" value="4_cuotas">
               <strong>4 cuotas</strong>
               <span class="plan-amount">245 € + 135 € + 135 € + 135 €</span>
@@ -361,6 +361,20 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
   loadingEl.style.display = "none";
   pickerEl.style.display = "block";
   document.getElementById("plan-jugadora").textContent = estado.jugadora_nombre || "";
+
+  (function ajustarPrecioPorEdad() {
+    if (!estado.jugadora_fecha_nacimiento) return;
+    const nacimiento = new Date(estado.jugadora_fecha_nacimiento + "T00:00:00");
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const noHaCumplidoAun = hoy.getMonth() < nacimiento.getMonth() || (hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() < nacimiento.getDate());
+    if (noHaCumplidoAun) edad--;
+    if (edad >= 18) {
+      document.getElementById("pp-unico-amount").textContent = "450 €";
+      document.getElementById("pp-2-amount").textContent = "225 € + 225 €";
+      document.getElementById("pp-4-option").style.display = "none";
+    }
+  })();
 
   document.getElementById("plan-btn").addEventListener("click", async () => {
     const planBtn = document.getElementById("plan-btn");

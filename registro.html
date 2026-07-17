@@ -51,6 +51,18 @@
   .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.92rem; line-height: 1.9; color: rgba(244,240,232,0.82); }
   .bienvenida-valores strong { color: #fff; }
   .bienvenida-btn { margin-top: 2.2rem; }
+  .plan-pago-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 0 0 1.2rem; text-align: left; }
+  @media (max-width: 620px) { .plan-pago-grid { grid-template-columns: 1fr; } }
+  .plan-pago-opt {
+    display: block; cursor: pointer;
+    border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md);
+    padding: 1rem 1.1rem; transition: border-color 0.2s, background 0.2s;
+  }
+  .plan-pago-opt:has(input:checked) { border-color: var(--accent); background: var(--cream-deep); }
+  .plan-pago-opt:hover { border-color: var(--accent); }
+  .plan-pago-opt strong { font-family: var(--font-display); font-size: 0.88rem; text-transform: uppercase; letter-spacing: -0.01em; display: block; }
+  .plan-pago-opt .plan-amount { font-family: var(--font-display); font-weight: 900; font-size: 1.1rem; color: var(--accent-dark); margin-top: 0.3em; display: block; }
+  .plan-pago-opt span.plan-when { display: block; font-size: 0.76rem; color: var(--text-on-cream-muted); margin-top: 0.3em; }
 </style>
 </head>
 <body>
@@ -212,6 +224,29 @@
                 <label for="r-tutor2-email">Correo electrónico</label>
                 <input type="email" id="r-tutor2-email" autocomplete="email">
               </div>
+            </div>
+
+            <h3 class="form-section-title">Plan de pago</h3>
+            <p class="form-section-note" id="r-plan-note">Elige cómo prefieres pagar la cuota de <strong id="r-plan-total">650</strong> € (pago por transferencia bancaria — en el siguiente paso te damos los datos).</p>
+            <div class="plan-pago-grid" role="radiogroup" aria-label="Plan de pago" id="r-plan-grid">
+              <label class="plan-pago-opt">
+                <input type="radio" name="r-plan-pago" value="unico" checked required>
+                <strong>Pago único</strong>
+                <span class="plan-amount" id="r-plan-unico-amount">650 €</span>
+                <span class="plan-when">100% en julio 2026</span>
+              </label>
+              <label class="plan-pago-opt">
+                <input type="radio" name="r-plan-pago" value="2_cuotas" required>
+                <strong>2 cuotas</strong>
+                <span class="plan-amount" id="r-plan-2-amount">325 € + 325 €</span>
+                <span class="plan-when">Julio y octubre 2026</span>
+              </label>
+              <label class="plan-pago-opt" id="r-plan-4-option">
+                <input type="radio" name="r-plan-pago" value="4_cuotas" required>
+                <strong>4 cuotas</strong>
+                <span class="plan-amount" id="r-plan-4-amount">245 € + 135 € + 135 € + 135 €</span>
+                <span class="plan-when">Julio, octubre y diciembre 2026, febrero 2027</span>
+              </label>
             </div>
 
             <h3 class="form-section-title">Autorización de derechos de imagen</h3>
@@ -395,6 +430,24 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     "Completa estos datos para terminar el registro de " + (datos.jugadora_nombre || "tu jugadora") + ".";
   document.getElementById("r-tutor-email").value = datos.tutor_email || "";
 
+  function calcularEdad(fechaNacimiento) {
+    if (!fechaNacimiento) return null;
+    const nacimiento = new Date(fechaNacimiento + "T00:00:00");
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const noHaCumplidoAun = hoy.getMonth() < nacimiento.getMonth() || (hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() < nacimiento.getDate());
+    if (noHaCumplidoAun) edad--;
+    return edad;
+  }
+  const edad = calcularEdad(datos.jugadora_fecha_nacimiento);
+  const esMayorDeEdad = edad !== null && edad >= 18;
+  if (esMayorDeEdad) {
+    document.getElementById("r-plan-total").textContent = "450";
+    document.getElementById("r-plan-unico-amount").textContent = "450 €";
+    document.getElementById("r-plan-2-amount").textContent = "225 € + 225 €";
+    document.getElementById("r-plan-4-option").style.display = "none";
+  }
+
   if (datos.registro_completado_en) {
     successEl.style.display = "block";
     successEl.innerHTML = '<p style="margin:0 0 0.6rem;">Ya habíamos recibido estos datos — si necesitas corregir algo, vuelve a enviar el formulario y lo actualizamos.</p><a href="pago.html?id=' + encodeURIComponent(id) + '" class="btn btn-primary btn-sm">Ir al pago</a>';
@@ -457,6 +510,15 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
         }),
       });
       if (!res.ok) throw new Error(await res.text());
+
+      const planPago = (document.querySelector('input[name="r-plan-pago"]:checked') || {}).value || "unico";
+      const resPlan = await fetch("/.netlify/functions/select-plan-pago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inscripcion_id: id, plan_pago: planPago }),
+      });
+      if (!resPlan.ok) throw new Error(await resPlan.text());
+
       successEl.style.display = "block";
       successEl.innerHTML = '<p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente. Ahora vamos a llevarte al pago…</p>';
       successEl.scrollIntoView({ behavior: "smooth", block: "center" });

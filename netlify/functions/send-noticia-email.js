@@ -1,12 +1,22 @@
 /*
   send-noticia-email.js — Netlify Function
   ============================================================================
-  Admin-only. Envía por email una noticia ya publicada a todas las familias
-  que tenemos registradas (tutor_email / tutor2_email de la tabla
+  Admin-only. Envía por email una noticia ya publicada a las familias que
+  tenemos registradas (tutor_email / tutor2_email de la tabla
   `inscripciones`) — para que se enteren aunque no entren a mirar la web.
   Se manda con copia oculta (BCC) en tandas, para no enseñar el email de
   una familia a las demás y para no pasarnos del límite de destinatarios
   por envío de Gmail.
+
+  Si se manda `categoria`, solo se envía a las familias cuya jugadora
+  encaja en esa categoría por año de nacimiento (misma tabla que
+  admin/plantilla.html) — para avisos como "las citas para probarse la
+  equipación ya están abiertas para Benjamín Alevín" sin molestar al
+  resto de categorías. Sin `categoria`, se manda a todas las familias
+  registradas, como antes.
+
+  Si se manda `enlace_cita: true` junto con `categoria`, se añade al
+  email un botón con el enlace a citas.html para esa categoría.
 
   No se puede reenviar sin querer sin darse cuenta: se guarda
   email_enviado_en en la noticia y el admin ve el aviso en pantalla, pero
@@ -27,6 +37,19 @@ const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 
 const TAMANO_TANDA = 40;
+
+// Misma tabla de categorías por año de nacimiento que admin/plantilla.html
+// y mark-pago-pagado.js — si cambia una, hay que cambiar las demás.
+const CATEGORIA_POR_ANIO = [
+  { min: 2015, max: 2018, categoria: "Benjamín Alevín" },
+  { min: 2013, max: 2014, categoria: "Infantil" },
+  { min: 2008, max: 2012, categoria: "Cadete Juvenil" },
+  { min: -Infinity, max: 2007, categoria: "Amateur" },
+];
+function categoriaPorAnio(anio) {
+  const rango = CATEGORIA_POR_ANIO.find((r) => anio >= r.min && anio <= r.max);
+  return rango ? rango.categoria : null;
+}
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -61,7 +84,7 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-  const { noticia_id } = payload;
+  const { noticia_id, categoria, enlace_cita } = payload;
   if (!noticia_id) {
     return { statusCode: 400, body: "Falta noticia_id" };
   }
@@ -82,24 +105,32 @@ exports.handler = async function (event) {
 
   const { data: inscripciones, error: insError } = await supabase
     .from("inscripciones")
-    .select("tutor_email, tutor2_email");
+    .select("tutor_email, tutor2_email, jugadora_fecha_nacimiento");
   if (insError) {
     return { statusCode: 500, body: "No se han podido cargar los emails de las familias: " + insError.message };
   }
 
+  const inscripcionesFiltradas = categoria
+    ? (inscripciones || []).filter((i) => {
+        const anio = i.jugadora_fecha_nacimiento ? Number(String(i.jugadora_fecha_nacimiento).slice(0, 4)) : null;
+        return anio && categoriaPorAnio(anio) === categoria;
+      })
+    : (inscripciones || []);
+
   const emails = Array.from(new Set(
-    (inscripciones || [])
+    inscripcionesFiltradas
       .flatMap((i) => [i.tutor_email, i.tutor2_email])
       .filter(Boolean)
       .map((e) => e.trim().toLowerCase())
   ));
 
   if (!emails.length) {
-    return { statusCode: 400, body: "Todavía no hay ninguna familia registrada con email" };
+    return { statusCode: 400, body: categoria ? `No hay ninguna familia registrada en la categoría ${categoria}` : "Todavía no hay ninguna familia registrada con email" };
   }
 
   const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const noticiaUrl = `${baseUrl}/noticia.html?id=${noticia_id}`;
+  const citaUrl = categoria ? `${baseUrl}/citas.html?categoria=${encodeURIComponent(categoria)}` : null;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -111,6 +142,7 @@ exports.handler = async function (event) {
     <h2 style="margin:0 0 0.6rem;">${noticia.titulo}</h2>
     ${noticia.resumen ? `<p>${noticia.resumen}</p>` : ""}
     <p><a href="${noticiaUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Leer la noticia completa</a></p>
+    ${enlace_cita && citaUrl ? `<p><a href="${citaUrl}" style="display:inline-block;background:#17151b;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Reservar hora para probar la equipación</a></p>` : ""}
     <p style="font-size:0.86rem;color:#666;">Recibes este email porque tu familia está registrada en Fútbol Femenino Santa Ponça.</p>
   `;
 

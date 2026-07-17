@@ -301,6 +301,32 @@ create index if not exists inscripcion_pagos_inscripcion_idx on inscripcion_pago
 create index if not exists inscripcion_pagos_vencimiento_idx on inscripcion_pagos(fecha_vencimiento) where estado = 'pendiente';
 
 -- ----------------------------------------------------------------------------
+-- citas_horario
+-- Horas para que las familias reserven cita y vengan a probarse la
+-- equipación, por categoría. El admin crea los huecos desde
+-- admin/citas.html; las familias reservan uno desde citas.html (enlace
+-- público con ?categoria=), sin necesitar cuenta. Sin política de lectura
+-- pública a propósito: la disponibilidad se sirve desde get-citas.js con
+-- la service_role key para no enseñar directamente el nombre/email de
+-- quien ha reservado cada hora a cualquiera que abra el enlace.
+-- ----------------------------------------------------------------------------
+create table if not exists citas_horario (
+  id uuid primary key default gen_random_uuid(),
+  categoria text not null,
+  fecha date not null,
+  hora time not null,
+  duracion_min int not null default 15,
+  disponible boolean not null default true,
+  reservado_nombre text,
+  reservado_email text,
+  jugadora_nombre text,
+  reservado_en timestamptz,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists citas_horario_categoria_fecha_idx on citas_horario(categoria, fecha, hora);
+
+-- ----------------------------------------------------------------------------
 -- ffib_sync_log
 -- Auditoría de cada ejecución de la función de scraping, para depurar
 -- cuándo la FFIB cambia su HTML y el parser deja de funcionar.
@@ -333,6 +359,7 @@ alter table destacado enable row level security;
 alter table members enable row level security;
 alter table inscripciones enable row level security;
 alter table inscripcion_pagos enable row level security;
+alter table citas_horario enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -385,6 +412,11 @@ create policy "inscripcion_pagos_public_insert" on inscripcion_pagos for insert 
 create policy "inscripcion_pagos_admin_read" on inscripcion_pagos for select using (is_app_admin());
 create policy "inscripcion_pagos_admin_update" on inscripcion_pagos for update using (is_app_admin()) with check (is_app_admin());
 create policy "inscripcion_pagos_admin_delete" on inscripcion_pagos for delete using (is_app_admin());
+
+-- citas_horario: sin lectura/escritura pública — todo pasa por
+-- get-citas.js / reservar-cita.js (service_role); el admin gestiona
+-- los huecos directamente porque is_app_admin() se lo permite.
+create policy "citas_horario_admin_all" on citas_horario for all using (is_app_admin()) with check (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

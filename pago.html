@@ -107,7 +107,7 @@
             <label class="plan-pago-opt" id="pp-4-option">
               <input type="radio" name="plan-pago" value="4_cuotas">
               <strong>4 cuotas</strong>
-              <span class="plan-amount">245 € + 135 € + 135 € + 135 €</span>
+              <span class="plan-amount" id="pp-4-amount">245 € + 135 € + 135 € + 135 €</span>
               <span class="plan-when">Julio, octubre y diciembre 2026, febrero 2027</span>
             </label>
           </div>
@@ -372,7 +372,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     if (edad >= 18) {
       document.getElementById("pp-unico-amount").textContent = "450 €";
       document.getElementById("pp-2-amount").textContent = "225 € + 225 €";
-      document.getElementById("pp-4-option").style.display = "none";
+      document.getElementById("pp-4-amount").textContent = "150 € + 100 € + 100 € + 100 €";
     }
   })();
 

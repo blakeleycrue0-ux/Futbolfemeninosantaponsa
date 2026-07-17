@@ -37,15 +37,18 @@ const PLANES_MENOR = {
   ],
 };
 
-// Cuota Amateur (mayores de edad): 450 €. Pago único y 2 cuotas son un
-// reparto exacto (225+225); el de 4 cuotas queda pendiente de que el club
-// confirme el reparto exacto en euros — de momento no se ofrece esa
-// opción a mayores de edad para no inventar unas cifras de un pago real.
+// Cuota Amateur (mayores de edad): 450 €.
 const PLANES_AMATEUR = {
   unico: [{ numero_cuota: 1, importe: 450, fecha_vencimiento: "2026-07-01" }],
   "2_cuotas": [
     { numero_cuota: 1, importe: 225, fecha_vencimiento: "2026-07-01" },
     { numero_cuota: 2, importe: 225, fecha_vencimiento: "2026-10-01" },
+  ],
+  "4_cuotas": [
+    { numero_cuota: 1, importe: 150, fecha_vencimiento: "2026-07-01" },
+    { numero_cuota: 2, importe: 100, fecha_vencimiento: "2026-10-01" },
+    { numero_cuota: 3, importe: 100, fecha_vencimiento: "2026-12-01" },
+    { numero_cuota: 4, importe: 100, fecha_vencimiento: "2027-02-01" },
   ],
 };
 

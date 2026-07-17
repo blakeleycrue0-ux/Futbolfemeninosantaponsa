@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservar hora para probar la equipación — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .citas-wrap { max-width: 640px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; }
+  @media (max-width: 620px) { .citas-wrap { padding: 1.6rem; } }
+  .citas-dia { margin-bottom: 1.8rem; }
+  .citas-dia:last-child { margin-bottom: 0; }
+  .citas-dia h3 { font-family: var(--font-display); font-size: 1rem; text-transform: capitalize; margin: 0 0 0.7rem; }
+  .citas-horas { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .cita-hora-btn {
+    border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md);
+    padding: 0.6rem 1rem; background: var(--paper); font-weight: 700; font-size: 0.92rem;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .cita-hora-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+  .cita-hora-btn[aria-pressed="true"] { border-color: var(--accent-dark); background: var(--accent-dark); color: #fff; }
+  .cita-hora-btn:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  #citas-form-wrap { margin-top: 2rem; padding-top: 1.8rem; border-top: 1px solid rgba(10,10,10,0.1); display: none; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+  </div>
+  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag" id="citas-tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Reservar hora para probar la equipación</h1>
+      <p class="hero__lede">Elige el día y la hora que mejor te vengan. Cada hora solo la puede coger una familia.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="citas-wrap">
+        <div id="citas-loading">Cargando horarios…</div>
+        <div id="citas-error" class="form-error" style="display:none;"></div>
+
+        <div id="citas-lista" style="display:none;"></div>
+
+        <div id="citas-form-wrap">
+          <p style="margin:0 0 1rem;font-weight:700;" id="citas-hora-elegida"></p>
+          <form id="citas-form" novalidate>
+            <div class="form-field">
+              <label for="cf-jugadora">Nombre de la jugadora *</label>
+              <input type="text" id="cf-jugadora" required>
+            </div>
+            <div class="form-field">
+              <label for="cf-nombre">Tu nombre *</label>
+              <input type="text" id="cf-nombre" required>
+            </div>
+            <div class="form-field">
+              <label for="cf-email">Tu email *</label>
+              <input type="email" id="cf-email" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="citas-submit-btn">Confirmar cita</button>
+            <p id="citas-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+          </form>
+        </div>
+
+        <div id="citas-confirmada" style="display:none;text-align:center;">
+          <p class="pago-estado-pagado" style="font-size:1.1rem;">¡Cita confirmada! ✓</p>
+          <p id="citas-confirmada-detalle" style="color:var(--text-on-cream-muted);"></p>
+          <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">Te hemos enviado la confirmación por email. Cualquier duda, escríbenos a <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.textContent = open ? 'Cerrar' : 'Menú';
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+(function highlightCurrentNav() {
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.fullnav-link[href], .hdr-nav a[href]').forEach((a) => {
+    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
+  });
+})();
+</script>
+<script>
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const categoria = params.get("categoria");
+  const loadingEl = document.getElementById("citas-loading");
+  const errorEl = document.getElementById("citas-error");
+  const listaEl = document.getElementById("citas-lista");
+  const formWrapEl = document.getElementById("citas-form-wrap");
+  const confirmadaEl = document.getElementById("citas-confirmada");
+
+  function showError(msg) {
+    loadingEl.style.display = "none";
+    errorEl.style.display = "block";
+    errorEl.textContent = msg;
+  }
+
+  if (!categoria) {
+    showError("Este enlace no es válido — falta la categoría. Revisa que lo hayas abierto completo desde el email o la noticia.");
+    return;
+  }
+
+  document.getElementById("citas-tag").textContent = "Categoría " + categoria;
+
+  let citas;
+  try {
+    const res = await fetch("/.netlify/functions/get-citas?categoria=" + encodeURIComponent(categoria));
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    citas = json.citas || [];
+  } catch (err) {
+    showError("No hemos podido cargar los horarios. [" + (err && err.message ? err.message : "") + "]");
+    return;
+  }
+
+  loadingEl.style.display = "none";
+
+  if (!citas.length) {
+    listaEl.style.display = "block";
+    listaEl.innerHTML = "<p>Todavía no hay horarios abiertos para esta categoría. Vuelve a mirar en unos días o escríbenos a <a href=\"mailto:ffsp2026@gmail.com\">ffsp2026@gmail.com</a>.</p>";
+    return;
+  }
+
+  const porDia = {};
+  citas.forEach((c) => {
+    (porDia[c.fecha] = porDia[c.fecha] || []).push(c);
+  });
+
+  listaEl.style.display = "block";
+  listaEl.innerHTML = Object.keys(porDia).sort().map((fecha) => {
+    const fechaTexto = new Date(fecha + "T00:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long" });
+    const horas = porDia[fecha].map((c) => `
+      <button type="button" class="cita-hora-btn" data-cita-id="${c.id}" ${c.disponible ? "" : "disabled"} aria-pressed="false">
+        ${String(c.hora).slice(0, 5)}
+      </button>`).join("");
+    return `<div class="citas-dia"><h3>${fechaTexto}</h3><div class="citas-horas">${horas}</div></div>`;
+  }).join("");
+
+  let citaSeleccionada = null;
+
+  listaEl.querySelectorAll(".cita-hora-btn:not(:disabled)").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      listaEl.querySelectorAll(".cita-hora-btn").forEach((b) => b.setAttribute("aria-pressed", "false"));
+      btn.setAttribute("aria-pressed", "true");
+      citaSeleccionada = citas.find((c) => c.id === btn.dataset.citaId);
+      const fechaTexto = new Date(citaSeleccionada.fecha + "T00:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+      document.getElementById("citas-hora-elegida").textContent = "Has elegido: " + fechaTexto + " a las " + String(citaSeleccionada.hora).slice(0, 5);
+      formWrapEl.style.display = "block";
+      formWrapEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+
+  document.getElementById("citas-form").addEventListener("submit", async (evt) => {
+    evt.preventDefault();
+    if (!citaSeleccionada) return;
+    const btn = document.getElementById("citas-submit-btn");
+    const status = document.getElementById("citas-form-status");
+    const jugadora = document.getElementById("cf-jugadora").value.trim();
+    const nombre = document.getElementById("cf-nombre").value.trim();
+    const email = document.getElementById("cf-email").value.trim();
+    if (!jugadora || !nombre || !email) {
+      status.textContent = "Completa los tres campos, por favor.";
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Confirmando…";
+    status.textContent = "";
+    try {
+      const res = await fetch("/.netlify/functions/reservar-cita", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cita_id: citaSeleccionada.id, nombre, email, jugadora_nombre: jugadora }),
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        if (res.status === 409) {
+          status.textContent = msg;
+          btn.disabled = false;
+          btn.textContent = "Confirmar cita";
+          const btnHora = listaEl.querySelector(`[data-cita-id="${citaSeleccionada.id}"]`);
+          if (btnHora) { btnHora.disabled = true; btnHora.setAttribute("aria-pressed", "false"); }
+          citaSeleccionada = null;
+          formWrapEl.style.display = "none";
+          return;
+        }
+        throw new Error(msg);
+      }
+      const json = await res.json();
+      const fechaTexto = new Date(json.cita.fecha + "T00:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+      document.getElementById("citas-confirmada-detalle").textContent = jugadora + " — " + fechaTexto + " a las " + String(json.cita.hora).slice(0, 5);
+      listaEl.style.display = "none";
+      formWrapEl.style.display = "none";
+      confirmadaEl.style.display = "block";
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Confirmar cita";
+      status.textContent = "No se ha podido confirmar. Inténtalo de nuevo o escríbenos a ffsp2026@gmail.com. [" + (err && err.message ? err.message : "") + "]";
+    }
+  });
+})();
+</script>
+<script src="/assets/js/pwa-register.js" defer></script>
+<script src="/assets/js/install-banner.js" defer></script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

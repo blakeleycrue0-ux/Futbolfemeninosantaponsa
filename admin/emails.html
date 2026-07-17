@@ -22,6 +22,7 @@
       <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
       <a href="emails.html">Emails</a>
+      <a href="citas.html">Citas</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
@@ -39,17 +40,18 @@
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:680px;">
       Desde aquí mandas una noticia ya publicada por email a <strong id="email-count">—</strong> familias registradas
-      (el correo de tutor/a 1 y tutor/a 2 de cada inscripción). Aparte, hay dos avisos que salen solos, sin que
-      tengas que hacer nada: el email de "ya está inscrita" al aceptar una plaza, y el recordatorio de pago un día
-      antes de que venza cada cuota (se ve en el detalle de cada familia, en Formularios de interés).
+      (el correo de tutor/a 1 y tutor/a 2 de cada inscripción) — a todas o solo a una categoría. Aparte, hay dos
+      avisos que salen solos, sin que tengas que hacer nada: el email de "ya está inscrita" al aceptar una plaza, y
+      el recordatorio de pago un día antes de que venza cada cuota (se ve en el detalle de cada familia, en
+      Formularios de interés).
     </p>
 
     <div class="admin-card">
       <h2>Enviar una noticia por email</h2>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Título</th><th>Estado</th><th>Envío por email</th><th></th></tr></thead>
-          <tbody id="news-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Título</th><th>Estado</th><th>Enviar a</th><th>Envío por email</th><th></th></tr></thead>
+          <tbody id="news-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -64,6 +66,8 @@
 <script>
 (async function () {
   if (!window.spfc) return;
+
+  const CATEGORIAS = ["Amateur", "Cadete Juvenil", "Infantil", "Benjamín Alevín"];
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -81,13 +85,19 @@
   async function load() {
     const { data, error } = await window.spfc.from("news").select("*").order("fecha", { ascending: false });
     const body = document.getElementById("news-body");
-    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay noticias — créalas desde <a href="noticias.html">Noticias</a>.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay noticias — créalas desde <a href="noticias.html">Noticias</a>.</td></tr>'; return; }
     body.innerHTML = data.map((n) => `
       <tr>
         <td>${n.fecha}</td>
         <td>${escapeHtml(n.titulo)}</td>
         <td>${n.publicado ? '<span class="pill">Publicada</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Borrador</span>'}</td>
+        <td>
+          <select data-categoria="${n.id}" style="font-size:0.82rem;">
+            <option value="">Todas las familias</option>
+            ${CATEGORIAS.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("")}
+          </select>
+        </td>
         <td style="font-size:0.82rem;color:var(--text-on-cream-muted);">${n.email_enviado_en ? "Enviada el " + new Date(n.email_enviado_en).toLocaleDateString("es-ES") : "Todavía no enviada"}</td>
         <td class="actions">
           <button class="btn btn-outline btn-sm" data-send="${n.id}" type="button" ${n.publicado ? "" : "disabled"}>Enviar por email</button>
@@ -99,9 +109,11 @@
       btn.addEventListener("click", async () => {
         const noticia = data.find((n) => n.id === btn.dataset.send);
         const yaEnviada = noticia && noticia.email_enviado_en;
+        const categoria = body.querySelector(`[data-categoria="${btn.dataset.send}"]`).value;
+        const destino = categoria ? `las familias de la categoría ${categoria}` : "todas las familias registradas";
         if (!confirm(yaEnviada
-          ? "Esta noticia ya se envió por email antes. ¿Volver a enviarla a todas las familias registradas?"
-          : "¿Enviar esta noticia por email a todas las familias registradas?")) return;
+          ? `Esta noticia ya se envió por email antes. ¿Volver a enviarla a ${destino}?`
+          : `¿Enviar esta noticia por email a ${destino}?`)) return;
         const status = body.querySelector(`[data-send-status="${btn.dataset.send}"]`);
         btn.disabled = true;
         status.textContent = "Enviando…";
@@ -110,7 +122,7 @@
           const res = await fetch("/.netlify/functions/send-noticia-email", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
-            body: JSON.stringify({ noticia_id: btn.dataset.send }),
+            body: JSON.stringify({ noticia_id: btn.dataset.send, categoria: categoria || undefined }),
           });
           if (!res.ok) throw new Error(await res.text());
           const json = await res.json();

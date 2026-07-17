@@ -445,5 +445,16 @@ values
   ('Juvenil Femenino', 'Juvenil', '2026/27', 'juvenil', 5)
 on conflict do nothing;
 
+-- Club definitivo: solo 4 categorías (2026/27) — Amateur (2007 y antes),
+-- Cadete Juvenil (2008-2012), Infantil (2013-2014), Benjamín Alevín
+-- (2015-2018). "Alevín Femenino" se renombra a "Benjamín Alevín Femenino"
+-- en vez de borrarla (evita perder jugadoras ya asignadas por el
+-- "on delete cascade" de players.team_id). "Benjamín Femenino",
+-- "Cadete Femenino" y "Juvenil Femenino" (arriba) quedan sin uso: si
+-- están vacíos, se pueden borrar a mano desde el admin.
+update teams
+set nombre = 'Benjamín Alevín Femenino', categoria = 'Benjamín Alevín'
+where categoria = 'Alevín';
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

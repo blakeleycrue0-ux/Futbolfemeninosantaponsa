@@ -15,10 +15,11 @@
   de la función — la cuota ya ha quedado marcada como pagada, que es lo
   importante.
 
-  Además, en cuanto la inscripción queda del todo pagada (todas las cuotas,
-  no solo la primera), da de alta sola a la jugadora en Plantilla (tabla
-  `players`) para que aparezca en la web sin que nadie tenga que añadirla a
-  mano. El equipo se elige por año de nacimiento con las mismas categorías
+  Además, en cuanto se marca pagada la primera cuota (numero_cuota === 1) —
+  da igual si el plan es de pago único, 2 cuotas o 4 cuotas, con la primera
+  ya basta — da de alta sola a la jugadora en Plantilla (tabla `players`)
+  para que aparezca en la web sin esperar a que termine de pagar todo el
+  plan. El equipo se elige por año de nacimiento con las mismas categorías
   que en admin/plantilla.html — si no hay ningún equipo creado para esa
   categoría, no se puede dar de alta (falta team_id) y se queda pendiente
   de añadirla a mano. inscripcion_id evita duplicados si se vuelve a marcar
@@ -39,11 +40,9 @@ const nodemailer = require("nodemailer");
 // Misma tabla de categorías por año de nacimiento que admin/plantilla.html
 // — si cambia una, hay que cambiar la otra.
 const CATEGORIA_POR_ANIO = [
-  { min: 2017, max: 2018, categoria: "Benjamín" },
-  { min: 2015, max: 2016, categoria: "Alevín" },
+  { min: 2015, max: 2018, categoria: "Benjamín Alevín" },
   { min: 2013, max: 2014, categoria: "Infantil" },
-  { min: 2011, max: 2012, categoria: "Cadete" },
-  { min: 2008, max: 2010, categoria: "Juvenil" },
+  { min: 2008, max: 2012, categoria: "Cadete Juvenil" },
   { min: -Infinity, max: 2007, categoria: "Amateur" },
 ];
 function categoriaPorAnio(anio) {
@@ -118,7 +117,7 @@ exports.handler = async function (event) {
   }
   await supabase.from("inscripciones").update({ estado: nuevoEstado }).eq("id", pago.inscripcion_id);
 
-  if (nuevoEstado === "pagado") {
+  if (pago.numero_cuota === 1) {
     try {
       const { data: yaExiste } = await supabase
         .from("players")

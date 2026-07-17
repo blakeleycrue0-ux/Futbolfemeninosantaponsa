@@ -8,9 +8,9 @@
   correspondientes en inscripcion_pagos. Usa la service_role key porque
   esa tabla solo permite INSERT/UPDATE a administradores según RLS.
 
-  La cuota es distinta según la edad de la jugadora: 650 € para menores de
-  18 años, 450 € para mayores de edad (categoría Amateur) — mismas 3
-  opciones de pago (único / 2 / 4 cuotas) en los dos casos.
+  La cuota es distinta según la edad de la jugadora: 650 € hasta los 18
+  años (incluidos), 450 € a partir de los 19 (categoría Amateur) — mismas
+  3 opciones de pago (único / 2 / 4 cuotas) en los dos casos.
 
   Solo se permite si el club ya aceptó la plaza (confirmada_en) y ya pidió
   el pago (pago_solicitado_en) — evita que alguien con el id de una
@@ -61,7 +61,7 @@ function esMayorDeEdad(fechaNacimiento) {
     hoy.getUTCMonth() < nacimiento.getUTCMonth() ||
     (hoy.getUTCMonth() === nacimiento.getUTCMonth() && hoy.getUTCDate() < nacimiento.getUTCDate());
   if (noHaCumplidoAun) edad--;
-  return edad >= 18;
+  return edad >= 19;
 }
 
 exports.handler = async function (event) {

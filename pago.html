@@ -369,7 +369,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
     const noHaCumplidoAun = hoy.getMonth() < nacimiento.getMonth() || (hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() < nacimiento.getDate());
     if (noHaCumplidoAun) edad--;
-    if (edad >= 18) {
+    if (edad >= 19) {
       document.getElementById("pp-unico-amount").textContent = "450 €";
       document.getElementById("pp-2-amount").textContent = "225 € + 225 €";
       document.getElementById("pp-4-amount").textContent = "150 € + 100 € + 100 € + 100 €";

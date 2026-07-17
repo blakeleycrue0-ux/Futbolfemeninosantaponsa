@@ -139,6 +139,10 @@ create table if not exists news (
   fecha date not null default current_date,
   autor text,
   publicado boolean not null default true,
+  -- se rellena cuando el admin manda esta noticia por email a las familias
+  -- registradas (ver send-noticia-email.js) — null = todavía no se ha
+  -- enviado por email (solo está en la web).
+  email_enviado_en timestamptz,
   creado_en timestamptz not null default now()
 );
 

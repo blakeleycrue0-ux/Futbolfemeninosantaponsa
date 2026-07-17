@@ -285,6 +285,10 @@ create table if not exists inscripcion_pagos (
   estado text not null default 'pendiente' check (estado in ('pendiente','pagado','fallido')),
   stripe_payment_intent_id text,
   recordatorio_enviado boolean not null default false,
+  -- recordatorio_enviado = aviso de "vence mañana"; este otro es el aviso
+  -- de "vence hoy" — son dos avisos independientes, cada uno una sola vez
+  -- por plazo (ver payment-reminders.js).
+  recordatorio_mismo_dia_enviado boolean not null default false,
   -- foto/captura del justificante de la transferencia bancaria, subida por
   -- la familia desde pago.html (ver upload-comprobante.js) — el club la
   -- revisa antes de marcar la cuota como pagada.

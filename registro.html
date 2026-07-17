@@ -157,6 +157,10 @@
 
           <form id="registro-form" novalidate>
             <h3 class="form-section-title">Datos de la jugadora</h3>
+            <div class="form-field" id="r-nacimiento-field" style="display:none;">
+              <label for="r-jugadora-nacimiento">Fecha de nacimiento *</label>
+              <input type="date" id="r-jugadora-nacimiento">
+            </div>
             <div class="form-field">
               <label for="r-jugadora-dni">DNI / NIE / Pasaporte</label>
               <input type="text" id="r-jugadora-dni">
@@ -439,14 +443,27 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     if (noHaCumplidoAun) edad--;
     return edad;
   }
-  const edad = calcularEdad(datos.jugadora_fecha_nacimiento);
-  const esMayorDeEdad = edad !== null && edad >= 18;
-  if (esMayorDeEdad) {
-    document.getElementById("r-plan-total").textContent = "450";
-    document.getElementById("r-plan-unico-amount").textContent = "450 €";
-    document.getElementById("r-plan-2-amount").textContent = "225 € + 225 €";
-    document.getElementById("r-plan-4-amount").textContent = "150 € + 100 € + 100 € + 100 €";
+
+  function actualizarPrecioPorEdad(fechaNacimiento) {
+    const edad = calcularEdad(fechaNacimiento);
+    const esMayorDeEdad = edad !== null && edad >= 18;
+    document.getElementById("r-plan-total").textContent = esMayorDeEdad ? "450" : "650";
+    document.getElementById("r-plan-unico-amount").textContent = esMayorDeEdad ? "450 €" : "650 €";
+    document.getElementById("r-plan-2-amount").textContent = esMayorDeEdad ? "225 € + 225 €" : "325 € + 325 €";
+    document.getElementById("r-plan-4-amount").textContent = esMayorDeEdad ? "150 € + 100 € + 100 € + 100 €" : "245 € + 135 € + 135 € + 135 €";
   }
+
+  // Sin fecha de nacimiento no se puede saber si la cuota es de 650€ o
+  // 450€ — si no se guardó en el formulario de interés, se vuelve a pedir
+  // aquí, obligatoria, antes de dejar elegir plan de pago.
+  const nacimientoFieldWrap = document.getElementById("r-nacimiento-field");
+  const nacimientoInput = document.getElementById("r-jugadora-nacimiento");
+  if (!datos.jugadora_fecha_nacimiento) {
+    nacimientoFieldWrap.style.display = "block";
+    nacimientoInput.required = true;
+    nacimientoInput.addEventListener("change", () => actualizarPrecioPorEdad(nacimientoInput.value));
+  }
+  actualizarPrecioPorEdad(datos.jugadora_fecha_nacimiento);
 
   if (datos.registro_completado_en) {
     successEl.style.display = "block";
@@ -490,6 +507,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: id,
+          jugadora_fecha_nacimiento: nacimientoInput.value || null,
           jugadora_dni: document.getElementById("r-jugadora-dni").value.trim(),
           talla_equipacion: document.getElementById("r-talla").value || null,
           direccion: document.getElementById("r-direccion").value.trim(),

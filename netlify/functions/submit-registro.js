@@ -45,7 +45,7 @@ exports.handler = async function (event) {
 
   const { data: inscripcion, error: fetchError } = await supabase
     .from("inscripciones")
-    .select("id, confirmada_en")
+    .select("id, confirmada_en, jugadora_fecha_nacimiento")
     .eq("id", id)
     .single();
   if (fetchError || !inscripcion) {
@@ -56,6 +56,10 @@ exports.handler = async function (event) {
   }
 
   const update = {
+    // Solo se pide de nuevo aquí si no se guardó en el formulario de interés
+    // (registro.html solo enseña este campo si venía vacío) — sin esto, la
+    // cuota (650€ / 450€ según la edad) no se puede calcular bien.
+    jugadora_fecha_nacimiento: payload.jugadora_fecha_nacimiento || inscripcion.jugadora_fecha_nacimiento || null,
     jugadora_dni: (payload.jugadora_dni || "").trim() || null,
     talla_equipacion: payload.talla_equipacion || null,
     direccion: (payload.direccion || "").trim() || null,

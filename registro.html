@@ -480,7 +480,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
   function actualizarPrecioPorEdad(fechaNacimiento) {
     const edad = calcularEdad(fechaNacimiento);
-    const esMayorDeEdad = edad !== null && edad >= 18;
+    const esMayorDeEdad = edad !== null && edad >= 19;
     document.getElementById("r-plan-total").textContent = esMayorDeEdad ? "450" : "650";
     document.getElementById("r-plan-unico-amount").textContent = esMayorDeEdad ? "450 €" : "650 €";
     document.getElementById("r-plan-2-amount").textContent = esMayorDeEdad ? "225 € + 225 €" : "325 € + 325 €";

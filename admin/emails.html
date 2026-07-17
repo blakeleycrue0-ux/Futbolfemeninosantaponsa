@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emails — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Emails</h1>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:680px;">
+      Desde aquí mandas una noticia ya publicada por email a <strong id="email-count">—</strong> familias registradas
+      (el correo de tutor/a 1 y tutor/a 2 de cada inscripción). Aparte, hay dos avisos que salen solos, sin que
+      tengas que hacer nada: el email de "ya está inscrita" al aceptar una plaza, y el recordatorio de pago un día
+      antes de que venza cada cuota (se ve en el detalle de cada familia, en Formularios de interés).
+    </p>
+
+    <div class="admin-card">
+      <h2>Enviar una noticia por email</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Título</th><th>Estado</th><th>Envío por email</th><th></th></tr></thead>
+          <tbody id="news-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  async function loadEmailCount() {
+    const { data } = await window.spfc.from("inscripciones").select("tutor_email, tutor2_email");
+    const emails = new Set();
+    (data || []).forEach((i) => {
+      [i.tutor_email, i.tutor2_email].forEach((e) => { if (e) emails.add(e.trim().toLowerCase()); });
+    });
+    document.getElementById("email-count").textContent = emails.size;
+  }
+
+  async function load() {
+    const { data, error } = await window.spfc.from("news").select("*").order("fecha", { ascending: false });
+    const body = document.getElementById("news-body");
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay noticias — créalas desde <a href="noticias.html">Noticias</a>.</td></tr>'; return; }
+    body.innerHTML = data.map((n) => `
+      <tr>
+        <td>${n.fecha}</td>
+        <td>${escapeHtml(n.titulo)}</td>
+        <td>${n.publicado ? '<span class="pill">Publicada</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Borrador</span>'}</td>
+        <td style="font-size:0.82rem;color:var(--text-on-cream-muted);">${n.email_enviado_en ? "Enviada el " + new Date(n.email_enviado_en).toLocaleDateString("es-ES") : "Todavía no enviada"}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-send="${n.id}" type="button" ${n.publicado ? "" : "disabled"}>Enviar por email</button>
+          <span data-send-status="${n.id}" style="margin-left:0.5rem;font-size:0.82rem;"></span>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-send]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const noticia = data.find((n) => n.id === btn.dataset.send);
+        const yaEnviada = noticia && noticia.email_enviado_en;
+        if (!confirm(yaEnviada
+          ? "Esta noticia ya se envió por email antes. ¿Volver a enviarla a todas las familias registradas?"
+          : "¿Enviar esta noticia por email a todas las familias registradas?")) return;
+        const status = body.querySelector(`[data-send-status="${btn.dataset.send}"]`);
+        btn.disabled = true;
+        status.textContent = "Enviando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/send-noticia-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({ noticia_id: btn.dataset.send }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const json = await res.json();
+          status.textContent = "Enviada a " + json.enviados + " familias ✓";
+          load();
+        } catch (err) {
+          btn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      }));
+  }
+
+  loadEmailCount();
+  load();
+})();
+</script>
+</body>
+</html>

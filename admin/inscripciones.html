@@ -21,6 +21,7 @@
       <a href="dashboard.html">Resumen</a>
       <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
@@ -249,6 +250,7 @@
         <li style="margin-bottom:0.3rem;">
           Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}
           ${p.comprobante_url ? ` · <a href="${escapeHtml(p.comprobante_url)}" target="_blank" rel="noopener">Ver justificante</a>` : ` · <span class="pill pill-warn">Sin justificante</span>`}
+          ${p.estado === "pendiente" ? ` · <span style="font-size:0.8rem;color:var(--text-on-cream-muted);">${p.recordatorio_enviado ? "Recordatorio de pago ya enviado" : "Recordatorio de pago: se envía solo un día antes del vencimiento"}</span>` : ""}
           ${p.estado !== "pagado" ? `
             <button type="button" class="btn btn-outline btn-sm" style="margin-left:0.6rem;" data-mark-pago="${p.id}">Marcar como pagada</button>
             <span data-mark-status="${p.id}" style="margin-left:0.4rem;font-size:0.82rem;"></span>

@@ -21,6 +21,7 @@
       <a href="dashboard.html">Resumen</a>
       <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
       <a href="galeria.html">Galería</a>
@@ -37,6 +38,9 @@
       <h1>Noticias</h1>
       <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nueva noticia</button>
     </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;margin-top:-0.6rem;">
+      Para enviar una noticia publicada por email a las familias, ve a <a href="emails.html">Emails</a>.
+    </p>
 
     <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
       <h2 id="form-title">Nueva noticia</h2>
@@ -86,8 +90,8 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Título</th><th>Autor</th><th>Estado</th><th>Email</th><th></th></tr></thead>
-          <tbody id="news-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Título</th><th>Autor</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="news-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -132,19 +136,14 @@
   async function load() {
     const { data, error } = await window.spfc.from("news").select("*").order("fecha", { ascending: false });
     const body = document.getElementById("news-body");
-    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay noticias.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay noticias.</td></tr>'; return; }
     body.innerHTML = data.map((n) => `
       <tr>
         <td>${n.fecha}</td>
         <td>${escapeHtml(n.titulo)}</td>
         <td>${escapeHtml(n.autor || "")}</td>
         <td>${n.publicado ? '<span class="pill">Publicada</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Borrador</span>'}</td>
-        <td style="font-size:0.8rem;color:var(--text-on-cream-muted);">
-          ${n.email_enviado_en ? "Enviada el " + new Date(n.email_enviado_en).toLocaleDateString("es-ES") : "—"}
-          <br><button class="btn btn-outline btn-sm" data-send="${n.id}" type="button" style="margin-top:0.3rem;" ${n.publicado ? "" : "disabled"}>Enviar por email</button>
-          <span data-send-status="${n.id}"></span>
-        </td>
         <td class="actions">
           <button class="btn-icon" data-edit="${n.id}" title="Editar" type="button">✎</button>
           <button class="btn-icon danger" data-del="${n.id}" title="Eliminar" type="button">✕</button>
@@ -158,32 +157,6 @@
         if (!confirm("¿Eliminar esta noticia?")) return;
         await window.spfc.from("news").delete().eq("id", btn.dataset.del);
         load();
-      }));
-    body.querySelectorAll("[data-send]").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const noticia = data.find((n) => n.id === btn.dataset.send);
-        const yaEnviada = noticia && noticia.email_enviado_en;
-        if (!confirm(yaEnviada
-          ? "Esta noticia ya se envió por email antes. ¿Volver a enviarla a todas las familias registradas?"
-          : "¿Enviar esta noticia por email a todas las familias registradas?")) return;
-        const status = body.querySelector(`[data-send-status="${btn.dataset.send}"]`);
-        btn.disabled = true;
-        status.textContent = " Enviando…";
-        try {
-          const { data: { session } } = await window.spfc.auth.getSession();
-          const res = await fetch("/.netlify/functions/send-noticia-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
-            body: JSON.stringify({ noticia_id: btn.dataset.send }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          const json = await res.json();
-          status.textContent = " Enviada a " + json.enviados + " familias ✓";
-          load();
-        } catch (err) {
-          btn.disabled = false;
-          status.textContent = " Error: " + err.message;
-        }
       }));
   }
 

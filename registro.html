@@ -536,14 +536,17 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
         body: JSON.stringify({ inscripcion_id: id, plan_pago: planPago }),
       });
       if (!resPlan.ok) throw new Error(await resPlan.text());
+      const jsonPlan = await resPlan.json();
 
       successEl.style.display = "block";
-      successEl.innerHTML = '<p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente. Ahora vamos a llevarte al pago…</p>';
+      successEl.innerHTML = jsonPlan.ya_existia
+        ? '<p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente. <strong>El plan de pago ya estaba elegido de antes y no se ha podido cambiar aquí</strong> — si necesitas cambiarlo, escríbenos a ffsp2026@gmail.com. Ahora vamos a llevarte a ver los datos de ese plan…</p>'
+        : '<p style="margin:0;">¡Gracias! Hemos guardado los datos del registro correctamente. Ahora vamos a llevarte al pago…</p>';
       successEl.scrollIntoView({ behavior: "smooth", block: "center" });
       submitBtn.textContent = "Redirigiendo…";
       setTimeout(function () {
         location.href = "pago.html?id=" + encodeURIComponent(id);
-      }, 1400);
+      }, jsonPlan.ya_existia ? 3200 : 1400);
     } catch (err) {
       submitBtn.disabled = false;
       submitBtn.textContent = "Guardar y continuar al pago";

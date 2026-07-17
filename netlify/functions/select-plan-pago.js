@@ -117,7 +117,7 @@ exports.handler = async function (event) {
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, pagos: existentes }),
+      body: JSON.stringify({ ok: true, pagos: existentes, ya_existia: true }),
     };
   }
 
@@ -138,6 +138,6 @@ exports.handler = async function (event) {
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ok: true, pagos }),
+    body: JSON.stringify({ ok: true, pagos, ya_existia: false }),
   };
 };

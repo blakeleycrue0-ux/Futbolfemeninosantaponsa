@@ -393,7 +393,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
       const json = await res.json();
       const primerPago = (json.pagos || []).find((p) => p.estado !== "pagado") || (json.pagos || [])[0];
       if (!primerPago) throw new Error("No se ha podido preparar el plan de pago.");
-      mostrarPago(primerPago);
+      mostrarPago(primerPago, json.ya_existia === true);
     } catch (err) {
       planBtn.disabled = false;
       planBtn.textContent = "Confirmar plan y continuar";

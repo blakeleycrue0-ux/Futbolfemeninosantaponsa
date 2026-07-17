@@ -1,11 +1,16 @@
 /*
   select-plan-pago.js — Netlify Function
   ============================================================================
-  Escritura pública (solo POST) llamada desde pago.html la primera vez que
-  la familia abre su enlace de pago y elige un plan (único / 2 / 4 cuotas).
-  Crea los plazos correspondientes en inscripcion_pagos. Usa la
-  service_role key porque esa tabla solo permite INSERT/UPDATE a
-  administradores según RLS.
+  Escritura pública (solo POST) llamada desde registro.html al terminar el
+  registro (la familia ya eligió el plan ahí mismo, junto con el resto de
+  datos) — o, como red de seguridad, desde el selector de pago.html si por
+  lo que sea todavía no hay plazos creados. Crea los plazos
+  correspondientes en inscripcion_pagos. Usa la service_role key porque
+  esa tabla solo permite INSERT/UPDATE a administradores según RLS.
+
+  La cuota es distinta según la edad de la jugadora: 650 € para menores de
+  18 años, 450 € para mayores de edad (categoría Amateur) — mismas 3
+  opciones de pago (único / 2 / 4 cuotas) en los dos casos.
 
   Solo se permite si el club ya aceptó la plaza (confirmada_en) y ya pidió
   el pago (pago_solicitado_en) — evita que alguien con el id de una
@@ -18,7 +23,7 @@
 */
 const { createClient } = require("@supabase/supabase-js");
 
-const PLAN_CUOTAS = {
+const PLANES_MENOR = {
   unico: [{ numero_cuota: 1, importe: 650, fecha_vencimiento: "2026-07-01" }],
   "2_cuotas": [
     { numero_cuota: 1, importe: 325, fecha_vencimiento: "2026-07-01" },
@@ -31,6 +36,30 @@ const PLAN_CUOTAS = {
     { numero_cuota: 4, importe: 135, fecha_vencimiento: "2027-02-01" },
   ],
 };
+
+// Cuota Amateur (mayores de edad): 450 €. Pago único y 2 cuotas son un
+// reparto exacto (225+225); el de 4 cuotas queda pendiente de que el club
+// confirme el reparto exacto en euros — de momento no se ofrece esa
+// opción a mayores de edad para no inventar unas cifras de un pago real.
+const PLANES_AMATEUR = {
+  unico: [{ numero_cuota: 1, importe: 450, fecha_vencimiento: "2026-07-01" }],
+  "2_cuotas": [
+    { numero_cuota: 1, importe: 225, fecha_vencimiento: "2026-07-01" },
+    { numero_cuota: 2, importe: 225, fecha_vencimiento: "2026-10-01" },
+  ],
+};
+
+function esMayorDeEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return false;
+  const nacimiento = new Date(fechaNacimiento + "T00:00:00Z");
+  const hoy = new Date();
+  let edad = hoy.getUTCFullYear() - nacimiento.getUTCFullYear();
+  const noHaCumplidoAun =
+    hoy.getUTCMonth() < nacimiento.getUTCMonth() ||
+    (hoy.getUTCMonth() === nacimiento.getUTCMonth() && hoy.getUTCDate() < nacimiento.getUTCDate());
+  if (noHaCumplidoAun) edad--;
+  return edad >= 18;
+}
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -49,16 +78,15 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: "JSON inválido" };
   }
   const { inscripcion_id, plan_pago } = payload;
-  const cuotas = PLAN_CUOTAS[plan_pago];
-  if (!inscripcion_id || !cuotas) {
-    return { statusCode: 400, body: "Falta inscripcion_id o plan_pago no válido" };
+  if (!inscripcion_id || !plan_pago) {
+    return { statusCode: 400, body: "Falta inscripcion_id o plan_pago" };
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const { data: inscripcion, error: insError } = await supabase
     .from("inscripciones")
-    .select("id, confirmada_en, pago_solicitado_en")
+    .select("id, jugadora_fecha_nacimiento, confirmada_en, pago_solicitado_en")
     .eq("id", inscripcion_id)
     .single();
   if (insError || !inscripcion) {
@@ -66,6 +94,12 @@ exports.handler = async function (event) {
   }
   if (!inscripcion.confirmada_en || !inscripcion.pago_solicitado_en) {
     return { statusCode: 403, body: "Esta inscripción todavía no está lista para elegir plan de pago" };
+  }
+
+  const planes = esMayorDeEdad(inscripcion.jugadora_fecha_nacimiento) ? PLANES_AMATEUR : PLANES_MENOR;
+  const cuotas = planes[plan_pago];
+  if (!cuotas) {
+    return { statusCode: 400, body: "Ese plan de pago no está disponible" };
   }
 
   const { data: existentes, error: existentesError } = await supabase

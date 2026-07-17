@@ -31,7 +31,7 @@ exports.handler = async function (event) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const { data: inscripcion, error } = await supabase
     .from("inscripciones")
-    .select("jugadora_nombre, tutor_email, confirmada_en, registro_completado_en")
+    .select("jugadora_nombre, jugadora_fecha_nacimiento, tutor_email, confirmada_en, registro_completado_en")
     .eq("id", id)
     .single();
 
@@ -44,6 +44,7 @@ exports.handler = async function (event) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       jugadora_nombre: inscripcion.jugadora_nombre,
+      jugadora_fecha_nacimiento: inscripcion.jugadora_fecha_nacimiento,
       tutor_email: inscripcion.tutor_email,
       confirmada_en: inscripcion.confirmada_en,
       registro_completado_en: inscripcion.registro_completado_en,

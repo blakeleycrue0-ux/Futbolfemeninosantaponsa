@@ -161,7 +161,7 @@
       ${item.tutor2_nombre ? `<p><strong>Tutor/a 2:</strong> ${escapeHtml(item.tutor2_nombre)}${item.tutor2_dni ? " · " + escapeHtml(item.tutor2_dni) : ""}${item.tutor2_telefono ? " · " + escapeHtml(item.tutor2_telefono) : ""}${item.tutor2_email ? " · " + escapeHtml(item.tutor2_email) : ""}</p>` : ""}
       <p><strong>Autorización de imagen:</strong> ${imagenConsentSummary(item)}</p>
       <p><strong>Condiciones generales:</strong> ${item.acepta_condiciones_generales ? `<span class="pill pill-ok">Aceptadas${item.condiciones_generales_aceptadas_en ? " el " + new Date(item.condiciones_generales_aceptadas_en).toLocaleString("es-ES") : ""}</span>` : `<span class="pill pill-warn">Pendiente de completar el registro</span>`}</p>
-      <p><strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago} &nbsp; <strong>Cuota total:</strong> ${item.cuota_total != null ? item.cuota_total + " €" : "—"}</p>
+      <p id="detail-plan">Cargando plan de pago…</p>
       <div id="detail-pagos">Cargando plazos…</div>
     `;
     document.getElementById("i-estado").value = item.estado;
@@ -239,10 +239,14 @@
 
     const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("*").eq("inscripcion_id", item.id).order("numero_cuota");
     const pagosEl = document.getElementById("detail-pagos");
+    const planEl = document.getElementById("detail-plan");
     if (!pagos || !pagos.length) {
-      pagosEl.innerHTML = "<p><strong>Plazos:</strong> — (la familia elige el plan al abrir su enlace de pago)</p>";
+      planEl.innerHTML = `<strong>Plan de pago:</strong> <span class="pill pill-warn">Todavía no elegido</span>`;
+      pagosEl.innerHTML = "<p><strong>Plazos:</strong> — (la familia elige el plan al completar su registro)</p>";
       return;
     }
+    const totalReal = pagos.reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+    planEl.innerHTML = `<strong>Plan de pago:</strong> ${planLabels[item.plan_pago] || item.plan_pago} &nbsp; <strong>Cuota total:</strong> ${totalReal} €`;
     const pagoEstadoLabels = { pendiente: "Pendiente", pagado: "Pagado", fallido: "Fallido" };
     const hayPagado = pagos.some((p) => p.estado === "pagado");
     pagosEl.innerHTML = `<p><strong>Plazos (pago por transferencia):</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +

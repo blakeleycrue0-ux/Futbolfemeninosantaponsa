@@ -428,12 +428,14 @@ function countUp(el, target, suffix) {
     return `<span>${(rival || "").trim().slice(0, 2).toUpperCase() || "--"}</span>`;
   }
 
-  /* Destacado — ahora en forma de popup, aparece a los 10s de entrar.
-     El aviso de "instalar app" sale justo después de este popup (o solo,
-     si no hay destacado activo) — se controla aquí para que no salgan
-     los dos avisos a la vez. */
+  /* El aviso de "instalar app" sale el primero, nada más entrar — antes
+     de leer la destacada. La destacada (si hay alguna activa y no se ha
+     visto ya en esta sesión) se prepara igual, pero se muestra justo
+     después de que se cierre el aviso de instalar, nunca antes ni a la
+     vez (window.SPFC_INSTALL_BANNER_ON_DISMISS, ver install-banner.js). */
   const destacado = await SPFC_DATA.destacado();
-  if (destacado && (destacado.titulo || destacado.texto)) {
+  const hayDestacado = !!(destacado && (destacado.titulo || destacado.texto) && !sessionStorage.getItem("spfc_destacado_visto"));
+  if (hayDestacado) {
     document.getElementById("destacadoModalTitle").textContent = destacado.titulo || "";
     document.getElementById("destacadoModalText").textContent = destacado.texto || "";
     const mediaEl = document.getElementById("destacadoModalMedia");
@@ -448,20 +450,19 @@ function countUp(el, target, suffix) {
       linkEl.textContent = destacado.enlace_texto || "Más información";
       linkEl.style.display = "inline-flex";
     }
-    if (!sessionStorage.getItem("spfc_destacado_visto")) {
+  }
+  window.SPFC_INSTALL_BANNER_ON_DISMISS = function () {
+    if (hayDestacado) {
       setTimeout(() => {
         document.getElementById("destacadoModal").style.display = "flex";
-      }, 10000);
-    } else {
-      setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 3000);
+      }, 600);
     }
-  } else {
-    setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 12000);
-  }
+  };
+  setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 1500);
+
   function cerrarDestacadoModal() {
     document.getElementById("destacadoModal").style.display = "none";
     sessionStorage.setItem("spfc_destacado_visto", "1");
-    setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 1200);
   }
   document.getElementById("destacadoModalClose").addEventListener("click", cerrarDestacadoModal);
   document.getElementById("destacadoModalBackdrop").addEventListener("click", cerrarDestacadoModal);

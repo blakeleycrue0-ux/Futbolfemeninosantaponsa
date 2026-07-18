@@ -14,21 +14,39 @@
 
   Se recuerda el cierre en localStorage — pero solo 3 días (no 14), para
   que a quien lo cierra sin instalar se le vuelva a ofrecer pronto en vez
-  de desaparecer casi para siempre.
+  de desaparecer casi para siempre. La clave lleva "_v2" para que quien ya
+  hubiera cerrado la versión anterior (el avisito pequeño de esquina) SÍ
+  vea este nuevo aviso, en vez de quedar oculto por una decisión antigua.
 
-  Por defecto se muestra sola a los 3s de cargar la página. Si otra página
-  quiere controlar el momento exacto (p.ej. index.html, para que salga justo
-  después del popup de "destacado"), debe poner
-  window.SPFC_INSTALL_BANNER_MANUAL = true antes de cargar este script y
-  llamar ella misma a window.SPFC_SHOW_INSTALL_BANNER() cuando le convenga.
+  Por defecto se muestra sola a los 1.5s de cargar la página — lo antes
+  posible, nada más entrar. Si otra página quiere controlar el momento
+  exacto (p.ej. index.html, para que la "destacada" no salga a la vez ni
+  antes), debe poner window.SPFC_INSTALL_BANNER_MANUAL = true antes de
+  cargar este script y llamar ella misma a window.SPFC_SHOW_INSTALL_BANNER()
+  cuando le convenga. En cuanto este aviso se cierra (se instale o no),
+  llama una vez a window.SPFC_INSTALL_BANNER_ON_DISMISS() si existe — así
+  esa página puede encadenar lo siguiente (p.ej. la destacada) justo
+  después, nunca antes.
   ============================================================================
 */
 (function () {
-  const yaInstalada = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const DISMISS_KEY = "spfc_install_dismissed_v2_at";
   const TRES_DIAS_MS = 3 * 24 * 60 * 60 * 1000;
-  const dismissedAt = Number(localStorage.getItem("spfc_install_dismissed_at"));
-  const dismissedRecently = dismissedAt && (Date.now() - dismissedAt) < TRES_DIAS_MS;
-  if (yaInstalada || dismissedRecently) return;
+
+  function yaInstalada() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  function dismissedRecently() {
+    const dismissedAt = Number(localStorage.getItem(DISMISS_KEY));
+    return dismissedAt && (Date.now() - dismissedAt) < TRES_DIAS_MS;
+  }
+  function continuar() {
+    if (typeof window.SPFC_INSTALL_BANNER_ON_DISMISS === "function") {
+      const cb = window.SPFC_INSTALL_BANNER_ON_DISMISS;
+      window.SPFC_INSTALL_BANNER_ON_DISMISS = null;
+      cb();
+    }
+  }
 
   let deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", (e) => {
@@ -57,9 +75,12 @@
       #spfcInstallModal img.spfc-im-crest { width: 56px; height: 56px; object-fit: contain; margin-bottom: 0.8rem; }
       #spfcInstallModal h3 { margin: 0 0 0.3rem; font-size: 1.25rem; font-weight: 800; }
       #spfcInstallModal .spfc-im-sub { font-size: 0.86rem; color: rgba(255,255,255,0.6); margin: 0 0 1.3rem; }
-      #spfcInstallModal ul.spfc-im-pros { list-style: none; margin: 0 0 1.1rem; padding: 0; text-align: left; }
-      #spfcInstallModal ul.spfc-im-pros li { display: flex; gap: 0.6em; align-items: flex-start; font-size: 0.87rem; line-height: 1.4; margin-bottom: 0.65em; color: rgba(255,255,255,0.9); }
-      #spfcInstallModal ul.spfc-im-pros li .spfc-im-icon { flex-shrink: 0; }
+      #spfcInstallModal ul.spfc-im-pros { list-style: none; margin: 0 0 1.1rem; padding: 0; text-align: left; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 1rem; }
+      #spfcInstallModal ul.spfc-im-pros li {
+        display: flex; gap: 0.6em; align-items: flex-start; font-size: 0.87rem; line-height: 1.4;
+        margin-bottom: 0.65em; color: rgba(255,255,255,0.9);
+      }
+      #spfcInstallModal ul.spfc-im-pros li::before { content: "—"; flex-shrink: 0; color: rgba(255,255,255,0.4); }
       #spfcInstallModal .spfc-im-warn {
         font-size: 0.8rem; line-height: 1.45; color: #fca5a5; background: rgba(220,38,38,0.12);
         border-radius: 9px; padding: 0.7rem 0.9rem; margin: 0 0 1.4rem;
@@ -96,9 +117,9 @@
         <h3>Instala la app del club</h3>
         <p class="spfc-im-sub">Fútbol Femenino Santa Ponça — 10 segundos, sin ocupar apenas espacio.</p>
         <ul class="spfc-im-pros">
-          <li><span class="spfc-im-icon">🔔</span><span>Notificaciones en directo de partidos y noticias, al momento.</span></li>
-          <li><span class="spfc-im-icon">⚡</span><span>Acceso directo desde tu pantalla de inicio, sin buscarla cada vez.</span></li>
-          <li><span class="spfc-im-icon">📶</span><span>Va mejor incluso con poca cobertura en el campo.</span></li>
+          <li>Notificaciones en directo de partidos y noticias, al momento.</li>
+          <li>Acceso directo desde tu pantalla de inicio, sin buscarla cada vez.</li>
+          <li>Va mejor incluso con poca cobertura en el campo.</li>
         </ul>
         <p class="spfc-im-warn">${isIOS
           ? "En iPhone, si no la instalas, Apple no permite recibir notificaciones — te perderás los avisos en directo."
@@ -125,8 +146,9 @@
 
     function dismiss() {
       modal.classList.remove("show");
-      localStorage.setItem("spfc_install_dismissed_at", String(Date.now()));
+      localStorage.setItem(DISMISS_KEY, String(Date.now()));
       setTimeout(() => modal.remove(), 350);
+      continuar();
     }
     modal.querySelector(".spfc-im-close").addEventListener("click", dismiss);
 
@@ -155,11 +177,15 @@
   }
 
   window.SPFC_SHOW_INSTALL_BANNER = function () {
-    if (document.getElementById("spfcInstallModal") || dismissedRecently) return;
+    if (document.getElementById("spfcInstallModal")) return;
+    if (yaInstalada() || dismissedRecently()) {
+      continuar();
+      return;
+    }
     buildBanner();
   };
 
   if (!window.SPFC_INSTALL_BANNER_MANUAL) {
-    setTimeout(() => window.SPFC_SHOW_INSTALL_BANNER(), 3000);
+    setTimeout(() => window.SPFC_SHOW_INSTALL_BANNER(), 1500);
   }
 })();

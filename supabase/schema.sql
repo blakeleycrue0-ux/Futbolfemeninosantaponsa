@@ -332,6 +332,24 @@ create table if not exists citas_horario (
 create index if not exists citas_horario_categoria_fecha_idx on citas_horario(categoria, fecha, hora);
 
 -- ----------------------------------------------------------------------------
+-- push_subscriptions
+-- Una fila por dispositivo/navegador que ha activado las notificaciones
+-- push (partidos, noticias). endpoint es único porque lo genera el propio
+-- navegador y sirve de identificador natural — al desactivar las
+-- notificaciones o si el navegador lo da de baja solo, se borra la fila.
+-- Sin política de lectura/escritura pública: todo pasa por
+-- save-push-subscription.js / remove-push-subscription.js / send-push.js
+-- (service_role) para no exponer los endpoints de nadie.
+-- ----------------------------------------------------------------------------
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  creado_en timestamptz not null default now()
+);
+
+-- ----------------------------------------------------------------------------
 -- ffib_sync_log
 -- Auditoría de cada ejecución de la función de scraping, para depurar
 -- cuándo la FFIB cambia su HTML y el parser deja de funcionar.
@@ -365,6 +383,7 @@ alter table members enable row level security;
 alter table inscripciones enable row level security;
 alter table inscripcion_pagos enable row level security;
 alter table citas_horario enable row level security;
+alter table push_subscriptions enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -422,6 +441,11 @@ create policy "inscripcion_pagos_admin_delete" on inscripcion_pagos for delete u
 -- get-citas.js / reservar-cita.js (service_role); el admin gestiona
 -- los huecos directamente porque is_app_admin() se lo permite.
 create policy "citas_horario_admin_all" on citas_horario for all using (is_app_admin()) with check (is_app_admin());
+
+-- push_subscriptions: solo admin puede ver cuántas hay (para el contador
+-- en el admin) — altas, bajas y envíos van siempre por function con
+-- service_role.
+create policy "push_subscriptions_admin_read" on push_subscriptions for select using (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

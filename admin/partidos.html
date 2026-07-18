@@ -93,8 +93,8 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th></tr></thead>
-          <tbody id="matches-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th><th></th></tr></thead>
+          <tbody id="matches-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -156,9 +156,9 @@
   async function loadMatches() {
     const { data, error } = await window.spfc.from("matches").select("*").order("fecha", { ascending: false });
     const body = document.getElementById("matches-body");
-    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     matches = data || [];
-    if (!matches.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay partidos.</td></tr>'; return; }
+    if (!matches.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay partidos.</td></tr>'; return; }
     body.innerHTML = matches.map((m) => `
       <tr>
         <td>${m.fecha}</td>
@@ -170,6 +170,10 @@
           <button class="btn-icon" data-edit="${m.id}" type="button">✎</button>
           <button class="btn-icon danger" data-del="${m.id}" type="button">✕</button>
         </td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-push="${m.id}" type="button">Enviar notificación</button>
+          <span data-push-status="${m.id}" style="margin-left:0.5rem;font-size:0.82rem;"></span>
+        </td>
       </tr>`).join("");
 
     body.querySelectorAll("[data-edit]").forEach((btn) =>
@@ -179,6 +183,36 @@
         if (!confirm("¿Eliminar este partido?")) return;
         await window.spfc.from("matches").delete().eq("id", btn.dataset.del);
         loadMatches();
+      }));
+    body.querySelectorAll("[data-push]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const m = matches.find((x) => x.id === btn.dataset.push);
+        const fechaTexto = new Date(m.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "long" });
+        const titulo = m.estado === "jugado" && m.goles_equipo != null
+          ? `Resultado: ${m.goles_equipo}-${m.goles_rival} vs ${m.rival}`
+          : `Próximo partido: vs ${m.rival}`;
+        const cuerpo = m.estado === "jugado" && m.goles_equipo != null
+          ? `${fechaTexto}${m.campo ? " · " + m.campo : ""}`
+          : `${fechaTexto}${m.hora ? " a las " + m.hora.slice(0, 5) : ""}${m.campo ? " · " + m.campo : ""}`;
+        if (!confirm(`¿Enviar la notificación "${titulo}" a todos los que las tengan activadas?`)) return;
+        const status = body.querySelector(`[data-push-status="${btn.dataset.push}"]`);
+        btn.disabled = true;
+        status.textContent = "Enviando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/send-push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({ titulo, cuerpo, url: "/partido.html?id=" + m.id }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const json = await res.json();
+          status.textContent = "Enviada a " + json.enviados + " ✓";
+        } catch (err) {
+          status.textContent = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
+        }
       }));
   }
 

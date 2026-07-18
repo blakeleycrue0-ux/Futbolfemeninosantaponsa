@@ -4,6 +4,10 @@
   dinámico: las llamadas a /.netlify/functions/* (formularios, pagos,
   admin...) y cualquier petición que no sea GET pasan siempre directas a
   la red, sin pasar por aquí.
+
+  También recibe las notificaciones push (partidos, noticias) — ver
+  assets/js/push-notifications.js para la parte de activarlas desde el
+  navegador y send-push.js para el envío desde el admin.
   ============================================================================
 */
 const CACHE_NAME = "spfc-v1";
@@ -60,6 +64,37 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cached);
       return cached || network;
+    })
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let datos = {};
+  try {
+    datos = event.data ? event.data.json() : {};
+  } catch (err) {
+    datos = { titulo: "Fútbol Femenino Santa Ponça", cuerpo: event.data ? event.data.text() : "" };
+  }
+  const titulo = datos.titulo || "Fútbol Femenino Santa Ponça";
+  event.waitUntil(
+    self.registration.showNotification(titulo, {
+      body: datos.cuerpo || "",
+      icon: "/assets/img/icons/icon-192.png",
+      badge: "/assets/img/icons/icon-192.png",
+      data: { url: datos.url || "/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === url && "focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
     })
   );
 });

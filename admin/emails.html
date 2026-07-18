@@ -40,18 +40,19 @@
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:680px;">
       Desde aquí mandas una noticia ya publicada por email a <strong id="email-count">—</strong> familias registradas
-      (el correo de tutor/a 1 y tutor/a 2 de cada inscripción) — a todas o solo a una categoría. Aparte, hay dos
-      avisos que salen solos, sin que tengas que hacer nada: el email de "ya está inscrita" al aceptar una plaza, y
-      el recordatorio de pago un día antes de que venza cada cuota (se ve en el detalle de cada familia, en
-      Formularios de interés).
+      (el correo de tutor/a 1 y tutor/a 2 de cada inscripción) — a todas o solo a una categoría — y/o como
+      <strong>notificación push</strong> a <strong id="push-count">—</strong> dispositivos que la tengan activada.
+      Aparte, hay dos avisos que salen solos, sin que tengas que hacer nada: el email de "ya está inscrita" al
+      aceptar una plaza, y el recordatorio de pago un día antes de que venza cada cuota (se ve en el detalle de cada
+      familia, en Formularios de interés).
     </p>
 
     <div class="admin-card">
-      <h2>Enviar una noticia por email</h2>
+      <h2>Enviar una noticia</h2>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Título</th><th>Estado</th><th>Enviar a</th><th>Envío por email</th><th></th></tr></thead>
-          <tbody id="news-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Título</th><th>Estado</th><th>Enviar a</th><th>Envío por email</th><th></th><th></th></tr></thead>
+          <tbody id="news-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -82,11 +83,16 @@
     document.getElementById("email-count").textContent = emails.size;
   }
 
+  async function loadPushCount() {
+    const { count } = await window.spfc.from("push_subscriptions").select("id", { count: "exact", head: true });
+    document.getElementById("push-count").textContent = count == null ? "—" : count;
+  }
+
   async function load() {
     const { data, error } = await window.spfc.from("news").select("*").order("fecha", { ascending: false });
     const body = document.getElementById("news-body");
-    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay noticias — créalas desde <a href="noticias.html">Noticias</a>.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay noticias — créalas desde <a href="noticias.html">Noticias</a>.</td></tr>'; return; }
     body.innerHTML = data.map((n) => `
       <tr>
         <td>${n.fecha}</td>
@@ -102,6 +108,10 @@
         <td class="actions">
           <button class="btn btn-outline btn-sm" data-send="${n.id}" type="button" ${n.publicado ? "" : "disabled"}>Enviar por email</button>
           <span data-send-status="${n.id}" style="margin-left:0.5rem;font-size:0.82rem;"></span>
+        </td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-push="${n.id}" type="button" ${n.publicado ? "" : "disabled"}>Enviar notificación push</button>
+          <span data-push-status="${n.id}" style="margin-left:0.5rem;font-size:0.82rem;"></span>
         </td>
       </tr>`).join("");
 
@@ -133,9 +143,38 @@
           status.textContent = "Error: " + err.message;
         }
       }));
+
+    body.querySelectorAll("[data-push]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const noticia = data.find((n) => n.id === btn.dataset.push);
+        if (!confirm(`¿Enviar una notificación push de "${noticia.titulo}" a todos los que las tengan activadas?`)) return;
+        const status = body.querySelector(`[data-push-status="${btn.dataset.push}"]`);
+        btn.disabled = true;
+        status.textContent = "Enviando…";
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/send-push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({
+              titulo: noticia.titulo,
+              cuerpo: noticia.resumen || "",
+              url: "/noticia.html?id=" + noticia.id,
+            }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const json = await res.json();
+          status.textContent = "Enviada a " + json.enviados + " ✓";
+        } catch (err) {
+          status.textContent = "Error: " + err.message;
+        } finally {
+          btn.disabled = false;
+        }
+      }));
   }
 
   loadEmailCount();
+  loadPushCount();
   load();
 })();
 </script>

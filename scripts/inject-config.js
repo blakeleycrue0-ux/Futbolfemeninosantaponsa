@@ -8,6 +8,7 @@ const outPath = path.join(__dirname, "..", "assets", "js", "config.js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "";
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.warn(
@@ -15,11 +16,17 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     "La web se generará sin conexión a Supabase (modo contenido estático)."
   );
 }
+if (!VAPID_PUBLIC_KEY) {
+  console.warn(
+    "[inject-config] VAPID_PUBLIC_KEY no definida. Las notificaciones push no estarán disponibles."
+  );
+}
 
 let contents = fs.readFileSync(templatePath, "utf8");
 contents = contents
   .split("__SUPABASE_URL__").join(SUPABASE_URL)
-  .split("__SUPABASE_ANON_KEY__").join(SUPABASE_ANON_KEY);
+  .split("__SUPABASE_ANON_KEY__").join(SUPABASE_ANON_KEY)
+  .split("__VAPID_PUBLIC_KEY__").join(VAPID_PUBLIC_KEY);
 
 fs.writeFileSync(outPath, contents, "utf8");
 console.log(`[inject-config] Escrito ${outPath}`);

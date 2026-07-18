@@ -344,6 +344,22 @@ function applyLang(lang) {
     // nada todavía: el club lo revisa y confirma la plaza desde el admin, y
     // solo entonces se envía un email (solo a esta familia) con el enlace
     // de pago.
+
+    // Aviso al club por email al momento — para no tener que estar
+    // mirando el admin cada rato a ver si ha llegado alguna solicitud.
+    // Fire-and-forget: si falla, no afecta a la solicitud, que ya se ha
+    // guardado bien.
+    fetch("/.netlify/functions/notificar-nueva-solicitud", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jugadora_nombre: payload.jugadora_nombre,
+        tutor_nombre: payload.tutor_nombre,
+        tutor_email: payload.tutor_email,
+        tutor_telefono: payload.tutor_telefono,
+      }),
+    }).catch(() => {});
+
     form.reset();
     form.style.display = "none";
     successEl.style.display = "block";

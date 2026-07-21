@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrenos — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="citas.html">Citas</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Entrenos</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo entreno</button>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Programa aquí los entrenamientos de cada equipo. Desde cada uno puedes convocar a las jugadoras
+      (igual que en <a href="partidos.html">Partidos</a>) — a cada familia le avisamos por email y, si tiene
+      las notificaciones activadas para esa jugadora, también por push.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2 id="form-title">Nuevo entreno</h2>
+      <form id="training-form">
+        <input type="hidden" id="t-id">
+        <div class="form-field"><label for="t-team">Equipo</label><select id="t-team" required></select></div>
+        <div class="form-row">
+          <div class="form-field"><label for="t-fecha">Fecha</label><input type="date" id="t-fecha" required></div>
+          <div class="form-field"><label for="t-hora">Hora</label><input type="time" id="t-hora"></div>
+        </div>
+        <div class="form-field"><label for="t-lugar">Lugar</label><input type="text" id="t-lugar" placeholder="Camp Municipal Santa Ponça"></div>
+        <div class="form-field"><label for="t-notas">Notas</label><textarea id="t-notas" rows="3"></textarea></div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card admin-form-toggle" id="convocatoria-card" style="display:none;">
+      <h2>Convocatoria</h2>
+      <p class="form-note" id="convocatoria-sub" style="margin-top:-0.6rem;"></p>
+      <div id="convocatoria-lista" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
+      <button type="button" class="btn btn-primary btn-sm" id="convocatoria-guardar-btn">Guardar convocatoria y avisar</button>
+      <button type="button" class="btn btn-outline btn-sm" id="convocatoria-cancel-btn">Cerrar</button>
+      <p id="convocatoria-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Fecha</th><th>Equipo</th><th>Lugar</th><th></th></tr></thead>
+          <tbody id="trainings-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let teams = [];
+  let trainings = [];
+
+  async function loadTeams() {
+    const { data } = await window.spfc.from("teams").select("*").order("orden");
+    teams = data || [];
+    document.getElementById("t-team").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+  }
+
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("training-form");
+
+  function openForm(item) {
+    form.reset();
+    document.getElementById("form-title").textContent = item ? "Editar entreno" : "Nuevo entreno";
+    document.getElementById("t-id").value = item ? item.id : "";
+    if (item) document.getElementById("t-team").value = item.team_id;
+    document.getElementById("t-fecha").value = item ? item.fecha : "";
+    document.getElementById("t-hora").value = item ? (item.hora || "") : "";
+    document.getElementById("t-lugar").value = item ? (item.lugar || "") : "";
+    document.getElementById("t-notas").value = item ? (item.notas || "") : "";
+    document.getElementById("convocatoria-card").style.display = "none";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("new-btn").addEventListener("click", () => {
+    if (!teams.length) { alert("Crea primero un equipo desde Plantilla."); return; }
+    openForm(null);
+  });
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  async function loadTrainings() {
+    const { data, error } = await window.spfc.from("training_sessions").select("*, teams(nombre)").order("fecha", { ascending: false });
+    const body = document.getElementById("trainings-body");
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    trainings = data || [];
+    if (!trainings.length) { body.innerHTML = '<tr><td colspan="4">Todavía no hay entrenos programados.</td></tr>'; return; }
+    body.innerHTML = trainings.map((t) => `
+      <tr>
+        <td>${t.fecha}${t.hora ? " · " + t.hora.slice(0, 5) : ""}</td>
+        <td>${escapeHtml(t.teams ? t.teams.nombre : "")}</td>
+        <td>${escapeHtml(t.lugar || "-")}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-convocar="${t.id}" type="button">Convocatoria</button>
+          <button class="btn-icon" data-edit="${t.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del="${t.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) =>
+      btn.addEventListener("click", () => openForm(trainings.find((t) => t.id === btn.dataset.edit))));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este entreno? También se borrará su convocatoria.")) return;
+        await window.spfc.from("training_sessions").delete().eq("id", btn.dataset.del);
+        loadTrainings();
+      }));
+    body.querySelectorAll("[data-convocar]").forEach((btn) =>
+      btn.addEventListener("click", () => abrirConvocatoria(trainings.find((t) => t.id === btn.dataset.convocar))));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("t-id").value;
+    const payload = {
+      team_id: document.getElementById("t-team").value,
+      fecha: document.getElementById("t-fecha").value,
+      hora: document.getElementById("t-hora").value || null,
+      lugar: document.getElementById("t-lugar").value.trim(),
+      notas: document.getElementById("t-notas").value.trim(),
+    };
+    const { error } = id
+      ? await window.spfc.from("training_sessions").update(payload).eq("id", id)
+      : await window.spfc.from("training_sessions").insert(payload);
+    if (error) { alert("Error al guardar: " + error.message); return; }
+    formCard.style.display = "none";
+    loadTrainings();
+  });
+
+  // ---- Convocatoria ----
+  const convocatoriaCard = document.getElementById("convocatoria-card");
+  const convocatoriaLista = document.getElementById("convocatoria-lista");
+  let convocatoriaTrainingId = null;
+  let convocatoriaJugadoras = [];
+  let convocatoriaExistentes = [];
+
+  async function abrirConvocatoria(training) {
+    formCard.style.display = "none";
+    convocatoriaTrainingId = training.id;
+    document.getElementById("convocatoria-sub").textContent =
+      `${training.teams ? training.teams.nombre : ""} — ${training.fecha}${training.hora ? " · " + training.hora.slice(0, 5) : ""}`;
+    convocatoriaLista.innerHTML = "Cargando jugadoras…";
+    document.getElementById("convocatoria-status").textContent = "";
+    convocatoriaCard.style.display = "block";
+    convocatoriaCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const [{ data: jugadoras }, { data: existentes }] = await Promise.all([
+      window.spfc.from("players").select("id, nombre").eq("team_id", training.team_id).eq("activa", true).order("nombre"),
+      window.spfc.from("convocatorias").select("player_id").eq("training_id", training.id),
+    ]);
+    convocatoriaJugadoras = jugadoras || [];
+    convocatoriaExistentes = (existentes || []).map((e) => e.player_id);
+
+    if (!convocatoriaJugadoras.length) {
+      convocatoriaLista.innerHTML = "<p>Este equipo todavía no tiene jugadoras en Plantilla.</p>";
+      return;
+    }
+    convocatoriaLista.innerHTML = convocatoriaJugadoras.map((j) => `
+      <label style="display:flex;align-items:center;gap:0.6em;font-size:0.9rem;">
+        <input type="checkbox" value="${j.id}" ${convocatoriaExistentes.includes(j.id) ? "checked" : ""}>
+        ${escapeHtml(j.nombre)}
+      </label>`).join("");
+  }
+
+  document.getElementById("convocatoria-cancel-btn").addEventListener("click", () => (convocatoriaCard.style.display = "none"));
+
+  document.getElementById("convocatoria-guardar-btn").addEventListener("click", async () => {
+    const status = document.getElementById("convocatoria-status");
+    const btn = document.getElementById("convocatoria-guardar-btn");
+    const seleccionadas = Array.from(convocatoriaLista.querySelectorAll("input:checked")).map((i) => i.value);
+    const nuevas = seleccionadas.filter((id) => !convocatoriaExistentes.includes(id));
+    if (!nuevas.length) {
+      status.textContent = "No hay jugadoras nuevas que convocar (las marcadas ya estaban convocadas).";
+      return;
+    }
+    btn.disabled = true;
+    status.textContent = "Guardando…";
+    const filas = nuevas.map((player_id) => ({ training_id: convocatoriaTrainingId, player_id }));
+    const { data: insertadas, error } = await window.spfc.from("convocatorias").insert(filas).select();
+    if (error) {
+      btn.disabled = false;
+      status.textContent = "Error: " + error.message;
+      return;
+    }
+    status.textContent = "Convocatoria guardada. Avisando a las familias…";
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch("/.netlify/functions/notificar-convocatoria", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+        body: JSON.stringify({ convocatoria_ids: (insertadas || []).map((c) => c.id) }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      status.textContent = `Convocatoria guardada — ${json.emails_enviados} email(s) y ${json.push_enviados} notificación(es) push enviadas.`;
+    } catch (err) {
+      status.textContent = "Convocatoria guardada, pero no se ha podido avisar a las familias: " + err.message;
+    }
+    btn.disabled = false;
+  });
+
+  await loadTeams();
+  await loadTrainings();
+})();
+</script>
+</body>
+</html>

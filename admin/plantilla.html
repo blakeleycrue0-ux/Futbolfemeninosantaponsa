@@ -25,6 +25,7 @@
       <a href="citas.html">Citas</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
       <a href="galeria.html">Galería</a>
       <a href="inscripciones.html">Formularios de interés</a>
     </nav>
@@ -253,8 +254,9 @@
         <td>${team ? escapeHtml(team.nombre) : "-"}</td>
         <td>${escapeHtml(p.posicion || "")}</td>
         <td class="actions">
-          <button class="btn-icon" data-edit="${p.id}" type="button">✎</button>
-          <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
+          <button class="btn-icon" data-edit="${p.id}" type="button" title="Editar">✎</button>
+          <button class="btn-icon" data-copy-link="${p.access_token}" type="button" title="Copiar enlace de Mi jugadora">🔗</button>
+          <button class="btn-icon danger" data-del="${p.id}" type="button" title="Eliminar">✕</button>
         </td>
       </tr>`;
     }).join("");
@@ -266,6 +268,14 @@
         if (!confirm("¿Eliminar esta jugadora?")) return;
         await window.spfc.from("players").delete().eq("id", btn.dataset.del);
         loadPlayers();
+      }));
+    body.querySelectorAll("[data-copy-link]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const url = location.origin + "/mi-jugadora.html?token=" + btn.dataset.copyLink;
+        await navigator.clipboard.writeText(url);
+        const original = btn.textContent;
+        btn.textContent = "✓";
+        setTimeout(() => (btn.textContent = original), 1500);
       }));
   }
 

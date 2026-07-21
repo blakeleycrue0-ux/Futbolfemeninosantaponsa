@@ -68,11 +68,16 @@ create table if not exists players (
   -- mismo archivo (players va antes) — incluso lo trata como token de
   -- referencia, igual que el resto de la app.
   inscripcion_id uuid,
+  -- Enlace personal fijo de la familia para mi-jugadora.html (convocatorias,
+  -- asistencia...) — no hace falta contraseña, el token hace de llave,
+  -- igual que el id de inscripción en pago.html/registro.html.
+  access_token uuid not null default gen_random_uuid(),
   creado_en timestamptz not null default now()
 );
 
 create index if not exists players_team_idx on players(team_id);
 create unique index if not exists players_inscripcion_idx on players(inscripcion_id) where inscripcion_id is not null;
+create unique index if not exists players_access_token_idx on players(access_token);
 
 -- ----------------------------------------------------------------------------
 -- matches
@@ -102,6 +107,50 @@ create table if not exists matches (
 
 create index if not exists matches_team_fecha_idx on matches(team_id, fecha desc);
 create unique index if not exists matches_ffib_source_idx on matches(ffib_source_id) where ffib_source_id is not null;
+
+-- ----------------------------------------------------------------------------
+-- training_sessions
+-- Entrenamientos programados por equipo — para poder convocar jugadoras
+-- igual que a un partido (ver convocatorias).
+-- ----------------------------------------------------------------------------
+create table if not exists training_sessions (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references teams(id) on delete cascade,
+  fecha date not null,
+  hora time,
+  lugar text,
+  notas text,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists training_sessions_team_fecha_idx on training_sessions(team_id, fecha desc);
+
+-- ----------------------------------------------------------------------------
+-- convocatorias
+-- Una fila por jugadora citada a un partido o entrenamiento (nunca los
+-- dos a la vez — de ahí el check). La familia confirma o rechaza desde
+-- su enlace personal (mi-jugadora.html?token=...), sin necesitar cuenta
+-- ni contraseña — el token vive en players.access_token. Sin política de
+-- lectura/escritura pública a propósito: todo pasa por
+-- get-mi-jugadora.js / responder-convocatoria.js (service_role), que
+-- comprueban el token antes de dejar tocar nada.
+-- ----------------------------------------------------------------------------
+create table if not exists convocatorias (
+  id uuid primary key default gen_random_uuid(),
+  match_id uuid references matches(id) on delete cascade,
+  training_id uuid references training_sessions(id) on delete cascade,
+  player_id uuid not null references players(id) on delete cascade,
+  estado_asistencia text not null default 'pendiente' check (estado_asistencia in ('pendiente','confirma','rechaza')),
+  respondido_en timestamptz,
+  creado_en timestamptz not null default now(),
+  constraint convocatoria_un_solo_evento check (
+    (match_id is not null and training_id is null) or (match_id is null and training_id is not null)
+  )
+);
+
+create unique index if not exists convocatorias_match_player_uniq on convocatorias(match_id, player_id) where match_id is not null;
+create unique index if not exists convocatorias_training_player_uniq on convocatorias(training_id, player_id) where training_id is not null;
+create index if not exists convocatorias_player_idx on convocatorias(player_id);
 
 -- ----------------------------------------------------------------------------
 -- ffib_standings
@@ -346,8 +395,15 @@ create table if not exists push_subscriptions (
   endpoint text not null unique,
   p256dh text not null,
   auth text not null,
+  -- si se activa desde mi-jugadora.html, va ligada a esa jugadora — para
+  -- poder avisar solo a su familia de sus convocatorias (ver
+  -- notificar-convocatoria.js), en vez de a todo el mundo como las
+  -- notificaciones generales de partidos/noticias.
+  player_id uuid references players(id) on delete cascade,
   creado_en timestamptz not null default now()
 );
+
+create index if not exists push_subscriptions_player_idx on push_subscriptions(player_id) where player_id is not null;
 
 -- ----------------------------------------------------------------------------
 -- ffib_sync_log
@@ -384,6 +440,8 @@ alter table inscripciones enable row level security;
 alter table inscripcion_pagos enable row level security;
 alter table citas_horario enable row level security;
 alter table push_subscriptions enable row level security;
+alter table training_sessions enable row level security;
+alter table convocatorias enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -446,6 +504,16 @@ create policy "citas_horario_admin_all" on citas_horario for all using (is_app_a
 -- en el admin) — altas, bajas y envíos van siempre por function con
 -- service_role.
 create policy "push_subscriptions_admin_read" on push_subscriptions for select using (is_app_admin());
+
+-- training_sessions: el admin/entrenador gestiona directamente (RLS se lo
+-- permite); las familias solo lo ven a través de get-mi-jugadora.js.
+create policy "training_sessions_admin_all" on training_sessions for all using (is_app_admin()) with check (is_app_admin());
+
+-- convocatorias: el admin/entrenador las crea y gestiona directamente;
+-- la respuesta de la familia (confirma/rechaza) pasa siempre por
+-- responder-convocatoria.js (service_role), que comprueba el token de la
+-- jugadora antes de dejar tocar nada — sin política pública.
+create policy "convocatorias_admin_all" on convocatorias for all using (is_app_admin()) with check (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

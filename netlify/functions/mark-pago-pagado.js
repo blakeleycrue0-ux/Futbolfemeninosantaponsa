@@ -117,14 +117,21 @@ exports.handler = async function (event) {
   }
   await supabase.from("inscripciones").update({ estado: nuevoEstado }).eq("id", pago.inscripcion_id);
 
+  // access_token de la jugadora en Plantilla (si ya existe o se acaba de
+  // crear) — para poder incluir el enlace personal de mi-jugadora.html en
+  // el email de "ya está inscrita" más abajo.
+  let jugadoraAccessToken = null;
+
   if (pago.numero_cuota === 1) {
     try {
       const { data: yaExiste } = await supabase
         .from("players")
-        .select("id")
+        .select("id, access_token")
         .eq("inscripcion_id", pago.inscripcion_id)
         .maybeSingle();
-      if (!yaExiste) {
+      if (yaExiste) {
+        jugadoraAccessToken = yaExiste.access_token;
+      } else {
         const inscripcion = pago.inscripciones || {};
         const anio = inscripcion.jugadora_fecha_nacimiento ? Number(String(inscripcion.jugadora_fecha_nacimiento).slice(0, 4)) : null;
         const categoria = anio ? categoriaPorAnio(anio) : null;
@@ -134,13 +141,14 @@ exports.handler = async function (event) {
             (t.categoria || "").toLowerCase().includes(categoria.toLowerCase()) ||
             (t.nombre || "").toLowerCase().includes(categoria.toLowerCase()));
           if (equipo && inscripcion.jugadora_nombre) {
-            await supabase.from("players").insert({
+            const { data: nuevaJugadora } = await supabase.from("players").insert({
               nombre: inscripcion.jugadora_nombre,
               team_id: equipo.id,
               fecha_nacimiento: inscripcion.jugadora_fecha_nacimiento || null,
               inscripcion_id: pago.inscripcion_id,
               activa: true,
-            });
+            }).select("access_token").single();
+            if (nuevaJugadora) jugadoraAccessToken = nuevaJugadora.access_token;
           }
         }
       }
@@ -159,6 +167,9 @@ exports.handler = async function (event) {
           auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
         });
         const esPrimerPago = pago.numero_cuota === 1;
+        const { PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
+        const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
+        const enlaceMiJugadora = jugadoraAccessToken ? `${baseUrl}/mi-jugadora.html?token=${jugadoraAccessToken}` : null;
         const asunto = esPrimerPago
           ? `¡Ya está inscrita! — ${inscripcion.jugadora_nombre || ""}`
           : `Pago recibido — ${inscripcion.jugadora_nombre || ""} (cuota ${pago.numero_cuota})`;
@@ -166,6 +177,7 @@ exports.handler = async function (event) {
           ? `
             <p>Hola ${inscripcion.tutor_nombre || ""},</p>
             <p>Hemos comprobado la transferencia y ya está todo correcto — <strong>${inscripcion.jugadora_nombre || ""} ya está oficialmente inscrita</strong> en el Fútbol Femenino Santa Ponça para la temporada 2026/27. ¡Bienvenidas!</p>
+            ${enlaceMiJugadora ? `<p>Guarda este enlace — es el tuyo para toda la temporada: ahí verás las convocatorias de ${inscripcion.jugadora_nombre || "tu hija"} y podrás confirmar la asistencia a partidos y entrenos.<br><a href="${enlaceMiJugadora}">${enlaceMiJugadora}</a></p>` : ""}
             <p>Cualquier duda, escríbenos a ffsp2026@gmail.com o llama al 676 04 01 11.</p>
             <p>Fútbol Femenino Santa Ponça</p>
           `

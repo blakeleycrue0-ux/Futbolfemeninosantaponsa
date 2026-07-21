@@ -8,6 +8,13 @@
   después (ver send-push.js). Upsert por endpoint: si ya existía (p.ej.
   se volvió a activar tras desactivarlo), no crea una fila duplicada.
 
+  Si se manda player_id (activado desde mi-jugadora.html en vez del aviso
+  general del sitio), ese dispositivo queda ligado a esa jugadora — sigue
+  recibiendo los avisos generales de partidos/noticias igual, pero además
+  recibe las convocatorias de esa jugadora en concreto (ver
+  notificar-convocatoria.js). Un dispositivo solo puede estar ligado a una
+  jugadora a la vez (una fila por endpoint).
+
   Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
   ============================================================================
 */
@@ -31,6 +38,7 @@ exports.handler = async function (event) {
   }
   const endpoint = payload.endpoint;
   const keys = payload.keys || {};
+  const playerId = payload.player_id || null;
   if (!endpoint || !keys.p256dh || !keys.auth) {
     return { statusCode: 400, body: "Falta endpoint o las claves de la suscripción" };
   }
@@ -39,7 +47,7 @@ exports.handler = async function (event) {
 
   const { error } = await supabase
     .from("push_subscriptions")
-    .upsert({ endpoint, p256dh: keys.p256dh, auth: keys.auth }, { onConflict: "endpoint" });
+    .upsert({ endpoint, p256dh: keys.p256dh, auth: keys.auth, player_id: playerId }, { onConflict: "endpoint" });
   if (error) {
     return { statusCode: 500, body: "No se ha podido guardar la suscripción: " + error.message };
   }

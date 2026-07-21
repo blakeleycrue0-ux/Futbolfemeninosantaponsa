@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi jugadora — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .mj-wrap { max-width: 640px; margin: 0 auto; }
+  .mj-card { background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; margin-bottom: 1.4rem; }
+  @media (max-width: 620px) { .mj-card { padding: 1.5rem; } }
+  .mj-jugadora { display: flex; align-items: center; gap: 1.1rem; }
+  .mj-foto { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; background: var(--accent-soft); flex-shrink: 0; }
+  .mj-nombre { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin: 0; }
+  .mj-meta { color: var(--text-on-cream-muted); font-size: 0.88rem; margin: 0.2rem 0 0; }
+  .mj-push-btn { margin-top: 1.2rem; }
+  .mj-evento { border: 1px solid rgba(10,10,10,0.12); border-radius: var(--radius-md); padding: 1rem 1.1rem; margin-bottom: 0.8rem; }
+  .mj-evento:last-child { margin-bottom: 0; }
+  .mj-evento-tipo { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; color: var(--accent-dark); }
+  .mj-evento-titulo { font-weight: 700; margin: 0.2rem 0; }
+  .mj-evento-cuando { font-size: 0.85rem; color: var(--text-on-cream-muted); }
+  .mj-evento-acciones { display: flex; gap: 0.6rem; margin-top: 0.8rem; }
+  .mj-estado { font-size: 0.82rem; font-weight: 700; margin-top: 0.6rem; }
+  .mj-estado.confirma { color: var(--win, #16a34a); }
+  .mj-estado.rechaza { color: var(--lose, #dc2626); }
+  .mj-empty { color: var(--text-on-cream-muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+  </div>
+  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Mi jugadora</h1>
+      <p class="hero__lede">Convocatorias, asistencia y avisos — guarda este enlace, es el tuyo para toda la temporada.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="mj-wrap">
+        <div id="mj-loading">Cargando…</div>
+        <div id="mj-error" class="form-error" style="display:none;"></div>
+
+        <div id="mj-content" style="display:none;">
+          <div class="mj-card">
+            <div class="mj-jugadora">
+              <img class="mj-foto" id="mj-foto" src="" alt="">
+              <div>
+                <p class="mj-nombre" id="mj-nombre"></p>
+                <p class="mj-meta" id="mj-meta"></p>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm mj-push-btn" id="mj-push-btn">Activar notificaciones para esta jugadora</button>
+            <p id="mj-push-status" style="margin-top:0.6rem;font-size:0.82rem;"></p>
+          </div>
+
+          <div class="mj-card">
+            <h2 style="margin-top:0;">Pendientes de confirmar</h2>
+            <div id="mj-pendientes"></div>
+          </div>
+
+          <div class="mj-card">
+            <h2 style="margin-top:0;">Historial</h2>
+            <div id="mj-historial"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.textContent = open ? 'Cerrar' : 'Menú';
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+(function highlightCurrentNav() {
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.fullnav-link[href], .hdr-nav a[href]').forEach((a) => {
+    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
+  });
+})();
+</script>
+<script src="assets/js/config.js"></script>
+<script>
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token");
+  const loadingEl = document.getElementById("mj-loading");
+  const errorEl = document.getElementById("mj-error");
+  const contentEl = document.getElementById("mj-content");
+
+  function showError(msg) {
+    loadingEl.style.display = "none";
+    errorEl.style.display = "block";
+    errorEl.textContent = msg;
+  }
+
+  if (!token) {
+    showError("Este enlace no es válido. Revisa que lo hayas abierto completo desde el email.");
+    return;
+  }
+
+  let datos;
+  try {
+    const res = await fetch("/.netlify/functions/get-mi-jugadora?token=" + encodeURIComponent(token));
+    if (!res.ok) throw new Error(await res.text());
+    datos = await res.json();
+  } catch (err) {
+    showError("No hemos podido cargar estos datos. [" + (err && err.message ? err.message : "") + "]");
+    return;
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+
+  const jugadora = datos.player;
+  document.title = "Mi jugadora — " + (jugadora.nombre || "") + " — Fútbol Femenino Santa Ponça";
+  document.getElementById("mj-foto").src = jugadora.foto_url || "assets/img/escudo-santa-ponsa.png";
+  document.getElementById("mj-foto").alt = jugadora.nombre || "";
+  document.getElementById("mj-nombre").textContent = jugadora.nombre || "";
+  document.getElementById("mj-meta").textContent = [jugadora.equipo, jugadora.dorsal ? "Dorsal " + jugadora.dorsal : null, jugadora.posicion]
+    .filter(Boolean).join(" · ");
+
+  function formatearFecha(fecha) {
+    if (!fecha) return "";
+    return new Date(fecha + "T00:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long" });
+  }
+
+  function renderEvento(c) {
+    const cuando = formatearFecha(c.fecha) + (c.hora ? " a las " + String(c.hora).slice(0, 5) : "");
+    const titulo = c.tipo === "partido" ? `Partido vs ${c.rival || ""}` : "Entrenamiento";
+    const lugar = c.lugar ? c.lugar : "";
+    const div = document.createElement("div");
+    div.className = "mj-evento";
+    div.innerHTML = `
+      <span class="mj-evento-tipo">${c.tipo === "partido" ? "Partido" : "Entrenamiento"}</span>
+      <p class="mj-evento-titulo">${titulo}</p>
+      <p class="mj-evento-cuando">${cuando}${lugar ? " · " + lugar : ""}</p>
+    `;
+    if (c.estado_asistencia === "pendiente") {
+      const acciones = document.createElement("div");
+      acciones.className = "mj-evento-acciones";
+      acciones.innerHTML = `
+        <button type="button" class="btn btn-primary btn-sm" data-responder="confirma">Voy</button>
+        <button type="button" class="btn btn-outline btn-sm" data-responder="rechaza">No puedo</button>
+      `;
+      div.appendChild(acciones);
+      const status = document.createElement("p");
+      status.style.marginTop = "0.5rem";
+      status.style.fontSize = "0.82rem";
+      div.appendChild(status);
+      acciones.querySelectorAll("[data-responder]").forEach((btn) =>
+        btn.addEventListener("click", async () => {
+          acciones.querySelectorAll("button").forEach((b) => (b.disabled = true));
+          status.textContent = "Guardando…";
+          try {
+            const res = await fetch("/.netlify/functions/responder-convocatoria", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ convocatoria_id: c.id, token, respuesta: btn.dataset.responder }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            status.textContent = "";
+            const estadoP = document.createElement("p");
+            estadoP.className = "mj-estado " + btn.dataset.responder;
+            estadoP.textContent = btn.dataset.responder === "confirma" ? "Has confirmado que vas ✓" : "Has avisado que no puedes";
+            acciones.replaceWith(estadoP);
+          } catch (err) {
+            status.textContent = "No se ha podido guardar. Inténtalo de nuevo.";
+            acciones.querySelectorAll("button").forEach((b) => (b.disabled = false));
+          }
+        }));
+    } else {
+      const estadoP = document.createElement("p");
+      estadoP.className = "mj-estado " + c.estado_asistencia;
+      estadoP.textContent = c.estado_asistencia === "confirma" ? "Confirmaste que ibas ✓" : "Avisaste que no podías";
+      div.appendChild(estadoP);
+    }
+    return div;
+  }
+
+  const pendientes = (datos.convocatorias || []).filter((c) => c.estado_asistencia === "pendiente");
+  const historial = (datos.convocatorias || []).filter((c) => c.estado_asistencia !== "pendiente");
+
+  const pendientesEl = document.getElementById("mj-pendientes");
+  const historialEl = document.getElementById("mj-historial");
+
+  if (!pendientes.length) {
+    pendientesEl.innerHTML = '<p class="mj-empty">No hay ninguna convocatoria pendiente de confirmar.</p>';
+  } else {
+    pendientes.forEach((c) => pendientesEl.appendChild(renderEvento(c)));
+  }
+  if (!historial.length) {
+    historialEl.innerHTML = '<p class="mj-empty">Todavía no hay historial.</p>';
+  } else {
+    historial.slice(0, 15).forEach((c) => historialEl.appendChild(renderEvento(c)));
+  }
+
+  // ---- Notificaciones push para esta jugadora en concreto ----
+  const pushBtn = document.getElementById("mj-push-btn");
+  const pushStatus = document.getElementById("mj-push-status");
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+  }
+
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !window.SPFC_CONFIG || !window.SPFC_CONFIG.VAPID_PUBLIC_KEY) {
+    pushBtn.style.display = "none";
+  } else if (Notification.permission === "denied") {
+    pushBtn.disabled = true;
+    pushBtn.textContent = "Notificaciones bloqueadas en este navegador";
+  } else {
+    pushBtn.addEventListener("click", async () => {
+      pushBtn.disabled = true;
+      pushStatus.textContent = "Activando…";
+      try {
+        const permiso = await Notification.requestPermission();
+        if (permiso !== "granted") {
+          pushStatus.textContent = "No se han activado los permisos de notificación.";
+          pushBtn.disabled = false;
+          return;
+        }
+        if (!navigator.serviceWorker.controller) {
+          await navigator.serviceWorker.register("/sw.js");
+        }
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(window.SPFC_CONFIG.VAPID_PUBLIC_KEY),
+        });
+        const body = Object.assign(subscription.toJSON(), { player_id: jugadora.id });
+        await fetch("/.netlify/functions/save-push-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        pushStatus.textContent = "Notificaciones activadas para " + jugadora.nombre + " ✓";
+        pushBtn.style.display = "none";
+      } catch (err) {
+        pushStatus.textContent = "No se ha podido activar. Inténtalo de nuevo.";
+        pushBtn.disabled = false;
+      }
+    });
+  }
+})();
+</script>
+<script src="/assets/js/pwa-register.js" defer></script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/mi-cuenta.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,900;1,500;1,600&display=swap" rel="stylesheet">
 <style>
@@ -88,6 +89,7 @@
   </nav>
   <div style="display:flex;align-items:center;gap:14px;">
     <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <span id="mcw-mount"></span>
     <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
   </div>
 </header>
@@ -104,7 +106,6 @@
     <a href="club.html" class="fullnav-link">Club</a>
     <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
     <a href="contacto.html" class="fullnav-link">Contacto</a>
-    <a href="mi-cuenta.html" class="fullnav-link">Mi cuenta</a>
   </div>
   <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
   <div class="fullnav-foot">
@@ -726,6 +727,11 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
   });
 })();
 </script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/mi-cuenta-widget.js"></script>
 <script src="/assets/js/pwa-register.js" defer></script>
 <script src="/assets/js/install-banner.js" defer></script>
 <script src="/assets/js/push-notifications.js" defer></script>

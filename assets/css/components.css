@@ -245,11 +245,38 @@
   opacity: 0.9;
 }
 
+/*
+  Cabecera de página secundaria (Contacto, Equipos, Clasificación...) —
+  sin la franja oscura animada del hero grande: fondo claro, título
+  directo, con el balón como único acento. .hero__media (el degradado
+  oscuro con textura) se sigue quedando en el HTML de cada página por
+  compatibilidad, pero aquí se oculta entero.
+*/
 .hero--sub {
-  min-height: 42vh;
-  align-items: center;
+  min-height: auto;
+  align-items: flex-start;
+  background: var(--cream);
+  color: var(--ink);
+  border-bottom: 1px solid rgba(10,10,10,0.08);
 }
-.hero--sub .hero__content { padding: 6.5rem 0 3rem; text-align: left; }
+.hero--sub .hero__media { display: none; }
+.hero--sub .hero__content { padding: 6.7rem 0 2.4rem; text-align: left; }
+.hero--sub .hero__tag { color: var(--accent-dark); }
+.hero--sub .hero__tag::before { background: var(--accent-dark); }
+.hero--sub .hero__title { color: var(--ink); }
+.hero--sub .hero__lede { color: var(--text-on-cream-muted); }
+/* top empieza pasados los 72px de la cabecera fija (.hdr), si no el
+   balón queda debajo del botón de Mi cuenta / Menú y se pisan. */
+.hero__ball {
+  position: absolute; z-index: 1; top: 92px; right: var(--gutter);
+  width: 62px; height: 62px; transform: rotate(-8deg);
+  filter: drop-shadow(0 6px 14px rgba(10,10,10,0.12));
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .hero--sub .hero__content { padding: 6.2rem 0 2rem; }
+  .hero__ball { width: 42px; height: 42px; top: 84px; right: 16px; }
+}
 
 @media (max-width: 780px) {
   .hero__crest { width: 110px; opacity: 0.45; right: var(--gutter); }

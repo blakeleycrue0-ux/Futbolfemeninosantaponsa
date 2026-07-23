@@ -44,6 +44,9 @@
   .player-profile__pos { margin-top: 0.3em; }
   .player-profile__name { margin: 0.3em 0 1rem; }
   .player-profile__bio { color: var(--text-on-cream-muted); max-width: 60ch; margin-bottom: 2rem; }
+  .player-stats-table { width: 100%; border-collapse: collapse; margin-top: 2rem; font-size: 0.9rem; }
+  .player-stats-table th, .player-stats-table td { text-align: left; padding: 0.6em 0.8em; border-bottom: 1px solid rgba(10,10,10,0.08); }
+  .player-stats-table th { font-weight: 700; color: var(--text-on-cream-muted); font-size: 0.8rem; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -194,6 +197,27 @@
          <div>${infoHtml}</div>
        </div>`
     : `<div style="max-width:640px;">${infoHtml}</div>`;
+
+  const matchStats = await SPFC_DATA.playerMatchStats(player.id).catch(() => []);
+  if (matchStats && matchStats.length) {
+    const filas = matchStats.map((s) => {
+      const m = s.matches || {};
+      const fechaTexto = m.fecha ? new Date(m.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" }) : "-";
+      return `<tr>
+        <td>${fechaTexto}</td>
+        <td>vs ${m.rival || "-"} ${m.condicion ? `(${m.condicion === "local" ? "local" : "visitante"})` : ""}</td>
+        <td>${s.minutos != null ? s.minutos + "'" : "-"}</td>
+        <td>${s.goles || 0}</td>
+        <td>${s.tarjetas_amarillas || 0}</td>
+        <td>${s.tarjetas_rojas || 0}</td>
+      </tr>`;
+    }).join("");
+    content.insertAdjacentHTML("beforeend", `
+      <table class="player-stats-table">
+        <thead><tr><th>Fecha</th><th>Partido</th><th>Minutos</th><th>Goles</th><th>Amarillas</th><th>Rojas</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>`);
+  }
 })();
 </script>
 <script src="/assets/js/pwa-register.js" defer></script>

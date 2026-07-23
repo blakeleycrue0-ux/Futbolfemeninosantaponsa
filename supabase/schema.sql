@@ -153,6 +153,28 @@ create unique index if not exists convocatorias_training_player_uniq on convocat
 create index if not exists convocatorias_player_idx on convocatorias(player_id);
 
 -- ----------------------------------------------------------------------------
+-- match_player_stats
+-- Minutos/goles/tarjetas de una jugadora en un partido concreto. Los
+-- totales de temporada en players (goles, partidos_jugados,
+-- tarjetas_amarillas, tarjetas_rojas) se recalculan sumando estas filas
+-- cada vez que se guardan estadísticas de un partido (ver
+-- admin/partidos.html) — así nunca se desincronizan.
+-- ----------------------------------------------------------------------------
+create table if not exists match_player_stats (
+  id uuid primary key default gen_random_uuid(),
+  match_id uuid not null references matches(id) on delete cascade,
+  player_id uuid not null references players(id) on delete cascade,
+  minutos int,
+  goles int not null default 0,
+  tarjetas_amarillas int not null default 0,
+  tarjetas_rojas int not null default 0,
+  creado_en timestamptz not null default now()
+);
+
+create unique index if not exists match_player_stats_uniq on match_player_stats(match_id, player_id);
+create index if not exists match_player_stats_player_idx on match_player_stats(player_id);
+
+-- ----------------------------------------------------------------------------
 -- ffib_standings
 -- Se sobreescribe por completo en cada sincronización de ffib-sync.js
 -- (borra y reinserta las filas del team_id correspondiente).
@@ -442,6 +464,7 @@ alter table citas_horario enable row level security;
 alter table push_subscriptions enable row level security;
 alter table training_sessions enable row level security;
 alter table convocatorias enable row level security;
+alter table match_player_stats enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -514,6 +537,11 @@ create policy "training_sessions_admin_all" on training_sessions for all using (
 -- responder-convocatoria.js (service_role), que comprueba el token de la
 -- jugadora antes de dejar tocar nada — sin política pública.
 create policy "convocatorias_admin_all" on convocatorias for all using (is_app_admin()) with check (is_app_admin());
+
+-- match_player_stats: público como el resto de datos de partidos/plantilla
+-- (se muestra en jugadora.html), solo el admin puede escribir.
+create policy "match_player_stats_public_read" on match_player_stats for select using (true);
+create policy "match_player_stats_admin_write" on match_player_stats for all using (is_app_admin()) with check (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

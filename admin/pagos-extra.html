@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagos extra — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="citas.html">Citas</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
+      <a href="pagos-extra.html">Pagos extra</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Pagos extra</h1>
+      <button class="btn btn-primary btn-sm" id="new-btn" type="button">Nuevo pago</button>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Para cobros aparte de la cuota de inscripción — viajes, torneos, equipación extra... Mismo circuito que
+      la cuota: la familia ve los datos de la transferencia y sube el justificante desde el enlace personal
+      de su jugadora (mi-jugadora.html), y aquí lo marcas como pagado cuando lo compruebes.
+    </p>
+
+    <div class="admin-card admin-form-toggle" id="form-card" style="display:none;">
+      <h2>Nuevo pago</h2>
+      <form id="pago-form">
+        <div class="form-field">
+          <label>Para quién</label>
+          <div style="display:flex;gap:1.2rem;">
+            <label style="font-weight:400;"><input type="radio" name="destino" value="jugadora" checked> Una jugadora</label>
+            <label style="font-weight:400;"><input type="radio" name="destino" value="equipo"> Todo un equipo</label>
+          </div>
+        </div>
+        <div class="form-field" id="destino-jugadora-field">
+          <label for="p-jugadora">Jugadora</label>
+          <select id="p-jugadora"></select>
+        </div>
+        <div class="form-field" id="destino-equipo-field" style="display:none;">
+          <label for="p-equipo">Equipo</label>
+          <select id="p-equipo"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="p-concepto">Concepto</label><input type="text" id="p-concepto" placeholder="Viaje torneo Palma" required></div>
+          <div class="form-field"><label for="p-importe">Importe (€)</label><input type="number" id="p-importe" min="0" step="0.01" required></div>
+        </div>
+        <div class="form-field"><label for="p-vencimiento">Fecha límite (opcional)</label><input type="date" id="p-vencimiento"></div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Crear y avisar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="cancel-btn">Cancelar</button>
+        </div>
+        <p id="form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Jugadora</th><th>Equipo</th><th>Concepto</th><th>Importe</th><th>Estado</th><th>Justificante</th><th></th></tr></thead>
+          <tbody id="pagos-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  let teams = [];
+  let players = [];
+  let pagos = [];
+
+  const [{ data: teamsData }, { data: playersData }] = await Promise.all([
+    window.spfc.from("teams").select("*").order("orden"),
+    window.spfc.from("players").select("id, nombre, team_id").eq("activa", true).order("nombre"),
+  ]);
+  teams = teamsData || [];
+  players = playersData || [];
+
+  const teamsById = Object.fromEntries(teams.map((t) => [t.id, t]));
+  document.getElementById("p-jugadora").innerHTML = players.map((p) =>
+    `<option value="${p.id}">${escapeHtml(p.nombre)}${teamsById[p.team_id] ? " — " + escapeHtml(teamsById[p.team_id].nombre) : ""}</option>`).join("");
+  document.getElementById("p-equipo").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+
+  const formCard = document.getElementById("form-card");
+  const form = document.getElementById("pago-form");
+
+  document.getElementById("new-btn").addEventListener("click", () => {
+    form.reset();
+    document.getElementById("form-status").textContent = "";
+    formCard.style.display = "block";
+    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
+
+  form.querySelectorAll('input[name="destino"]').forEach((radio) =>
+    radio.addEventListener("change", () => {
+      const esEquipo = form.querySelector('input[name="destino"]:checked').value === "equipo";
+      document.getElementById("destino-jugadora-field").style.display = esEquipo ? "none" : "block";
+      document.getElementById("destino-equipo-field").style.display = esEquipo ? "block" : "none";
+    }));
+
+  async function loadPagos() {
+    const { data, error } = await window.spfc.from("pagos_extra").select("*, players(nombre, team_id)").order("creado_en", { ascending: false });
+    const body = document.getElementById("pagos-body");
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    pagos = data || [];
+    if (!pagos.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay pagos extra.</td></tr>'; return; }
+    body.innerHTML = pagos.map((p) => {
+      const jugadora = p.players || {};
+      const equipo = teamsById[jugadora.team_id];
+      return `<tr>
+        <td>${escapeHtml(jugadora.nombre || "-")}</td>
+        <td>${equipo ? escapeHtml(equipo.nombre) : "-"}</td>
+        <td>${escapeHtml(p.concepto)}</td>
+        <td>${p.importe} €</td>
+        <td>${p.estado === "pagado" ? '<span class="pill">Pagado</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Pendiente</span>'}</td>
+        <td>${p.comprobante_url ? `<a href="${p.comprobante_url}" target="_blank" rel="noopener">Ver</a>` : "Sin justificante"}</td>
+        <td class="actions">
+          ${p.estado === "pendiente" ? `<button class="btn btn-outline btn-sm" data-marcar="${p.id}" type="button">Marcar pagado</button>` : ""}
+          <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-marcar]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Marcar este pago como pagado? Se avisará a la familia por email.")) return;
+        btn.disabled = true;
+        try {
+          const { data: { session } } = await window.spfc.auth.getSession();
+          const res = await fetch("/.netlify/functions/mark-pago-extra-pagado", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+            body: JSON.stringify({ pago_extra_id: btn.dataset.marcar }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          loadPagos();
+        } catch (err) {
+          alert("Error: " + err.message);
+          btn.disabled = false;
+        }
+      }));
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este pago?")) return;
+        await window.spfc.from("pagos_extra").delete().eq("id", btn.dataset.del);
+        loadPagos();
+      }));
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("form-status");
+    const esEquipo = form.querySelector('input[name="destino"]:checked').value === "equipo";
+    const concepto = document.getElementById("p-concepto").value.trim();
+    const importe = Number(document.getElementById("p-importe").value);
+    const vencimiento = document.getElementById("p-vencimiento").value || null;
+
+    let playerIds;
+    if (esEquipo) {
+      const teamId = document.getElementById("p-equipo").value;
+      playerIds = players.filter((p) => p.team_id === teamId).map((p) => p.id);
+      if (!playerIds.length) { status.textContent = "Ese equipo no tiene jugadoras en Plantilla."; return; }
+    } else {
+      playerIds = [document.getElementById("p-jugadora").value];
+    }
+
+    status.textContent = "Creando…";
+    const filas = playerIds.map((player_id) => ({ player_id, concepto, importe, fecha_vencimiento: vencimiento }));
+    const { data: insertados, error } = await window.spfc.from("pagos_extra").insert(filas).select();
+    if (error) { status.textContent = "Error: " + error.message; return; }
+
+    status.textContent = "Creado. Avisando a las familias…";
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch("/.netlify/functions/notificar-pago-extra", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+        body: JSON.stringify({ pago_extra_ids: (insertados || []).map((p) => p.id) }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      status.textContent = `Creado — ${json.enviados} familia(s) avisada(s) ✓`;
+    } catch (err) {
+      status.textContent = "Creado, pero no se ha podido avisar a las familias: " + err.message;
+    }
+    formCard.style.display = "none";
+    loadPagos();
+  });
+
+  await loadPagos();
+})();
+</script>
+</body>
+</html>

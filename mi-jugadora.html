@@ -31,6 +31,14 @@
   .mj-estado.confirma { color: var(--win, #16a34a); }
   .mj-estado.rechaza { color: var(--lose, #dc2626); }
   .mj-empty { color: var(--text-on-cream-muted); font-size: 0.9rem; }
+  .mj-pago { border: 1px solid rgba(10,10,10,0.12); border-radius: var(--radius-md); padding: 1rem 1.1rem; margin-bottom: 0.8rem; }
+  .mj-pago:last-child { margin-bottom: 0; }
+  .mj-pago-concepto { font-weight: 700; margin: 0; }
+  .mj-pago-importe { font-family: var(--font-display); font-weight: 900; font-size: 1.4rem; color: var(--accent-dark); margin: 0.3rem 0; }
+  .mj-pago-vencimiento { font-size: 0.82rem; color: var(--text-on-cream-muted); }
+  .mj-pago-transferencia { background: var(--cream-deep); border-radius: var(--radius-md); padding: 1rem 1.1rem; margin-top: 0.8rem; font-size: 0.86rem; }
+  .mj-pago-transferencia p { margin: 0 0 0.4rem; }
+  .mj-pago-comprobante { margin-top: 0.8rem; }
 </style>
 </head>
 <body>
@@ -106,6 +114,11 @@
           <div class="mj-card">
             <h2 style="margin-top:0;">Pendientes de confirmar</h2>
             <div id="mj-pendientes"></div>
+          </div>
+
+          <div class="mj-card" id="mj-pagos-card" style="display:none;">
+            <h2 style="margin-top:0;">Pagos</h2>
+            <div id="mj-pagos"></div>
           </div>
 
           <div class="mj-card">
@@ -295,6 +308,85 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     historialEl.innerHTML = '<p class="mj-empty">Todavía no hay historial.</p>';
   } else {
     historial.slice(0, 15).forEach((c) => historialEl.appendChild(renderEvento(c)));
+  }
+
+  // ---- Pagos puntuales (viajes, torneos, equipación...) ----
+  const pagosExtra = datos.pagos_extra || [];
+  if (pagosExtra.length) {
+    document.getElementById("mj-pagos-card").style.display = "block";
+    const pagosEl = document.getElementById("mj-pagos");
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    pagosExtra.forEach((p) => {
+      const div = document.createElement("div");
+      div.className = "mj-pago";
+      const vencimientoTexto = p.fecha_vencimiento
+        ? "Antes del " + new Date(p.fecha_vencimiento + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" })
+        : "";
+      if (p.estado === "pagado") {
+        div.innerHTML = `
+          <p class="mj-pago-concepto">${p.concepto}</p>
+          <p class="mj-pago-importe">${p.importe} €</p>
+          <p class="mj-estado confirma">Pagado ✓</p>
+        `;
+        pagosEl.appendChild(div);
+        return;
+      }
+      const concepto = `Femenino - ${jugadora.nombre || ""} - ${p.concepto}`;
+      div.innerHTML = `
+        <p class="mj-pago-concepto">${p.concepto}</p>
+        <p class="mj-pago-importe">${p.importe} €</p>
+        ${vencimientoTexto ? `<p class="mj-pago-vencimiento">${vencimientoTexto}</p>` : ""}
+        <div class="mj-pago-transferencia">
+          <p><strong>Cuenta:</strong> ES85 2100 3793 6622 0011 7594</p>
+          <p><strong>Titular:</strong> Santa Ponsa CF · <strong>CIF:</strong> G57710857</p>
+          <p><strong>Concepto (importante):</strong> ${concepto}</p>
+        </div>
+        <div class="mj-pago-comprobante">
+          ${p.comprobante_url
+            ? `<p style="font-size:0.86rem;"><span class="mj-estado confirma">Justificante recibido ✓</span> — <a href="${p.comprobante_url}" target="_blank" rel="noopener">verlo</a>. Si te equivocaste, puedes volver a subirlo.</p>`
+            : `<p style="font-size:0.84rem;color:var(--text-on-cream-muted);">Sube el justificante de la transferencia en cuanto la hagas.</p>`}
+          <input type="file" accept="image/*,.pdf" class="mj-pago-file" style="margin-bottom:0.6rem;display:block;">
+          <button type="button" class="btn btn-outline btn-sm mj-pago-subir-btn">${p.comprobante_url ? "Subir otro justificante" : "Subir justificante"}</button>
+          <span class="mj-pago-status" style="margin-left:0.6rem;font-size:0.82rem;"></span>
+        </div>
+      `;
+      pagosEl.appendChild(div);
+
+      const subirBtn = div.querySelector(".mj-pago-subir-btn");
+      const fileInput = div.querySelector(".mj-pago-file");
+      const statusEl = div.querySelector(".mj-pago-status");
+      subirBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) { statusEl.textContent = "Elige primero un archivo."; return; }
+        if (file.size > 8 * 1024 * 1024) { statusEl.textContent = "El archivo pesa demasiado (máx. 8 MB)."; return; }
+        subirBtn.disabled = true;
+        statusEl.textContent = "Subiendo…";
+        try {
+          const dataUrl = await fileToBase64(file);
+          const res = await fetch("/.netlify/functions/upload-comprobante-extra", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pago_extra_id: p.id, token, file_base64: dataUrl, file_type: file.type }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          statusEl.textContent = "";
+          subirBtn.textContent = "Subir otro justificante";
+          subirBtn.disabled = false;
+        } catch (err) {
+          statusEl.textContent = "No se ha podido subir: " + (err && err.message ? err.message : "inténtalo de nuevo.");
+          subirBtn.disabled = false;
+        }
+      });
+    });
   }
 
   // ---- Notificaciones push para esta jugadora en concreto ----

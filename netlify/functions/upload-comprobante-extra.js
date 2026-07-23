@@ -1,30 +1,20 @@
 /*
-  upload-comprobante.js — Netlify Function
+  upload-comprobante-extra.js — Netlify Function
   ============================================================================
-  Escritura pública (solo POST) llamada desde pago.html cuando la familia
-  sube la foto/captura del justificante de su transferencia bancaria. Se
-  guarda en el bucket de Storage "comprobantes" (público, con el id de la
-  inscripción y del plazo como ruta — igual de "token de facto" que el resto
-  de funciones de esta familia) y se apunta la URL en
-  inscripcion_pagos.comprobante_url para que el admin la revise antes de
-  marcar la cuota como pagada.
+  Escritura pública (solo POST) llamada desde mi-jugadora.html cuando la
+  familia sube el justificante de un pago puntual (pagos_extra — viajes,
+  torneos, equipación...). Comprueba que el token corresponde a la
+  jugadora dueña de ese pago antes de aceptar nada — mismo criterio que
+  responder-convocatoria.js. Reutiliza el bucket "comprobantes" que ya
+  usa upload-comprobante.js para las cuotas de inscripción.
 
-  Solo se permite subir un justificante a un plazo (inscripcion_pagos) que
-  ya existe — no se puede inventar un pago_id al azar porque hace falta que
-  la fila exista de antemano (la crea select-plan-pago.js). Si ya había un
-  justificante subido, este lo sustituye (por si se equivocaron de foto).
-
-  En cuanto se sube, avisa por email al club (GMAIL_USER) para que alguien
-  entre a revisarlo y, si está bien, lo marque como pagado desde el admin —
-  si no se avisa, nadie se entera de que hay un justificante nuevo esperando
-  revisión. Si el email de aviso falla, no se considera un error: el
-  justificante ya se ha guardado bien, que es lo importante.
+  En cuanto se sube, avisa por email al club para que lo revise y lo
+  marque como pagado desde admin/pagos-extra.html. Si el aviso falla no
+  se considera un error: el justificante ya se ha guardado bien.
 
   Variables de entorno requeridas:
     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales — si faltan, se sigue
-                                       guardando el justificante pero sin
-                                       aviso por email)
+    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales)
   ============================================================================
 */
 const { createClient } = require("@supabase/supabase-js");
@@ -56,10 +46,9 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-
-  const { pago_id, file_base64, file_type } = payload;
-  if (!pago_id || !file_base64 || !file_type) {
-    return { statusCode: 400, body: "Falta pago_id, file_base64 o file_type" };
+  const { pago_extra_id, token, file_base64, file_type } = payload;
+  if (!pago_extra_id || !token || !file_base64 || !file_type) {
+    return { statusCode: 400, body: "Faltan datos" };
   }
   const extension = TIPOS_PERMITIDOS[file_type];
   if (!extension) {
@@ -74,16 +63,28 @@ exports.handler = async function (event) {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const { data: pago, error: pagoError } = await supabase
-    .from("inscripcion_pagos")
-    .select("id, inscripcion_id, numero_cuota, importe, inscripciones(jugadora_nombre, tutor_nombre, tutor_email)")
-    .eq("id", pago_id)
+  const { data: player, error: playerError } = await supabase
+    .from("players")
+    .select("id, nombre")
+    .eq("access_token", token)
     .single();
-  if (pagoError || !pago) {
-    return { statusCode: 404, body: "No se ha encontrado ese plazo de pago" };
+  if (playerError || !player) {
+    return { statusCode: 404, body: "Enlace no válido" };
   }
 
-  const ruta = `${pago.inscripcion_id}/cuota-${pago.numero_cuota}-${Date.now()}.${extension}`;
+  const { data: pago, error: pagoError } = await supabase
+    .from("pagos_extra")
+    .select("id, player_id, concepto, importe")
+    .eq("id", pago_extra_id)
+    .single();
+  if (pagoError || !pago) {
+    return { statusCode: 404, body: "No se ha encontrado ese pago" };
+  }
+  if (pago.player_id !== player.id) {
+    return { statusCode: 403, body: "Este pago no corresponde a esta jugadora" };
+  }
+
+  const ruta = `extra/${player.id}/${pago.id}-${Date.now()}.${extension}`;
   const { error: uploadError } = await supabase.storage
     .from("comprobantes")
     .upload(ruta, buffer, { contentType: file_type, upsert: false });
@@ -95,9 +96,9 @@ exports.handler = async function (event) {
   const comprobanteUrl = urlData && urlData.publicUrl;
 
   const { error: updateError } = await supabase
-    .from("inscripcion_pagos")
+    .from("pagos_extra")
     .update({ comprobante_url: comprobanteUrl, comprobante_subido_en: new Date().toISOString() })
-    .eq("id", pago_id);
+    .eq("id", pago_extra_id);
   if (updateError) {
     return { statusCode: 500, body: "El archivo se subió pero no se ha podido guardar el enlace: " + updateError.message };
   }
@@ -105,25 +106,20 @@ exports.handler = async function (event) {
   const { GMAIL_USER, GMAIL_APP_PASSWORD, PUBLIC_SITE_URL, URL: SITE_URL } = process.env;
   if (GMAIL_USER && GMAIL_APP_PASSWORD) {
     try {
-      const inscripcion = pago.inscripciones || {};
       const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
-      });
+      const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD } });
       await transporter.sendMail({
         from: `"Fútbol Femenino Santa Ponça" <${GMAIL_USER}>`,
         to: GMAIL_USER,
-        subject: `Justificante recibido — ${inscripcion.jugadora_nombre || "jugadora"} (cuota ${pago.numero_cuota})`,
+        subject: `Justificante recibido — ${pago.concepto} (${player.nombre || ""})`,
         html: `
-          <p>${inscripcion.tutor_nombre || "La familia"} ha subido el justificante de la cuota ${pago.numero_cuota} (${pago.importe} €) de <strong>${inscripcion.jugadora_nombre || ""}</strong>.</p>
+          <p>Se ha subido el justificante de <strong>${pago.concepto}</strong> (${pago.importe} €) de <strong>${player.nombre || ""}</strong>.</p>
           <p><a href="${comprobanteUrl}" style="display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:bold;">Ver justificante</a></p>
-          <p>Revísalo y, si está correcto, márcalo como pagado desde <a href="${baseUrl}/admin/inscripciones.html">el panel de Formularios de interés</a>.</p>
+          <p>Revísalo y, si está correcto, márcalo como pagado desde <a href="${baseUrl}/admin/pagos-extra.html">Pagos extra</a>.</p>
         `,
       });
     } catch (err) {
-      // El justificante ya se guardó bien — que falle el aviso no debe
-      // impedir que la familia vea la subida como correcta.
+      // El justificante ya se guardó bien.
     }
   }
 
@@ -132,11 +128,10 @@ exports.handler = async function (event) {
     try {
       webpush.setVapidDetails(VAPID_SUBJECT || "mailto:ffsp2026@gmail.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
       const { data: subs } = await supabase.from("admin_push_subscriptions").select("*");
-      const inscripcion = pago.inscripciones || {};
       const cuerpoNotificacion = JSON.stringify({
         titulo: "Justificante recibido",
-        cuerpo: `${inscripcion.jugadora_nombre || "Jugadora"} — cuota ${pago.numero_cuota} (${pago.importe} €)`,
-        url: "/admin/inscripciones.html",
+        cuerpo: `${pago.concepto} — ${player.nombre || ""} (${pago.importe} €)`,
+        url: "/admin/pagos-extra.html",
       });
       const caducadas = [];
       await Promise.all((subs || []).map(async (sub) => {

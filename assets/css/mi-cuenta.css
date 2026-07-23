@@ -19,9 +19,14 @@
 .mcw-btn svg { flex-shrink: 0; }
 .mcw-btn-label { display: none; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 480px) { .mcw-btn-label { display: inline; } }
-.mcw-btn.mcw-in { background: var(--accent); border-color: var(--accent); color: #fff; }
-.hdr.scrolled .mcw-btn.mcw-in { background: var(--accent); border-color: var(--accent); color: #fff; }
-.mcw-btn.mcw-in:hover { background: var(--ink); border-color: var(--ink); color: #fff; }
+/*
+  Logueado/a: relleno negro, no morado — el morado ya lo usa "Formulario
+  de interés" justo al lado, y mezclarlos es precisamente lo que no
+  queríamos (se piden cosas distintas, deben leerse distintas).
+*/
+.mcw-btn.mcw-in { background: var(--ink); border-color: var(--ink); color: #fff; }
+.hdr.scrolled .mcw-btn.mcw-in { background: var(--ink); border-color: var(--ink); color: #fff; }
+.mcw-btn.mcw-in:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* ─── Overlay + modal ─── */
 .mcw-overlay { position: fixed; inset: 0; z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }

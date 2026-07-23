@@ -503,6 +503,18 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .hdr-nav a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 2px; background: var(--accent); transition: width 0.3s; }
 .hdr-nav a:hover::after { width: 100%; }
 
+/*
+  En móvil no caben "Fútbol Femenino Santa Ponça" + Formulario de
+  interés + Mi cuenta + Menú en una sola fila de 72px — se pisan.
+  Formulario de interés ya está duplicado como .fullnav-cta dentro del
+  menú desplegable, así que en pantallas estrechas se quita de aquí y
+  el hueco se lo queda Mi cuenta (que no tiene ningún otro sitio).
+*/
+@media (max-width: 640px) {
+  .hdr .btn-cta { display: none; }
+  .logo-wrap .logo-text { font-size: 10.5px; }
+}
+
 .btn-cta {
   display: inline-flex; align-items: center; font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: #fff; padding: 0 18px; height: 36px; text-decoration: none; border-radius: var(--radius-sm);

@@ -175,6 +175,48 @@ create unique index if not exists match_player_stats_uniq on match_player_stats(
 create index if not exists match_player_stats_player_idx on match_player_stats(player_id);
 
 -- ----------------------------------------------------------------------------
+-- pagos_extra
+-- Pagos puntuales por jugadora aparte de la cuota de inscripción (viajes,
+-- torneos, equipación extra...) — mismo circuito que inscripcion_pagos
+-- (transferencia + justificante que revisa el admin) pero con concepto e
+-- importe libres, porque no siguen ningún plan fijo. Sin lectura/escritura
+-- pública: la familia sube el justificante por function validando el
+-- access_token de la jugadora (igual que responder-convocatoria.js).
+-- ----------------------------------------------------------------------------
+create table if not exists pagos_extra (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players(id) on delete cascade,
+  concepto text not null,
+  importe numeric not null,
+  fecha_vencimiento date,
+  estado text not null default 'pendiente' check (estado in ('pendiente','pagado')),
+  comprobante_url text,
+  comprobante_subido_en timestamptz,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists pagos_extra_player_idx on pagos_extra(player_id);
+create index if not exists pagos_extra_estado_idx on pagos_extra(estado);
+
+-- ----------------------------------------------------------------------------
+-- admin_push_subscriptions
+-- Dispositivos del club (admin) que quieren notificación push de avisos
+-- internos: nueva solicitud de interés, justificante subido... Tabla
+-- separada de push_subscriptions (esa es pública/de las familias) a
+-- propósito: aquí hay datos que solo debe ver el club, así que el alta
+-- pasa siempre por save-admin-push-subscription.js, que exige estar
+-- autenticado como admin — nunca por un endpoint público, para que nadie
+-- pueda apuntarse a escondidas a estos avisos.
+-- ----------------------------------------------------------------------------
+create table if not exists admin_push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  creado_en timestamptz not null default now()
+);
+
+-- ----------------------------------------------------------------------------
 -- ffib_standings
 -- Se sobreescribe por completo en cada sincronización de ffib-sync.js
 -- (borra y reinserta las filas del team_id correspondiente).
@@ -465,6 +507,8 @@ alter table push_subscriptions enable row level security;
 alter table training_sessions enable row level security;
 alter table convocatorias enable row level security;
 alter table match_player_stats enable row level security;
+alter table pagos_extra enable row level security;
+alter table admin_push_subscriptions enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -542,6 +586,15 @@ create policy "convocatorias_admin_all" on convocatorias for all using (is_app_a
 -- (se muestra en jugadora.html), solo el admin puede escribir.
 create policy "match_player_stats_public_read" on match_player_stats for select using (true);
 create policy "match_player_stats_admin_write" on match_player_stats for all using (is_app_admin()) with check (is_app_admin());
+
+-- pagos_extra: sin lectura/escritura pública — la familia sube el
+-- justificante por function (comprueba el token de la jugadora) y el
+-- admin gestiona el resto directamente (RLS se lo permite).
+create policy "pagos_extra_admin_all" on pagos_extra for all using (is_app_admin()) with check (is_app_admin());
+
+-- admin_push_subscriptions: sin escritura pública en absoluto — el alta
+-- pasa por save-admin-push-subscription.js, que exige is_app_admin().
+create policy "admin_push_subscriptions_admin_all" on admin_push_subscriptions for all using (is_app_admin()) with check (is_app_admin());
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

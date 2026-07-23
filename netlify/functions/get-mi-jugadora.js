@@ -4,8 +4,9 @@
   Lectura pública (solo GET) llamada desde mi-jugadora.html?token=... — el
   enlace personal y fijo de cada jugadora (players.access_token), que la
   familia recibe una vez por email y puede reutilizar toda la temporada.
-  Devuelve los datos de la jugadora y sus convocatorias (partidos y
-  entrenamientos), con la información del partido/entreno ya resuelta.
+  Devuelve los datos de la jugadora, sus convocatorias (partidos y
+  entrenamientos) con la información del partido/entreno ya resuelta, y
+  sus pagos puntuales (pagos_extra — viajes, torneos, equipación...).
 
   Usa la service_role key a propósito: convocatorias/training_sessions no
   tienen política de lectura pública en Supabase — este es el único sitio
@@ -96,6 +97,15 @@ exports.handler = async function (event) {
     };
   }).sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0));
 
+  const { data: pagosExtra, error: pagosError } = await supabase
+    .from("pagos_extra")
+    .select("id, concepto, importe, fecha_vencimiento, estado, comprobante_url, comprobante_subido_en")
+    .eq("player_id", player.id)
+    .order("creado_en", { ascending: false });
+  if (pagosError) {
+    return { statusCode: 500, body: "No se han podido cargar los pagos: " + pagosError.message };
+  }
+
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
@@ -111,6 +121,7 @@ exports.handler = async function (event) {
         categoria: player.teams ? player.teams.categoria : null,
       },
       convocatorias: convocatoriasResueltas,
+      pagos_extra: pagosExtra || [],
     }),
   };
 };

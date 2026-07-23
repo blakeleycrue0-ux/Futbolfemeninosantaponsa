@@ -19,6 +19,20 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
+  /* ═══ "Tus jugadoras" (Mi cuenta — favoritos) ═══ */
+  .tj-sec { background: var(--dark); padding: 0 0 100px var(--gutter); overflow: hidden; }
+  .tj-sec .tag-line { font-size: 10px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; color: rgba(244,240,232,0.35); }
+  .tj-sec .tag-line::before { content: ''; display: block; width: 26px; height: 1px; background: currentColor; }
+  .tj-sec .big-title-v2 { color: var(--text-on-dark); }
+  .tj-scroll { display: flex; gap: 16px; overflow-x: auto; padding: 30px var(--gutter) 6px 0; scrollbar-width: none; }
+  .tj-scroll::-webkit-scrollbar { display: none; }
+  .tj-card { flex-shrink: 0; width: 240px; background: var(--dark-2); border: 1px solid rgba(244,240,232,0.07); border-radius: var(--radius-md); overflow: hidden; text-decoration: none; display: block; padding: 20px 22px; transition: transform 0.4s var(--ease), box-shadow 0.4s; }
+  .tj-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: var(--shadow-lg); }
+  .tj-foto { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: rgba(244,240,232,0.06); margin-bottom: 12px; }
+  .tj-nombre { font-family: var(--font-display); font-size: 13px; font-weight: 800; color: var(--text-on-dark); margin: 0; }
+  .tj-meta { font-size: 11px; color: rgba(244,240,232,0.4); margin: 4px 0 0; }
+  .tj-next { font-size: 11px; color: var(--accent-light); margin: 10px 0 0; }
+
   /* ═══ Carrusel de noticias (sustituye al hero grande) ═══ */
   .news-slider { position: relative; height: min(72vh, 620px); min-height: 420px; background: var(--dark); overflow: hidden; }
   .news-slider-track {
@@ -114,6 +128,7 @@
     <a href="club.html" class="fullnav-link">Club</a>
     <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
     <a href="contacto.html" class="fullnav-link">Contacto</a>
+    <a href="mi-cuenta.html" class="fullnav-link">Mi cuenta</a>
   </div>
   <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
   <div class="fullnav-foot">
@@ -182,6 +197,13 @@
     <div class="match-scroll" id="matchScroll">
       <div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div>
     </div>
+  </section>
+
+  <!-- ═══ TUS JUGADORAS (Mi cuenta — favoritos) ═══ -->
+  <section class="tj-sec" id="tjSec" style="display:none;">
+    <div class="sr-l tag-line">Mi cuenta</div>
+    <h2 class="big-title-v2 sr">Tus jugadoras</h2>
+    <div class="tj-scroll" id="tjScroll"></div>
   </section>
 
   <!-- ═══ ABOUT ═══ -->
@@ -571,6 +593,42 @@ function countUp(el, target, suffix) {
         </div>
       </a>`).join("")
     : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
+
+  /* "Tus jugadoras" — solo si hay sesión de Google (Mi cuenta) con favoritos */
+  if (window.spfc) {
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      if (session) {
+        const { data: favs } = await window.spfc
+          .from("user_favorites")
+          .select("player_id, players(id, nombre, dorsal, posicion, foto_url, team_id)")
+          .eq("user_id", session.user.id)
+          .order("creado_en");
+        const validos = (favs || []).filter((f) => f.players);
+        if (validos.length) {
+          const tjSec = document.getElementById("tjSec");
+          const tjScroll = document.getElementById("tjScroll");
+          const tarjetas = await Promise.all(validos.map(async (f) => {
+            const j = f.players;
+            const partido = await SPFC_DATA.upcomingMatch(j.team_id);
+            const proximo = partido
+              ? `vs ${escapeHtml(partido.rival || "?")} · ${spfcFormatDate(partido.fecha, { day: "2-digit", month: "short" })}`
+              : "";
+            return `<a class="tj-card" href="jugadora.html?id=${encodeURIComponent(j.id)}">
+              <img class="tj-foto" src="${j.foto_url || "assets/img/escudo-santa-ponsa.png"}" alt="">
+              <p class="tj-nombre">${escapeHtml(j.nombre || "")}</p>
+              <p class="tj-meta">${[j.dorsal ? "Dorsal " + j.dorsal : null, j.posicion].filter(Boolean).join(" · ")}</p>
+              ${proximo ? `<p class="tj-next">${proximo}</p>` : ""}
+            </a>`;
+          }));
+          tjScroll.innerHTML = tarjetas.join("");
+          tjSec.style.display = "block";
+        }
+      }
+    } catch (err) {
+      // Sección opcional — si falla, la portada sigue igual sin ella.
+    }
+  }
 })();
 </script>
 <script>window.SPFC_INSTALL_BANNER_MANUAL = true;</script>

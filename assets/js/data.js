@@ -51,6 +51,14 @@ const SPFC_DATA = (function () {
       if (Array.isArray(all)) return all[0] || window.SPFC_FALLBACK.players.find((p) => p.id === id);
       return window.SPFC_FALLBACK.players.find((p) => p.id === id);
     },
+    // Estadísticas partido a partido de una jugadora, con los datos del
+    // partido ya incluidos (rival, fecha) — para el desglose en su ficha.
+    async playerMatchStats(playerId) {
+      return safe(
+        (c) => c.from("match_player_stats").select("*, matches(rival, fecha, condicion)").eq("player_id", playerId).order("fecha", { foreignTable: "matches", ascending: false }),
+        []
+      );
+    },
     // teamId es opcional: si no se pasa, mira partidos de CUALQUIER equipo
     // del club (así la portada nunca se queda "vacía" por estar mirando
     // solo a un equipo concreto).

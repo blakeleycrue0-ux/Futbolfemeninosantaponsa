@@ -22,6 +22,7 @@
       <a href="destacado.html">Destacado</a>
       <a href="noticias.html">Noticias</a>
       <a href="emails.html">Emails</a>
+      <a href="avisos.html">Avisos</a>
       <a href="citas.html">Citas</a>
       <a href="plantilla.html">Plantilla</a>
       <a href="partidos.html">Partidos</a>
@@ -100,11 +101,27 @@
       <p id="convocatoria-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
     </div>
 
+    <div class="admin-card admin-form-toggle" id="stats-card" style="display:none;">
+      <h2>Estadísticas</h2>
+      <p class="form-note" id="stats-sub" style="margin-top:-0.6rem;"></p>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Jugadora</th><th>Minutos</th><th>Goles</th><th>Amarillas</th><th>Rojas</th></tr></thead>
+          <tbody id="stats-lista"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:1rem;">
+        <button type="button" class="btn btn-primary btn-sm" id="stats-guardar-btn">Guardar estadísticas</button>
+        <button type="button" class="btn btn-outline btn-sm" id="stats-cancel-btn">Cerrar</button>
+      </div>
+      <p id="stats-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+    </div>
+
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th><th></th><th></th></tr></thead>
-          <tbody id="matches-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th><th></th><th></th><th></th></tr></thead>
+          <tbody id="matches-body"><tr><td colspan="9">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -166,9 +183,9 @@
   async function loadMatches() {
     const { data, error } = await window.spfc.from("matches").select("*").order("fecha", { ascending: false });
     const body = document.getElementById("matches-body");
-    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="9">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     matches = data || [];
-    if (!matches.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay partidos.</td></tr>'; return; }
+    if (!matches.length) { body.innerHTML = '<tr><td colspan="9">Todavía no hay partidos.</td></tr>'; return; }
     body.innerHTML = matches.map((m) => `
       <tr>
         <td>${m.fecha}</td>
@@ -182,6 +199,9 @@
         </td>
         <td class="actions">
           <button class="btn btn-outline btn-sm" data-convocar="${m.id}" type="button">Convocatoria</button>
+        </td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-stats="${m.id}" type="button">Estadísticas</button>
         </td>
         <td class="actions">
           <button class="btn btn-outline btn-sm" data-push="${m.id}" type="button">Enviar notificación</button>
@@ -199,6 +219,8 @@
       }));
     body.querySelectorAll("[data-convocar]").forEach((btn) =>
       btn.addEventListener("click", () => abrirConvocatoria(matches.find((m) => m.id === btn.dataset.convocar))));
+    body.querySelectorAll("[data-stats]").forEach((btn) =>
+      btn.addEventListener("click", () => abrirStats(matches.find((m) => m.id === btn.dataset.stats))));
     body.querySelectorAll("[data-push]").forEach((btn) =>
       btn.addEventListener("click", async () => {
         const m = matches.find((x) => x.id === btn.dataset.push);
@@ -330,6 +352,84 @@
     } catch (err) {
       status.textContent = "Convocatoria guardada, pero no se ha podido avisar a las familias: " + err.message;
     }
+    btn.disabled = false;
+  });
+
+  // ---- Estadísticas ----
+  const statsCard = document.getElementById("stats-card");
+  const statsLista = document.getElementById("stats-lista");
+  let statsMatchId = null;
+
+  async function abrirStats(match) {
+    formCard.style.display = "none";
+    convocatoriaCard.style.display = "none";
+    statsMatchId = match.id;
+    const equipo = teams.find((t) => t.id === match.team_id);
+    document.getElementById("stats-sub").textContent =
+      `${equipo ? equipo.nombre : ""} vs ${match.rival} — ${match.fecha}`;
+    statsLista.innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
+    document.getElementById("stats-status").textContent = "";
+    statsCard.style.display = "block";
+    statsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    const [{ data: jugadoras }, { data: existentes }] = await Promise.all([
+      window.spfc.from("players").select("id, nombre").eq("team_id", match.team_id).eq("activa", true).order("nombre"),
+      window.spfc.from("match_player_stats").select("*").eq("match_id", match.id),
+    ]);
+    const statsPorJugadora = Object.fromEntries((existentes || []).map((s) => [s.player_id, s]));
+
+    if (!jugadoras || !jugadoras.length) {
+      statsLista.innerHTML = '<tr><td colspan="5">Este equipo todavía no tiene jugadoras en Plantilla.</td></tr>';
+      return;
+    }
+    statsLista.innerHTML = jugadoras.map((j) => {
+      const s = statsPorJugadora[j.id] || {};
+      return `<tr data-player="${j.id}">
+        <td>${escapeHtml(j.nombre)}</td>
+        <td><input type="number" min="0" max="120" class="stat-minutos" value="${s.minutos ?? ""}" style="width:70px;"></td>
+        <td><input type="number" min="0" class="stat-goles" value="${s.goles ?? 0}" style="width:60px;"></td>
+        <td><input type="number" min="0" class="stat-amarillas" value="${s.tarjetas_amarillas ?? 0}" style="width:60px;"></td>
+        <td><input type="number" min="0" class="stat-rojas" value="${s.tarjetas_rojas ?? 0}" style="width:60px;"></td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.getElementById("stats-cancel-btn").addEventListener("click", () => (statsCard.style.display = "none"));
+
+  document.getElementById("stats-guardar-btn").addEventListener("click", async () => {
+    const status = document.getElementById("stats-status");
+    const btn = document.getElementById("stats-guardar-btn");
+    const filas = Array.from(statsLista.querySelectorAll("tr[data-player]")).map((tr) => {
+      const minutosVal = tr.querySelector(".stat-minutos").value;
+      return {
+        match_id: statsMatchId,
+        player_id: tr.dataset.player,
+        minutos: minutosVal === "" ? null : Number(minutosVal),
+        goles: Number(tr.querySelector(".stat-goles").value || 0),
+        tarjetas_amarillas: Number(tr.querySelector(".stat-amarillas").value || 0),
+        tarjetas_rojas: Number(tr.querySelector(".stat-rojas").value || 0),
+      };
+    });
+    btn.disabled = true;
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("match_player_stats").upsert(filas, { onConflict: "match_id,player_id" });
+    if (error) {
+      btn.disabled = false;
+      status.textContent = "Error: " + error.message;
+      return;
+    }
+    status.textContent = "Recalculando totales de temporada…";
+    for (const fila of filas) {
+      const { data: todas } = await window.spfc.from("match_player_stats").select("goles, tarjetas_amarillas, tarjetas_rojas, minutos").eq("player_id", fila.player_id);
+      const totales = (todas || []).reduce((acc, s) => ({
+        goles: acc.goles + (s.goles || 0),
+        tarjetas_amarillas: acc.tarjetas_amarillas + (s.tarjetas_amarillas || 0),
+        tarjetas_rojas: acc.tarjetas_rojas + (s.tarjetas_rojas || 0),
+        partidos_jugados: acc.partidos_jugados + (s.minutos != null ? 1 : 0),
+      }), { goles: 0, tarjetas_amarillas: 0, tarjetas_rojas: 0, partidos_jugados: 0 });
+      await window.spfc.from("players").update(totales).eq("id", fila.player_id);
+    }
+    status.textContent = "Estadísticas guardadas y totales de temporada actualizados ✓";
     btn.disabled = false;
   });
 

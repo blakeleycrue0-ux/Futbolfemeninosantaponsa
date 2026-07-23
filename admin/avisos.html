@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avisos — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="citas.html">Citas</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Avisos rápidos</h1>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Para cosas del día a día de un equipo concreto — "entreno cancelado por lluvia", "cambio de hora del
+      sábado"... Solo llega a las familias de ese equipo (email siempre, y push a quien lo tenga activado
+      para alguna de sus jugadoras) — no a toda la web. Para noticias o avisos generales, usa
+      <a href="emails.html">Emails</a>.
+    </p>
+
+    <div class="admin-card">
+      <form id="aviso-form">
+        <div class="form-field"><label for="a-team">Equipo</label><select id="a-team" required></select></div>
+        <div class="form-field"><label for="a-titulo">Título</label><input type="text" id="a-titulo" placeholder="Entreno cancelado por lluvia" required></div>
+        <div class="form-field"><label for="a-mensaje">Mensaje</label><textarea id="a-mensaje" rows="5" required></textarea></div>
+        <button type="submit" class="btn btn-primary btn-sm" id="aviso-btn">Enviar aviso</button>
+        <p id="aviso-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  const { data: teams } = await window.spfc.from("teams").select("*").order("orden");
+  document.getElementById("a-team").innerHTML = (teams || []).map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+
+  document.getElementById("aviso-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const team = (teams || []).find((t) => t.id === document.getElementById("a-team").value);
+    const titulo = document.getElementById("a-titulo").value.trim();
+    const mensaje = document.getElementById("a-mensaje").value.trim();
+    if (!confirm(`¿Enviar "${titulo}" a las familias de ${team ? team.nombre : "este equipo"}?`)) return;
+    const btn = document.getElementById("aviso-btn");
+    const status = document.getElementById("aviso-status");
+    btn.disabled = true;
+    status.textContent = "Enviando…";
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch("/.netlify/functions/avisar-equipo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+        body: JSON.stringify({ team_id: team.id, titulo, mensaje }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      status.textContent = `Enviado — ${json.emails_enviados} email(s) y ${json.push_enviados} notificación(es) push.`;
+      document.getElementById("aviso-form").reset();
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

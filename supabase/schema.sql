@@ -217,6 +217,28 @@ create table if not exists admin_push_subscriptions (
 );
 
 -- ----------------------------------------------------------------------------
+-- user_favorites
+-- "Mi cuenta" — cualquiera puede entrar con Google (Supabase Auth, no
+-- hace falta tabla propia de usuarios) y marcar hasta 3 jugadoras
+-- favoritas, para tenerlas destacadas en la portada sin ir a Equipos. A
+-- diferencia de mi-jugadora.html (pensado para la familia de esa
+-- jugadora, con enlace fijo sin contraseña), esto es para cualquier
+-- aficionado/a. Política propia por fila: cada usuario solo ve y toca
+-- sus propios favoritos (auth.uid() = user_id) — no hace falta pasar
+-- por ninguna function, el cliente ya autenticado puede leer/escribir
+-- directo.
+-- ----------------------------------------------------------------------------
+create table if not exists user_favorites (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  player_id uuid not null references players(id) on delete cascade,
+  creado_en timestamptz not null default now(),
+  unique (user_id, player_id)
+);
+
+create index if not exists user_favorites_user_idx on user_favorites(user_id);
+
+-- ----------------------------------------------------------------------------
 -- ffib_standings
 -- Se sobreescribe por completo en cada sincronización de ffib-sync.js
 -- (borra y reinserta las filas del team_id correspondiente).
@@ -509,6 +531,7 @@ alter table convocatorias enable row level security;
 alter table match_player_stats enable row level security;
 alter table pagos_extra enable row level security;
 alter table admin_push_subscriptions enable row level security;
+alter table user_favorites enable row level security;
 alter table ffib_sync_log enable row level security;
 
 -- teams
@@ -595,6 +618,10 @@ create policy "pagos_extra_admin_all" on pagos_extra for all using (is_app_admin
 -- admin_push_subscriptions: sin escritura pública en absoluto — el alta
 -- pasa por save-admin-push-subscription.js, que exige is_app_admin().
 create policy "admin_push_subscriptions_admin_all" on admin_push_subscriptions for all using (is_app_admin()) with check (is_app_admin());
+
+-- user_favorites: cada usuario logueado con Google solo puede ver y
+-- tocar sus propias filas.
+create policy "user_favorites_owner_all" on user_favorites for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());

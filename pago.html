@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
-<link rel="stylesheet" href="assets/css/mi-cuenta.css">
 <style>
   .pago-wrap { max-width: 560px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; text-align: center; }
   @media (max-width: 620px) { .pago-wrap { padding: 1.6rem; } }
@@ -49,7 +48,6 @@
   </nav>
   <div style="display:flex;align-items:center;gap:14px;">
     <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
-    <span id="mcw-mount"></span>
     <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
   </div>
 </header>
@@ -403,11 +401,6 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
   });
 })();
 </script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/data.js"></script>
-<script src="assets/js/mi-cuenta-widget.js"></script>
 <script src="/assets/js/pwa-register.js" defer></script>
 <script src="/assets/js/install-banner.js" defer></script>
 <script src="/assets/js/push-notifications.js" defer></script>

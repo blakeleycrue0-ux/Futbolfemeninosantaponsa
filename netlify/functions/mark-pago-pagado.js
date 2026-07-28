@@ -1,39 +1,3 @@
-/*
-  mark-pago-pagado.js — Netlify Function
-  ============================================================================
-  Admin-only. El club cobra por transferencia bancaria (sin tarjeta, sin
-  comisión de Stripe) — revisa el justificante que sube la familia en
-  pago.html y, si está bien, marca la cuota correspondiente como pagada
-  desde aquí. Recalcula el estado general de la inscripción igual que hacía
-  antes el webhook de Stripe: 'pagado' si todos los plazos están pagados,
-  'pago_parcial' si solo alguno, 'pendiente' si ninguno.
-
-  Al marcarla, avisa por email a la familia: si es la cuota 1 (con eso la
-  plaza queda confirmada según las condiciones del club), el email dice que
-  ya está oficialmente inscrita; si es una cuota posterior, solo confirma
-  que se ha recibido ese pago. Si el email falla, no se considera un error
-  de la función — la cuota ya ha quedado marcada como pagada, que es lo
-  importante.
-
-  Además, en cuanto se marca pagada la primera cuota (numero_cuota === 1) —
-  da igual si el plan es de pago único, 2 cuotas o 4 cuotas, con la primera
-  ya basta — da de alta sola a la jugadora en Plantilla (tabla `players`)
-  para que aparezca en la web sin esperar a que termine de pagar todo el
-  plan. El equipo se elige por año de nacimiento con las mismas categorías
-  que en admin/plantilla.html — si no hay ningún equipo creado para esa
-  categoría, no se puede dar de alta (falta team_id) y se queda pendiente
-  de añadirla a mano. inscripcion_id evita duplicados si se vuelve a marcar
-  como pagada por error.
-
-  Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales — si faltan, se marca como
-                                       pagada pero sin aviso por email)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

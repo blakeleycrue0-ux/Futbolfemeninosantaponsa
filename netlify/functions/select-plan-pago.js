@@ -1,26 +1,3 @@
-/*
-  select-plan-pago.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde registro.html al terminar el
-  registro (la familia ya eligió el plan ahí mismo, junto con el resto de
-  datos) — o, como red de seguridad, desde el selector de pago.html si por
-  lo que sea todavía no hay plazos creados. Crea los plazos
-  correspondientes en inscripcion_pagos. Usa la service_role key porque
-  esa tabla solo permite INSERT/UPDATE a administradores según RLS.
-
-  La cuota es distinta según la edad de la jugadora: 650 € hasta los 18
-  años (incluidos), 450 € a partir de los 19 (categoría Amateur) — mismas
-  3 opciones de pago (único / 2 / 4 cuotas) en los dos casos.
-
-  Solo se permite si el club ya aceptó la plaza (confirmada_en) y ya pidió
-  el pago (pago_solicitado_en) — evita que alguien con el id de una
-  inscripción todavía pendiente de revisión pueda generar plazos de pago
-  por su cuenta. Si esa inscripción ya tiene plazos (la familia ya había
-  elegido plan antes), no hace nada y devuelve los que ya existen.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 const PLANES_MENOR = {

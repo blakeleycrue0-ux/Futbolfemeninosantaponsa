@@ -1,23 +1,3 @@
-/*
-  save-push-subscription.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde assets/js/push-notifications.js
-  cuando alguien activa las notificaciones push en su navegador. Guarda el
-  endpoint que genera el propio navegador (identifica ese dispositivo) y
-  las claves p256dh/auth que hacen falta para poder enviarle avisos
-  después (ver send-push.js). Upsert por endpoint: si ya existía (p.ej.
-  se volvió a activar tras desactivarlo), no crea una fila duplicada.
-
-  Si se manda player_id (activado desde mi-jugadora.html en vez del aviso
-  general del sitio), ese dispositivo queda ligado a esa jugadora — sigue
-  recibiendo los avisos generales de partidos/noticias igual, pero además
-  recibe las convocatorias de esa jugadora en concreto (ver
-  notificar-convocatoria.js). Un dispositivo solo puede estar ligado a una
-  jugadora a la vez (una fila por endpoint).
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

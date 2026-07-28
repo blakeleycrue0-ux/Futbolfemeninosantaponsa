@@ -107,7 +107,6 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .skip-link:focus { left: 0; }
 
-/* ===================== Scroll reveal ===================== */
 .reveal-init {
   opacity: 0;
   transform: translateY(36px);

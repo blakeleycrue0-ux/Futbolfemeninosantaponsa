@@ -1,32 +1,3 @@
-/*
-  upload-comprobante.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde pago.html cuando la familia
-  sube la foto/captura del justificante de su transferencia bancaria. Se
-  guarda en el bucket de Storage "comprobantes" (público, con el id de la
-  inscripción y del plazo como ruta — igual de "token de facto" que el resto
-  de funciones de esta familia) y se apunta la URL en
-  inscripcion_pagos.comprobante_url para que el admin la revise antes de
-  marcar la cuota como pagada.
-
-  Solo se permite subir un justificante a un plazo (inscripcion_pagos) que
-  ya existe — no se puede inventar un pago_id al azar porque hace falta que
-  la fila exista de antemano (la crea select-plan-pago.js). Si ya había un
-  justificante subido, este lo sustituye (por si se equivocaron de foto).
-
-  En cuanto se sube, avisa por email al club (GMAIL_USER) para que alguien
-  entre a revisarlo y, si está bien, lo marque como pagado desde el admin —
-  si no se avisa, nadie se entera de que hay un justificante nuevo esperando
-  revisión. Si el email de aviso falla, no se considera un error: el
-  justificante ya se ha guardado bien, que es lo importante.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales — si faltan, se sigue
-                                       guardando el justificante pero sin
-                                       aviso por email)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 const webpush = require("web-push");

@@ -1,17 +1,3 @@
-/*
-  get-citas.js — Netlify Function
-  ============================================================================
-  Lectura pública (solo GET) llamada desde citas.html para mostrar los
-  huecos de una categoría (probarse la equipación) y cuáles ya están
-  reservados. Usa la service_role key a propósito: citas_horario no tiene
-  política de lectura pública en Supabase, así que esta función es el
-  único sitio por el que se puede ver la disponibilidad — y solo devuelve
-  fecha/hora/disponible, nunca el nombre o email de quien ha reservado
-  cada hora (eso solo lo ve el admin).
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

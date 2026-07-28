@@ -1,20 +1,3 @@
-/*
-  reset-plan-pago.js — Netlify Function
-  ============================================================================
-  Admin-only. Borra los plazos (inscripcion_pagos) de una inscripción para
-  que la familia vuelva a ver el selector de plan (único / 2 / 4 cuotas) la
-  próxima vez que abra su enlace de pago.html — útil si se generaron por
-  error (pruebas, plan equivocado, etc.). Por seguridad, se niega si
-  cualquiera de los plazos ya está pagado: en ese caso hay que gestionarlo
-  a mano, no borrar el historial de un cobro real.
-
-  Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

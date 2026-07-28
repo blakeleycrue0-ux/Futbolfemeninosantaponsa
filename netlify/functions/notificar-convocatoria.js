@@ -1,24 +1,3 @@
-/*
-  notificar-convocatoria.js — Netlify Function
-  ============================================================================
-  Admin-only. Se llama justo después de guardar una convocatoria (o varias
-  de golpe, para todo un partido/entreno) desde admin/partidos.html o
-  admin/entrenos.html. Avisa a cada familia por email (siempre) y por
-  notificación push (si esa jugadora tiene algún dispositivo suscrito
-  específicamente a ella desde mi-jugadora.html) — nunca se manda al
-  resto de gente que solo sigue partidos/noticias en general.
-
-  Si una familia no tiene email registrado o el envío falla, no se
-  considera un error de la función — la convocatoria ya ha quedado
-  guardada, que es lo importante; el resto es un aviso de cortesía.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD           (opcionales)
-    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT   (opcionales)
-    PUBLIC_SITE_URL
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 const webpush = require("web-push");

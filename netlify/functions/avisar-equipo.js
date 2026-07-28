@@ -1,25 +1,3 @@
-/*
-  avisar-equipo.js — Netlify Function
-  ============================================================================
-  Admin-only. Manda un aviso rápido (título + mensaje corto) solo a las
-  familias de un equipo concreto — para cosas del día a día tipo "entreno
-  cancelado por lluvia" o "cambio de hora del sábado", sin tener que
-  escribir una noticia para toda la web ni mandarlo a categorías enteras.
-
-  Destinatarios: familias de las jugadoras activas de ese equipo (email,
-  siempre) + los dispositivos con notificaciones activadas para alguna de
-  esas jugadoras en concreto (push, si las tienen activadas) — nunca al
-  resto de gente que sigue el sitio en general.
-
-  Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD                       (opcionales)
-    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT   (opcionales)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 const webpush = require("web-push");

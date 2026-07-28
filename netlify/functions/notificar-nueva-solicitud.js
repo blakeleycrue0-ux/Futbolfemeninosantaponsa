@@ -1,24 +1,3 @@
-/*
-  notificar-nueva-solicitud.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde inscripcion.html justo
-  después de guardar un nuevo formulario de interés. Avisa al club al
-  momento por email y por notificación push (a quien la tenga activada
-  desde el dashboard del admin) — así no hace falta entrar al admin a
-  mirar cada rato si ha llegado alguna solicitud nueva. Es un aviso, no
-  crítico: si falla el envío, no pasa nada — la solicitud ya se ha
-  guardado bien en Supabase y sigue apareciendo en Formularios de interés
-  igualmente.
-
-  Variables de entorno requeridas:
-    GMAIL_USER, GMAIL_APP_PASSWORD                       (opcionales)
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY               (opcionales —
-                                                            hacen falta
-                                                            solo para el
-                                                            push)
-    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT   (opcionales)
-  ============================================================================
-*/
 const nodemailer = require("nodemailer");
 const webpush = require("web-push");
 const { createClient } = require("@supabase/supabase-js");

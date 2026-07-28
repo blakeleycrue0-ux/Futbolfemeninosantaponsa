@@ -1,24 +1,3 @@
-/*
-  payment-reminders.js — Netlify Function (Scheduled)
-  ============================================================================
-  Se ejecuta sola cada día (cron, configurado en netlify.toml) — nadie del
-  club tiene que hacer nada. Manda dos tipos de aviso por email a la
-  familia, con el enlace personal de pago.html para la cuota que toque
-  (la 2ª, 3ª o 4ª según el plan que hayan elegido — pago.html ya enseña
-  siempre la próxima cuota pendiente sola):
-
-  1. Un día ANTES del vencimiento (recordatorio_enviado).
-  2. El MISMO día del vencimiento (recordatorio_mismo_dia_enviado).
-
-  Cada aviso se manda una sola vez por plazo (se marca con su propio
-  booleano para no repetirlo al día siguiente).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD
-    PUBLIC_SITE_URL   (dominio público, p.ej. https://ffsp.info)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

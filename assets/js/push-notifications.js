@@ -1,19 +1,3 @@
-/*
-  push-notifications.js
-  ============================================================================
-  Aviso flotante para activar notificaciones push (avisos de partidos y
-  noticias nuevas, enviados a mano desde el admin — ver send-push.js).
-  Se recuerda el cierre en localStorage, igual que install-banner.js — no
-  vuelve a salir si ya se ha activado o si se ha cerrado hace poco.
-
-  iOS solo permite notificaciones push si la web está instalada en la
-  pantalla de inicio (no funciona en Safari normal) — si no está
-  instalada, no se muestra nada en vez de ofrecer un botón que fallaría.
-
-  Se muestra sola a los 20s de cargar la página (más tarde que el aviso
-  de instalar la app, para no competir con él en pantalla a la vez).
-  ============================================================================
-*/
 (function () {
   if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
   if (!window.SPFC_CONFIG || !window.SPFC_CONFIG.VAPID_PUBLIC_KEY) return;

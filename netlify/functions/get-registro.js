@@ -1,16 +1,3 @@
-/*
-  get-registro.js — Netlify Function
-  ============================================================================
-  Lectura pública (solo GET) de los datos básicos de UNA inscripción por su
-  id, para que registro.html pueda mostrar "Hola, completa el registro de
-  [jugadora]" antes de rellenar el resto de datos. Usa la service_role key
-  porque `inscripciones` solo permite SELECT a administradores según RLS —
-  el id (uuid) hace de token de acceso de facto para esa familia, igual que
-  en get-pago.js. No devuelve nada del resto de familias.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

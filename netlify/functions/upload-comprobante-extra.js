@@ -1,22 +1,3 @@
-/*
-  upload-comprobante-extra.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde mi-jugadora.html cuando la
-  familia sube el justificante de un pago puntual (pagos_extra — viajes,
-  torneos, equipación...). Comprueba que el token corresponde a la
-  jugadora dueña de ese pago antes de aceptar nada — mismo criterio que
-  responder-convocatoria.js. Reutiliza el bucket "comprobantes" que ya
-  usa upload-comprobante.js para las cuotas de inscripción.
-
-  En cuanto se sube, avisa por email al club para que lo revise y lo
-  marque como pagado desde admin/pagos-extra.html. Si el aviso falla no
-  se considera un error: el justificante ya se ha guardado bien.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 const webpush = require("web-push");

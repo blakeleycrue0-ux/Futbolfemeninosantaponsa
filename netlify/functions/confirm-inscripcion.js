@@ -1,28 +1,3 @@
-/*
-  confirm-inscripcion.js — Netlify Function
-  ============================================================================
-  Llamada desde Admin → Formularios de interés cuando el club revisa un
-  formulario y le da a "Aceptar plaza y enviar email". Marca la inscripción
-  como confirmada y envía UN ÚNICO email al tutor/a de esa familia con el
-  enlace personal a registro.html, donde en un solo sitio completan el
-  registro (DNI, dirección, talla, segundo tutor/a, condiciones generales),
-  eligen plan de pago y suben el justificante de la transferencia. Antes
-  esto eran dos pasos y dos emails (éste + send-payment-link.js); ahora es
-  uno solo porque el pago ya no depende de un paso aparte del club, sino de
-  que la familia rellene su enlace de principio a fin.
-
-  Requiere que quien llama esté autenticado como admin: recibe el JWT del
-  usuario en el header Authorization y comprueba is_app_admin() en Supabase
-  antes de hacer nada (si no, cualquiera con la URL de la función podría
-  confirmar inscripciones y disparar emails).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (cuenta de Gmail del club + contraseña
-                                       de aplicación, no la contraseña normal)
-    URL   (la inyecta Netlify automáticamente)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

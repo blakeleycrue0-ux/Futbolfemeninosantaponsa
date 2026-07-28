@@ -1,15 +1,3 @@
-/*
-  responder-convocatoria.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde mi-jugadora.html cuando la
-  familia confirma o rechaza una convocatoria. Comprueba que el token
-  recibido corresponde de verdad a la jugadora de esa convocatoria antes
-  de tocar nada — así nadie puede responder por una convocatoria que no
-  es la suya aunque adivine el id.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

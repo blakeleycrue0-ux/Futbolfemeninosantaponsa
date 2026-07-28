@@ -1,19 +1,3 @@
-/*
-  submit-registro.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) de los datos de registro completo (DNI,
-  dirección, talla, segundo tutor/a, email verificado) de UNA inscripción,
-  llamada desde registro.html — la página que llega enlazada solo en el
-  email de "plaza confirmada" (confirm-inscripcion.js), no antes.
-
-  Usa la service_role key porque `inscripciones` solo permite UPDATE a
-  administradores según RLS. Para evitar que cualquiera con el id pueda
-  reescribir una inscripción todavía pendiente de revisión, solo se permite
-  completar el registro si confirmada_en ya está informado.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

@@ -1,19 +1,3 @@
-/*
-  mark-pago-extra-pagado.js — Netlify Function
-  ============================================================================
-  Admin-only. Marca un pago puntual (pagos_extra) como pagado, tras
-  revisar el justificante que subió la familia. Avisa por email a la
-  familia de que se ha recibido correctamente. Si el email falla, no se
-  considera un error — el pago ya ha quedado marcado como pagado.
-
-  Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

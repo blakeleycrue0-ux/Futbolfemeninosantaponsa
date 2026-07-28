@@ -1,34 +1,3 @@
-/*
-  install-banner.js
-  ============================================================================
-  Aviso para instalar la web como app — a propósito muy visible, en el
-  centro de la pantalla con fondo oscuro detrás, para que la mayoría de
-  gente lo instale (no es un simple avisito de esquina). Explica el motivo
-  principal: sin la app instalada, en iPhone NO pueden llegar notificaciones
-  push (ver push-notifications.js) — así que instalarla es lo que hace que
-  de verdad se enteren de partidos y noticias en el momento.
-
-  En Chrome/Android usa el evento beforeinstallprompt para instalar con un
-  botón directo; en el resto de navegadores (Safari/iOS sobre todo, que no
-  tiene ese evento) muestra los pasos a mano.
-
-  Se recuerda el cierre en localStorage — pero solo 3 días (no 14), para
-  que a quien lo cierra sin instalar se le vuelva a ofrecer pronto en vez
-  de desaparecer casi para siempre. La clave lleva "_v2" para que quien ya
-  hubiera cerrado la versión anterior (el avisito pequeño de esquina) SÍ
-  vea este nuevo aviso, en vez de quedar oculto por una decisión antigua.
-
-  Por defecto se muestra sola a los 1.5s de cargar la página — lo antes
-  posible, nada más entrar. Si otra página quiere controlar el momento
-  exacto (p.ej. index.html, para que la "destacada" no salga a la vez ni
-  antes), debe poner window.SPFC_INSTALL_BANNER_MANUAL = true antes de
-  cargar este script y llamar ella misma a window.SPFC_SHOW_INSTALL_BANNER()
-  cuando le convenga. En cuanto este aviso se cierra (se instale o no),
-  llama una vez a window.SPFC_INSTALL_BANNER_ON_DISMISS() si existe — así
-  esa página puede encadenar lo siguiente (p.ej. la destacada) justo
-  después, nunca antes.
-  ============================================================================
-*/
 (function () {
   const DISMISS_KEY = "spfc_install_dismissed_v2_at";
   const TRES_DIAS_MS = 3 * 24 * 60 * 60 * 1000;

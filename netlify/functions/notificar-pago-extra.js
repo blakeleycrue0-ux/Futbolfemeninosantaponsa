@@ -1,22 +1,3 @@
-/*
-  notificar-pago-extra.js — Netlify Function
-  ============================================================================
-  Admin-only. Se llama justo después de crear uno o varios pagos_extra
-  (viajes, torneos, equipación...) desde admin/pagos-extra.html. Avisa a
-  cada familia por email con el concepto, el importe y su enlace personal
-  de mi-jugadora.html, donde puede ver los datos de la transferencia y
-  subir el justificante.
-
-  Si una familia no tiene email registrado o el envío falla, no se
-  considera un error de la función — el pago ya ha quedado creado, que es
-  lo importante.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales)
-    PUBLIC_SITE_URL
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

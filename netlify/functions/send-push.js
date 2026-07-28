@@ -1,23 +1,3 @@
-/*
-  send-push.js — Netlify Function
-  ============================================================================
-  Admin-only. Manda una notificación push a todos los dispositivos que la
-  tengan activada — se llama a mano desde admin/emails.html (al publicar
-  una noticia) o admin/partidos.html (aviso de partido), igual que el
-  envío de emails: es una acción explícita, nunca automática.
-
-  Si un envío falla con 404/410 (Gone) es que el navegador dio de baja
-  esa suscripción por su cuenta (se desinstaló la app, caducó, etc.) — se
-  aprovecha para borrarla de la tabla, así no se vuelve a intentar.
-
-  Requiere que quien llama esté autenticado como admin (mismo esquema que
-  confirm-inscripcion.js).
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-    VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:...)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const webpush = require("web-push");
 

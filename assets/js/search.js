@@ -1,10 +1,3 @@
-/*
-  search.js — Botón de búsqueda del header + panel de resultados.
-  Se inyecta solo (icono + overlay) para no tener que tocar el header de
-  cada página una a una. Busca en noticias, jugadoras y partidos a través
-  de SPFC_DATA.search (assets/js/data.js).
-  ============================================================================
-*/
 (function () {
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

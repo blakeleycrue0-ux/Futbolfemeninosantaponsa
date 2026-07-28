@@ -1,17 +1,3 @@
-/*
-  get-pago-inscripcion.js — Netlify Function
-  ============================================================================
-  Lectura pública (solo GET) del estado de pago de UNA inscripción por su
-  id, para que pago.html sepa si ya hay un plan elegido (y qué plazos
-  tiene) o si tiene que mostrar el selector de plan. Usa la service_role
-  key porque inscripciones/inscripcion_pagos solo permiten SELECT a
-  administradores según RLS — el id de la inscripción (uuid) hace de
-  token de acceso de facto para esa familia, igual que en get-pago.js y
-  get-registro.js. No devuelve nada del resto de familias.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

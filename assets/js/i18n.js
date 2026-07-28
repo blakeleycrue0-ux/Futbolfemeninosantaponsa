@@ -1,18 +1,3 @@
-/*
-  i18n.js — Selector de idioma ES/EN.
-  ============================================================================
-  Traduce el texto compartido de todas las páginas (menú, menú móvil, pie de
-  página) sin tener que tocar cada página una a una — igual que search.js e
-  install-banner.js, se inyecta solo. La elección se recuerda en
-  localStorage y se aplica en cuanto carga la página siguiente.
-
-  Alcance actual: solo el texto fijo del menú/pie de página y algunos
-  botones comunes. El contenido que escribe el club (noticias, fichas de
-  jugadoras, textos propios de cada página) sigue solo en español — eso
-  necesitaría traducción automática con una clave de IA que el club
-  todavía no ha dado de alta.
-  ============================================================================
-*/
 (function () {
   const ES_TO_EN = {
     "Equipos": "Teams",

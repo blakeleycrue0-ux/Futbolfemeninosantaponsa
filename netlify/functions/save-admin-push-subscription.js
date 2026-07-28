@@ -1,17 +1,3 @@
-/*
-  save-admin-push-subscription.js — Netlify Function
-  ============================================================================
-  Admin-only. Da de alta este dispositivo para recibir notificaciones push
-  de avisos internos del club: nueva solicitud de interés, justificante
-  de pago subido... A propósito NO es un endpoint público como
-  save-push-subscription.js — esos avisos llevan datos de familias
-  (nombre, email, teléfono), así que solo alguien ya autenticado como
-  admin puede apuntar un dispositivo a esta lista.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

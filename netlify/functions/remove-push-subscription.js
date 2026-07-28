@@ -1,14 +1,3 @@
-/*
-  remove-push-subscription.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde assets/js/push-notifications.js
-  cuando alguien desactiva las notificaciones push desde el propio sitio.
-  Borra la fila de ese endpoint — a partir de ahí ese dispositivo deja de
-  recibir avisos.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

@@ -1,21 +1,3 @@
-/*
-  get-mi-jugadora.js — Netlify Function
-  ============================================================================
-  Lectura pública (solo GET) llamada desde mi-jugadora.html?token=... — el
-  enlace personal y fijo de cada jugadora (players.access_token), que la
-  familia recibe una vez por email y puede reutilizar toda la temporada.
-  Devuelve los datos de la jugadora, sus convocatorias (partidos y
-  entrenamientos) con la información del partido/entreno ya resuelta, y
-  sus pagos puntuales (pagos_extra — viajes, torneos, equipación...).
-
-  Usa la service_role key a propósito: convocatorias/training_sessions no
-  tienen política de lectura pública en Supabase — este es el único sitio
-  por el que una familia puede ver esta información, y solo la suya
-  (nunca la de otra jugadora), porque hace falta conocer el token exacto.
-
-  Variables de entorno requeridas: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async function (event) {

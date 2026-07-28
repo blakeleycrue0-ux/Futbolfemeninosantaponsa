@@ -1,23 +1,3 @@
-/*
-  reservar-cita.js — Netlify Function
-  ============================================================================
-  Escritura pública (solo POST) llamada desde citas.html cuando una
-  familia elige un hueco para venir a probarse la equipación. La reserva
-  es atómica (UPDATE ... WHERE disponible = true): si dos familias
-  intentan coger la misma hora a la vez, solo una lo consigue — la otra
-  recibe un 409 y tiene que elegir otra hora. Así se evita que dos
-  familias se planten el mismo día a la misma hora.
-
-  Avisa por email a la familia (confirmación con fecha/hora) y al club
-  (para que sepa quién viene). Si el email falla no se deshace la
-  reserva — el hueco ya ha quedado bien cogido, que es lo importante.
-
-  Variables de entorno requeridas:
-    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    GMAIL_USER, GMAIL_APP_PASSWORD   (opcionales — si faltan, se reserva
-                                       igual pero sin aviso por email)
-  ============================================================================
-*/
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
 

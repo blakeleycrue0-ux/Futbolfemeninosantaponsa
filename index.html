@@ -13,7 +13,6 @@
 <meta property="og:locale" content="es_ES">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
-<link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
@@ -416,11 +415,6 @@ function countUp(el, target, suffix) {
     return `<span>${(rival || "").trim().slice(0, 2).toUpperCase() || "--"}</span>`;
   }
 
-  /* El aviso de "instalar app" sale el primero, nada más entrar — antes
-     de leer la destacada. La destacada (si hay alguna activa y no se ha
-     visto ya en esta sesión) se prepara igual, pero se muestra justo
-     después de que se cierre el aviso de instalar, nunca antes ni a la
-     vez (window.SPFC_INSTALL_BANNER_ON_DISMISS, ver install-banner.js). */
   const destacado = await SPFC_DATA.destacado();
   const hayDestacado = !!(destacado && (destacado.titulo || destacado.texto) && !sessionStorage.getItem("spfc_destacado_visto"));
   if (hayDestacado) {
@@ -438,15 +432,10 @@ function countUp(el, target, suffix) {
       linkEl.textContent = destacado.enlace_texto || "Más información";
       linkEl.style.display = "inline-flex";
     }
+    setTimeout(() => {
+      document.getElementById("destacadoModal").style.display = "flex";
+    }, 10000);
   }
-  window.SPFC_INSTALL_BANNER_ON_DISMISS = function () {
-    if (hayDestacado) {
-      setTimeout(() => {
-        document.getElementById("destacadoModal").style.display = "flex";
-      }, 600);
-    }
-  };
-  setTimeout(() => { if (window.SPFC_SHOW_INSTALL_BANNER) window.SPFC_SHOW_INSTALL_BANNER(); }, 1500);
 
   function cerrarDestacadoModal() {
     document.getElementById("destacadoModal").style.display = "none";
@@ -561,10 +550,6 @@ function countUp(el, target, suffix) {
     : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
 })();
 </script>
-<script>window.SPFC_INSTALL_BANNER_MANUAL = true;</script>
-<script src="/assets/js/pwa-register.js" defer></script>
-<script src="/assets/js/install-banner.js" defer></script>
-<script src="/assets/js/push-notifications.js" defer></script>
 <script src="assets/js/search.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>
 </body>

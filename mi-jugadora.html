@@ -7,7 +7,6 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#17151b">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
-<link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
@@ -20,7 +19,6 @@
   .mj-foto { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; background: var(--accent-soft); flex-shrink: 0; }
   .mj-nombre { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin: 0; }
   .mj-meta { color: var(--text-on-cream-muted); font-size: 0.88rem; margin: 0.2rem 0 0; }
-  .mj-push-btn { margin-top: 1.2rem; }
   .mj-evento { border: 1px solid rgba(10,10,10,0.12); border-radius: var(--radius-md); padding: 1rem 1.1rem; margin-bottom: 0.8rem; }
   .mj-evento:last-child { margin-bottom: 0; }
   .mj-evento-tipo { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 700; color: var(--accent-dark); }
@@ -106,8 +104,6 @@
                 <p class="mj-meta" id="mj-meta"></p>
               </div>
             </div>
-            <button type="button" class="btn btn-outline btn-sm mj-push-btn" id="mj-push-btn">Activar notificaciones para esta jugadora</button>
-            <p id="mj-push-status" style="margin-top:0.6rem;font-size:0.82rem;"></p>
           </div>
 
           <div class="mj-card">
@@ -388,58 +384,8 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     });
   }
 
-  // ---- Notificaciones push para esta jugadora en concreto ----
-  const pushBtn = document.getElementById("mj-push-btn");
-  const pushStatus = document.getElementById("mj-push-status");
-
-  function urlBase64ToUint8Array(base64String) {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const rawData = atob(base64);
-    return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-  }
-
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !window.SPFC_CONFIG || !window.SPFC_CONFIG.VAPID_PUBLIC_KEY) {
-    pushBtn.style.display = "none";
-  } else if (Notification.permission === "denied") {
-    pushBtn.disabled = true;
-    pushBtn.textContent = "Notificaciones bloqueadas en este navegador";
-  } else {
-    pushBtn.addEventListener("click", async () => {
-      pushBtn.disabled = true;
-      pushStatus.textContent = "Activando…";
-      try {
-        const permiso = await Notification.requestPermission();
-        if (permiso !== "granted") {
-          pushStatus.textContent = "No se han activado los permisos de notificación.";
-          pushBtn.disabled = false;
-          return;
-        }
-        if (!navigator.serviceWorker.controller) {
-          await navigator.serviceWorker.register("/sw.js");
-        }
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(window.SPFC_CONFIG.VAPID_PUBLIC_KEY),
-        });
-        const body = Object.assign(subscription.toJSON(), { player_id: jugadora.id });
-        await fetch("/.netlify/functions/save-push-subscription", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        pushStatus.textContent = "Notificaciones activadas para " + jugadora.nombre + " ✓";
-        pushBtn.style.display = "none";
-      } catch (err) {
-        pushStatus.textContent = "No se ha podido activar. Inténtalo de nuevo.";
-        pushBtn.disabled = false;
-      }
-    });
-  }
 })();
 </script>
-<script src="/assets/js/pwa-register.js" defer></script>
 <script src="assets/js/search.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>
 </body>

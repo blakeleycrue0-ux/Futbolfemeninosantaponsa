@@ -43,16 +43,6 @@
       <a href="../index.html" class="btn btn-outline btn-sm" target="_blank" rel="noopener">Ver web pública</a>
     </div>
 
-    <div class="admin-card" id="admin-push-card" style="display:none;">
-      <h2 style="margin-top:0;">Notificaciones en este dispositivo</h2>
-      <p style="font-size:0.86rem;color:var(--text-on-cream-muted);margin-bottom:1rem;">
-        Activa los avisos push del club en este ordenador o móvil: nueva solicitud de interés, justificante
-        de pago subido... Aparte de los emails, que siguen llegando igual.
-      </p>
-      <button class="btn btn-primary btn-sm" id="admin-push-btn" type="button">Activar notificaciones aquí</button>
-      <span id="admin-push-status" style="margin-left:0.6rem;font-size:0.82rem;"></span>
-    </div>
-
     <div class="admin-stat-grid" id="stat-grid">
       <div class="admin-stat"><strong>—</strong><span>Noticias</span></div>
       <div class="admin-stat"><strong>—</strong><span>Jugadoras</span></div>
@@ -213,58 +203,6 @@
     loadLog();
   });
 
-  /* Notificaciones push para el admin en este dispositivo */
-  (function () {
-    const card = document.getElementById("admin-push-card");
-    const btn = document.getElementById("admin-push-btn");
-    const status = document.getElementById("admin-push-status");
-
-    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !window.SPFC_CONFIG || !window.SPFC_CONFIG.VAPID_PUBLIC_KEY) return;
-    if (Notification.permission === "denied") return;
-    if (localStorage.getItem("spfc_admin_push_subscribed") === "1") return;
-    card.style.display = "block";
-
-    function urlBase64ToUint8Array(base64String) {
-      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-      const rawData = atob(base64);
-      return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-    }
-
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      status.textContent = "Activando…";
-      try {
-        const permiso = await Notification.requestPermission();
-        if (permiso !== "granted") {
-          status.textContent = "No se han activado los permisos de notificación.";
-          btn.disabled = false;
-          return;
-        }
-        if (!navigator.serviceWorker.controller) {
-          await navigator.serviceWorker.register("/sw.js");
-        }
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(window.SPFC_CONFIG.VAPID_PUBLIC_KEY),
-        });
-        const { data: { session } } = await window.spfc.auth.getSession();
-        const res = await fetch("/.netlify/functions/save-admin-push-subscription", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
-          body: JSON.stringify(subscription.toJSON()),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        localStorage.setItem("spfc_admin_push_subscribed", "1");
-        status.textContent = "Notificaciones activadas en este dispositivo ✓";
-        card.style.display = "none";
-      } catch (err) {
-        status.textContent = "No se ha podido activar: " + (err && err.message ? err.message : "inténtalo de nuevo.");
-        btn.disabled = false;
-      }
-    });
-  })();
 })();
 </script>
 </body>

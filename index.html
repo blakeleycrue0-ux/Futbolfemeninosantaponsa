@@ -75,20 +75,6 @@
   .destacado-modal-body { padding: 1.6rem; }
   .destacado-modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0 0 0.6rem; }
   .destacado-modal-text { font-size: 0.88rem; color: var(--text-on-cream-muted); line-height: 1.6; margin: 0 0 1.2rem; }
-
-  .slogan-sec { background: var(--dark, #0a0a0a); padding: 4.4rem 1.5rem; text-align: center; overflow: hidden; }
-  .slogan-text {
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(1.7rem, 6vw, 3.5rem); letter-spacing: -0.01em; margin: 0; line-height: 1.1;
-    color: #fff;
-  }
-  .slogan-text .sc-char { display: inline-block; color: #fff; }
-  .slogan-text .sc-char.sc-pending { color: rgba(168,85,247,0.6); }
-  .slogan-text .sc-char.sc-lock { animation: spfc-sc-lock 0.5s ease; }
-  @keyframes spfc-sc-lock {
-    0% { color: var(--accent-light); text-shadow: 0 0 18px rgba(168,85,247,0.9); transform: translateY(-4px); }
-    100% { color: #fff; text-shadow: none; transform: translateY(0); }
-  }
 </style>
 </head>
 <body>
@@ -173,10 +159,6 @@
       <span>Formulario de interés abierto</span><span class="dot">✦</span>
     </div>
   </div>
-
-  <section class="slogan-sec">
-    <p class="slogan-text" id="sloganText">Más allá de los límites</p>
-  </section>
 
   <!-- STATS -->
   <div class="stats-sec">
@@ -394,47 +376,6 @@ const ro = new IntersectionObserver((entries) => {
   entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
 }, { threshold: 0.09 });
 document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
-
-/* ── SLOGAN DECODE EFFECT ── */
-(function () {
-  const sec = document.querySelector('.slogan-sec');
-  const el = document.getElementById('sloganText');
-  if (!sec || !el) return;
-  const finalText = el.textContent.trim();
-  const glyphs = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ#%&$*+';
-  let started = false;
-
-  function scramble() {
-    if (started) return;
-    started = true;
-    const chars = finalText.split('');
-    el.innerHTML = chars.map((c) => `<span class="sc-char sc-pending">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
-    const spans = Array.from(el.querySelectorAll('.sc-char'));
-    let revealed = 0;
-    const timer = setInterval(() => {
-      spans.forEach((span, i) => {
-        if (i < revealed || chars[i] === ' ') return;
-        span.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-      });
-      if (spans[revealed] && chars[revealed] !== ' ') {
-        spans[revealed].textContent = chars[revealed];
-        spans[revealed].classList.remove('sc-pending');
-        spans[revealed].classList.add('sc-lock');
-      }
-      revealed++;
-      if (revealed >= spans.length) clearInterval(timer);
-    }, 45);
-  }
-
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    el.textContent = finalText;
-  } else {
-    const sloganObs = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) scramble(); });
-    }, { threshold: 0.4 });
-    sloganObs.observe(sec);
-  }
-})();
 
 /* ── STAT COUNTERS ── */
 function countUp(el, target, suffix) {

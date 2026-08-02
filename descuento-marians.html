@@ -105,7 +105,7 @@
   <section class="dm-hero">
     <span class="dm-eyebrow">Acuerdo con el club</span>
     <h1 class="dm-title">Marian's Sport<br>os regala un <em>10%</em></h1>
-    <p class="dm-sub">Marian's Sport Santa Ponça ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del club. Consigue tu tarjeta digital en un minuto.</p>
+    <p class="dm-sub">Marian's Sport Santa Ponça ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del club. Comprueba en un minuto si ya puedes conseguir la tuya.</p>
     <div class="dm-card-wrap">
       <div class="dm-card">
         <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
@@ -137,8 +137,8 @@
 
       <div class="dm-result" id="dm-result">
         <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça">
-        <h2 id="dm-result-nombre">¡Ya tienes tu tarjeta!</h2>
-        <p>Enseña esta pantalla en Marian's Sport Santa Ponça para conseguir tu 10% de descuento en productos sin descuento.</p>
+        <h2 id="dm-result-nombre">¡Genial, ya puedes conseguir la tuya!</h2>
+        <p>Pásate por Marian's Sport Santa Ponça y diles que eres jugadora del club, o ven a probarte la equipación y te damos la tarjeta física allí mismo.</p>
       </div>
 
       <div class="dm-not-eligible" id="dm-not-found">
@@ -247,7 +247,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
       formStateEl.style.display = 'none';
       if (json.eligible) {
-        resultNombreEl.textContent = '¡Ya tienes tu tarjeta, ' + json.jugadora_nombre + '!';
+        resultNombreEl.textContent = '¡Genial, ' + json.jugadora_nombre + ', ya puedes conseguir la tuya!';
         resultEl.style.display = 'block';
       } else if (json.motivo === 'pago_pendiente') {
         notPaidEl.style.display = 'block';

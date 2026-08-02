@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marian's Sport, nuevo colaborador del club — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .nm-hero {
+    position: relative; overflow: hidden; text-align: center;
+    background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
+    padding: 108px 1.5rem 3.6rem;
+  }
+  .nm-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 46px 46px; pointer-events: none;
+  }
+  .nm-hero > * { position: relative; z-index: 1; }
+  .nm-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent-light); margin-bottom: 18px;
+  }
+  .nm-eyebrow::before, .nm-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
+  .nm-title {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1.8rem, 5.5vw, 3.2rem); line-height: 1.05; letter-spacing: -0.01em;
+    color: #fff; margin: 0 auto 1rem; max-width: 760px;
+  }
+  .nm-byline { color: rgba(244,240,232,0.6); font-size: 0.86rem; }
+  .nm-byline strong { color: rgba(244,240,232,0.85); font-weight: 600; }
+
+  .nm-article { padding: 3.6rem 1.5rem 2rem; }
+  .nm-article-inner { max-width: 660px; margin: 0 auto; }
+  .nm-card-wrap { max-width: 380px; margin: 0 auto 2.6rem; perspective: 900px; }
+  .nm-card {
+    width: 100%; border-radius: 18px; overflow: hidden; display: block;
+    box-shadow: 0 24px 60px rgba(10,10,10,0.28), 0 4px 16px rgba(10,10,10,0.18);
+    transform: rotate(-3deg); transition: transform 0.4s ease;
+  }
+  .nm-card-wrap:hover .nm-card { transform: rotate(0deg) scale(1.02); }
+  .nm-card img { display: block; width: 100%; height: auto; }
+  .nm-body p { color: var(--text-on-cream); font-size: 1.05rem; line-height: 1.75; margin-bottom: 1.2em; }
+  .nm-body p:first-of-type {
+    font-size: 1.15rem; font-weight: 600; color: var(--ink);
+  }
+  .nm-cta-wrap { text-align: center; margin: 2.6rem 0 1rem; }
+  .nm-thanks {
+    margin-top: 2.6rem; padding-top: 2rem; border-top: 1px solid rgba(10,10,10,0.1);
+  }
+  .nm-thanks span { font-size: 0.86rem; color: var(--text-on-cream-muted); }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+  </div>
+  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <section class="nm-hero">
+    <span class="nm-eyebrow">Noticias del club</span>
+    <h1 class="nm-title">Marian's Sport, nuevo colaborador del club</h1>
+    <p class="nm-byline"><strong>Comunicación SPFC</strong> · <span id="nm-fecha"></span></p>
+  </section>
+
+  <section class="nm-article">
+    <div class="nm-article-inner">
+
+      <div class="nm-card-wrap sr">
+        <div class="nm-card">
+          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
+        </div>
+      </div>
+
+      <div class="nm-body">
+        <p class="sr">Estamos muy contentas de anunciar un nuevo acuerdo de colaboración con Marian's Sport Santa Ponça, que a partir de ahora ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del Fútbol Femenino Santa Ponça.</p>
+        <p class="sr">¿Cómo se consigue? Es muy sencillo: la tarjeta de descuento se entrega en persona cuando vienes a probarte la equipación del club. No hace falta nada más — solo ven a tu cita y te la damos allí mismo.</p>
+        <p class="sr">Gracias a Marian's Sport por apostar por el fútbol femenino de Santa Ponça y por acompañarnos en este proyecto.</p>
+      </div>
+
+      <div class="nm-cta-wrap sr">
+        <a href="descuento-marians.html" class="btn btn-primary">Más información</a>
+      </div>
+
+      <div class="nm-thanks sr">
+        <span>Gracias, Marian's Sport Santa Ponça, por apoyar al club.</span>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+document.getElementById('nm-fecha').textContent = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.textContent = open ? 'Cerrar' : 'Menú';
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+const roChrome = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => { if (e.isIntersecting) { e.target.style.transitionDelay = (Array.from(document.querySelectorAll('.sr')).indexOf(e.target) % 4) * 0.08 + 's'; e.target.classList.add('in'); } });
+}, { threshold: 0.09 });
+document.querySelectorAll('.sr,.sr-l').forEach((el) => roChrome.observe(el));
+</script>
+</body>
+</html>

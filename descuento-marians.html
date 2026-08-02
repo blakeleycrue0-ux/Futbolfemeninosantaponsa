@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarjeta de descuento Marian's Sport — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .dm-hero {
+    position: relative; overflow: hidden; text-align: center;
+    background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
+    padding: 108px 1.5rem 3.4rem;
+  }
+  .dm-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 46px 46px; pointer-events: none;
+  }
+  .dm-hero > * { position: relative; z-index: 1; }
+  .dm-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent-light); margin-bottom: 18px;
+  }
+  .dm-eyebrow::before, .dm-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
+  .dm-title {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1.7rem, 5.5vw, 3.1rem); line-height: 1.05; letter-spacing: -0.01em;
+    color: #fff; margin: 0 0 0.9rem;
+  }
+  .dm-title em { font-style: normal; color: var(--accent-light); }
+  .dm-sub { color: rgba(244,240,232,0.72); max-width: 460px; margin: 0 auto 2.6rem; font-size: 0.98rem; line-height: 1.65; }
+  .dm-card-wrap { max-width: 420px; margin: 0 auto; perspective: 900px; }
+  .dm-card {
+    width: 100%; border-radius: 18px; overflow: hidden; display: block;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4);
+    transform: rotate(-3deg); transition: transform 0.4s ease;
+  }
+  .dm-card-wrap:hover .dm-card { transform: rotate(0deg) scale(1.02); }
+  .dm-card img { display: block; width: 100%; height: auto; }
+
+  .dm-section { padding: 3.6rem 1.5rem; }
+  .dm-box { max-width: 480px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; text-align: center; }
+  @media (max-width: 620px) { .dm-box { padding: 1.6rem; } }
+  .dm-box p.dm-lede { color: var(--text-on-cream-muted); margin: 0 0 1.6rem; font-size: 0.92rem; }
+  .dm-form { text-align: left; }
+  .dm-result { display: none; text-align: center; }
+  .dm-result img { max-width: 100%; border-radius: 14px; margin-bottom: 1.2rem; box-shadow: var(--shadow-sm); }
+  .dm-result h2 { font-family: var(--font-display); font-size: 1.25rem; text-transform: uppercase; margin: 0 0 0.6rem; }
+  .dm-result p { color: var(--text-on-cream-muted); font-size: 0.92rem; line-height: 1.6; }
+  .dm-not-eligible { display: none; text-align: center; }
+  .dm-not-eligible h2 { font-family: var(--font-display); font-size: 1.1rem; text-transform: uppercase; margin: 0 0 0.7rem; }
+  .dm-not-eligible p { color: var(--text-on-cream-muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.4rem; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<header class="hdr" id="hdr">
+  <a href="index.html" class="logo-wrap">
+    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
+    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
+  </a>
+  <nav class="hdr-nav">
+    <a href="equipos.html">Equipos</a>
+    <a href="calendario.html">Calendario</a>
+    <a href="noticias.html">Noticias</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
+  </div>
+</header>
+
+<nav class="fullnav" id="fullnav">
+  <div class="fullnav-links">
+    <a href="index.html" class="fullnav-link">Inicio</a>
+    <a href="equipos.html" class="fullnav-link">Equipos</a>
+    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
+    <a href="calendario.html" class="fullnav-link">Calendario</a>
+    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
+    <a href="noticias.html" class="fullnav-link">Noticias</a>
+    <a href="galeria.html" class="fullnav-link">Galería</a>
+    <a href="club.html" class="fullnav-link">Club</a>
+    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
+    <a href="contacto.html" class="fullnav-link">Contacto</a>
+  </div>
+  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
+  <div class="fullnav-foot">
+    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <section class="dm-hero">
+    <span class="dm-eyebrow">Acuerdo con el club</span>
+    <h1 class="dm-title">Marian's Sport<br>os regala un <em>10%</em></h1>
+    <p class="dm-sub">Marian's Sport Santa Ponça ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del club. Consigue tu tarjeta digital en un minuto.</p>
+    <div class="dm-card-wrap">
+      <div class="dm-card">
+        <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
+      </div>
+    </div>
+  </section>
+
+  <section class="dm-section">
+    <div class="dm-box">
+
+      <div id="dm-form-state">
+        <p class="dm-lede">Escribe el nombre y la fecha de nacimiento de la jugadora — comprobamos que esté al día con el club y te damos la tarjeta al momento.</p>
+        <form class="dm-form" id="dm-form" novalidate>
+          <div class="form-field">
+            <label for="dm-nombre">Nombre de la jugadora *</label>
+            <input type="text" id="dm-nombre" required autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label for="dm-fecha">Fecha de nacimiento *</label>
+            <input type="date" id="dm-fecha" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="dm-submit-btn">Conseguir tarjeta de descuento</button>
+          <p id="dm-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
+      <div class="dm-result" id="dm-result">
+        <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça">
+        <h2 id="dm-result-nombre">¡Ya tienes tu tarjeta!</h2>
+        <p>Enseña esta pantalla en Marian's Sport Santa Ponça para conseguir tu 10% de descuento en productos sin descuento.</p>
+      </div>
+
+      <div class="dm-not-eligible" id="dm-not-found">
+        <h2>No hemos encontrado esa inscripción</h2>
+        <p>Revisa que el nombre y la fecha de nacimiento sean exactamente los del formulario de inscripción. Si todavía no eres jugadora del club, primero tienes que completar el formulario de interés.</p>
+        <a href="inscripcion.html" class="btn btn-outline">Ir al formulario de interés</a>
+      </div>
+
+      <div class="dm-not-eligible" id="dm-not-paid">
+        <h2>Casi lo tienes</h2>
+        <p>Hemos encontrado tu inscripción, pero todavía no consta ningún pago registrado. En cuanto el club confirme el pago podrás conseguir la tarjeta de descuento. Si crees que es un error, escríbenos.</p>
+        <a href="mailto:ffsp2026@gmail.com" class="btn btn-outline">Escribir al club</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+        </a>
+        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
+          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Club</h4>
+        <a href="club.html">Historia y palmarés</a>
+        <a href="equipos.html">Equipos</a>
+        <a href="patrocinadores.html">Patrocinadores</a>
+      </div>
+      <div>
+        <h4>Competición</h4>
+        <a href="calendario.html">Calendario</a>
+        <a href="clasificacion.html">Clasificación</a>
+        <a href="plantilla.html">Plantilla</a>
+        <a href="galeria.html">Galería</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="contacto.html">Ubicación y contacto</a>
+        <a href="noticias.html">Prensa y noticias</a>
+        <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
+      <a href="admin/index.html">Acceso club</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/nav.js"></script>
+<script>
+window.addEventListener('scroll', () => {
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
+}, { passive: true });
+function toggleNav() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('fullnav');
+  const open = nav.classList.toggle('open');
+  burger.textContent = open ? 'Cerrar' : 'Menú';
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+</script>
+<script>
+(function () {
+  const form = document.getElementById('dm-form');
+  const submitBtn = document.getElementById('dm-submit-btn');
+  const statusEl = document.getElementById('dm-form-status');
+  const formStateEl = document.getElementById('dm-form-state');
+  const resultEl = document.getElementById('dm-result');
+  const resultNombreEl = document.getElementById('dm-result-nombre');
+  const notFoundEl = document.getElementById('dm-not-found');
+  const notPaidEl = document.getElementById('dm-not-paid');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById('dm-nombre').value.trim();
+    const fecha = document.getElementById('dm-fecha').value;
+    if (!nombre || !fecha) return;
+
+    submitBtn.disabled = true;
+    statusEl.textContent = 'Comprobando…';
+    statusEl.style.color = '';
+
+    try {
+      const res = await fetch('/.netlify/functions/check-descuento-marians', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, fecha_nacimiento: fecha }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+
+      formStateEl.style.display = 'none';
+      if (json.eligible) {
+        resultNombreEl.textContent = '¡Ya tienes tu tarjeta, ' + json.jugadora_nombre + '!';
+        resultEl.style.display = 'block';
+      } else if (json.motivo === 'pago_pendiente') {
+        notPaidEl.style.display = 'block';
+      } else {
+        notFoundEl.style.display = 'block';
+      }
+    } catch (err) {
+      statusEl.textContent = 'No hemos podido comprobarlo. Inténtalo de nuevo. [' + (err && err.message ? err.message : '') + ']';
+      statusEl.style.color = '#b91c1c';
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

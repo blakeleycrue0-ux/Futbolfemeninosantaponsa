@@ -88,18 +88,20 @@
   @keyframes spfc-mini-shine { to { background-position: -260% center; } }
   @media (prefers-reduced-motion: reduce) { .slogan-mini-text { animation: none; } }
 
-  .mns-sec {
+  .mns-hero {
     position: relative; overflow: hidden;
     background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
-    padding: 3.6rem var(--gutter);
+    min-height: min(72vh, 620px);
+    display: flex; align-items: center;
+    padding: 108px var(--gutter) 2.5rem;
   }
-  .mns-sec::after {
+  .mns-hero::after {
     content: ''; position: absolute; inset: 0;
     background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
     background-size: 46px 46px; pointer-events: none;
   }
   .mns-inner {
-    position: relative; z-index: 1; max-width: 1080px; margin: 0 auto;
+    position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; width: 100%;
     display: flex; align-items: center; gap: 3.5rem;
   }
   @media (max-width: 860px) { .mns-inner { flex-direction: column; text-align: center; gap: 2rem; } }
@@ -196,6 +198,22 @@
     <div class="news-slider-dots" id="newsDots"></div>
   </section>
 
+  <section class="mns-hero" id="mnsHero" style="display:none;">
+    <div class="mns-inner">
+      <div class="mns-card-wrap">
+        <div class="mns-card">
+          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
+        </div>
+      </div>
+      <div>
+        <span class="mns-eyebrow">Nuevo colaborador</span>
+        <h2 class="mns-title">Marian's Sport os regala un <em>10%</em></h2>
+        <p class="mns-desc">10% de descuento en productos sin descuento para todas las jugadoras del club.</p>
+        <a href="noticia-marians.html" class="btn btn-primary">Leer más</a>
+      </div>
+    </div>
+  </section>
+
   <!-- MARQUEE -->
   <div class="marquee-strip" aria-hidden="true">
     <div class="marquee-inner">
@@ -215,22 +233,6 @@
   <div class="slogan-mini">
     <span class="slogan-mini-text">Más allá de los límites</span>
   </div>
-
-  <section class="mns-sec">
-    <div class="mns-inner">
-      <div class="mns-card-wrap">
-        <div class="mns-card">
-          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
-        </div>
-      </div>
-      <div>
-        <span class="mns-eyebrow">Nuevo colaborador</span>
-        <h2 class="mns-title">Marian's Sport os regala un <em>10%</em></h2>
-        <p class="mns-desc">10% de descuento en productos sin descuento para todas las jugadoras del club.</p>
-        <a href="noticia-marians.html" class="btn btn-primary">Leer más</a>
-      </div>
-    </div>
-  </section>
 
   <!-- STATS -->
   <div class="stats-sec">
@@ -595,14 +597,8 @@ function countUp(el, target, suffix) {
       cta: "Leer más",
     })));
   } else {
-    SPFC_INIT_NEWS_SLIDER([{
-      href: null,
-      bg: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=85",
-      eyebrow: "Fútbol Femenino Santa Ponça",
-      title: "Pasión por el fútbol femenino",
-      desc: "Club de fútbol femenino en Calvià, Mallorca. Formamos, competimos y abrimos puertas reales en el deporte.",
-      cta: null,
-    }]);
+    document.getElementById("newsSlider").style.display = "none";
+    document.getElementById("mnsHero").style.display = "flex";
   }
 
   /* News */

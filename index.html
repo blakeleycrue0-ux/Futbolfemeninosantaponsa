@@ -76,50 +76,17 @@
   .destacado-modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0 0 0.6rem; }
   .destacado-modal-text { font-size: 0.88rem; color: var(--text-on-cream-muted); line-height: 1.6; margin: 0 0 1.2rem; }
 
-  .hero-slogan-strip {
-    position: relative; overflow: hidden;
-    background: radial-gradient(120% 180% at 50% -20%, #2a1638 0%, #0a0a0a 60%);
-    padding: 112px 16px 30px; text-align: center;
+  .slogan-mini { text-align: center; padding: 1.5rem 1rem 0.3rem; }
+  .slogan-mini-text {
+    font-family: var(--font-display); font-weight: 800; text-transform: uppercase;
+    font-size: clamp(13px, 2.4vw, 17px); letter-spacing: 0.09em; display: inline-block;
+    background: linear-gradient(100deg, var(--accent-dark) 0%, var(--accent) 22%, var(--accent-light) 44%, var(--accent) 66%, var(--accent-dark) 88%, var(--accent) 100%);
+    background-size: 260% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+    animation: spfc-mini-shine 5s linear infinite;
   }
-  .hero-slogan-strip .hs-spark {
-    position: absolute; width: 3px; height: 3px; border-radius: 50%;
-    background: #e9d5ff; opacity: 0; pointer-events: none;
-    box-shadow: 0 0 6px 1px rgba(232,213,255,0.8);
-    animation: spfc-hs-twinkle 2.4s ease-in-out infinite;
-  }
-  @keyframes spfc-hs-twinkle {
-    0%, 100% { opacity: 0; transform: scale(0.4); }
-    50% { opacity: 1; transform: scale(1.3); }
-  }
-  .hero-slogan-word {
-    position: relative; display: inline-block;
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(17px, 4vw, 30px); letter-spacing: 0.05em; color: #fff;
-    perspective: 400px;
-  }
-  .hero-slogan-word .hs-char {
-    display: inline-block; opacity: 0; transform: translateY(18px) rotateX(-75deg);
-    transform-origin: bottom center; animation: spfc-hs-flip 0.6s cubic-bezier(.22,1.4,.36,1) forwards;
-  }
-  @keyframes spfc-hs-flip { to { opacity: 1; transform: translateY(0) rotateX(0deg); } }
-  .hero-slogan-word .hs-shine {
-    position: absolute; top: -20%; left: -60%; width: 45%; height: 140%;
-    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.85), transparent);
-    transform: skewX(-18deg); opacity: 0;
-    animation: spfc-hs-sweep 1.3s ease-in-out forwards;
-    animation-delay: var(--hs-sweep-delay, 1.1s);
-  }
-  @keyframes spfc-hs-sweep {
-    0% { left: -60%; opacity: 0; }
-    15% { opacity: 1; }
-    85% { opacity: 1; }
-    100% { left: 130%; opacity: 0; }
-  }
-  @media (max-width: 640px) { .hero-slogan-strip { padding: 96px 14px 24px; } }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-slogan-word .hs-char { opacity: 1; transform: none; animation: none; }
-    .hero-slogan-word .hs-shine, .hero-slogan-strip .hs-spark { display: none; }
-  }
+  @keyframes spfc-mini-shine { to { background-position: -260% center; } }
+  @media (prefers-reduced-motion: reduce) { .slogan-mini-text { animation: none; } }
 </style>
 </head>
 <body>
@@ -178,10 +145,6 @@
 
 <main id="main">
 
-  <div class="hero-slogan-strip" id="heroSloganStrip">
-    <span class="hero-slogan-word" id="heroSloganWord">Más allá de los límites</span>
-  </div>
-
   <!-- Sin display:none: el hueco (alto fijo por CSS) se reserva desde el
        primer render para que no haya salto de maquetación mientras se
        cargan las noticias — antes el bloque aparecía en 0 y empujaba todo
@@ -207,6 +170,10 @@
       <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
       <span>Formulario de interés abierto</span><span class="dot">✦</span>
     </div>
+  </div>
+
+  <div class="slogan-mini">
+    <span class="slogan-mini-text">Más allá de los límites</span>
   </div>
 
   <!-- STATS -->
@@ -426,36 +393,6 @@ const ro = new IntersectionObserver((entries) => {
   entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
 }, { threshold: 0.09 });
 document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
-
-/* ── HERO SLOGAN EFFECT ── */
-(function () {
-  const wrap = document.getElementById('heroSloganStrip');
-  const word = document.getElementById('heroSloganWord');
-  if (!wrap || !word) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const finalText = word.textContent.trim();
-  const chars = finalText.split('');
-  word.innerHTML = chars.map((c) => `<span class="hs-char">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
-  const spans = word.querySelectorAll('.hs-char');
-  spans.forEach((span, i) => { span.style.animationDelay = (i * 45) + 'ms'; });
-
-  const totalMs = spans.length * 45 + 650;
-  const shine = document.createElement('span');
-  shine.className = 'hs-shine';
-  shine.setAttribute('aria-hidden', 'true');
-  shine.style.setProperty('--hs-sweep-delay', totalMs + 'ms');
-  word.appendChild(shine);
-
-  for (let i = 0; i < 14; i++) {
-    const s = document.createElement('span');
-    s.className = 'hs-spark';
-    s.style.left = Math.random() * 100 + '%';
-    s.style.top = Math.random() * 100 + '%';
-    s.style.animationDelay = (Math.random() * 2.4) + 's';
-    wrap.appendChild(s);
-  }
-})();
 
 /* ── STAT COUNTERS ── */
 function countUp(el, target, suffix) {

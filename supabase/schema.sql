@@ -504,6 +504,26 @@ create table if not exists ffib_sync_log (
   ejecutado_en timestamptz not null default now()
 );
 
+-- ----------------------------------------------------------------------------
+-- descuento_marians_reclamos
+-- Un registro por jugadora que ha conseguido la tarjeta de descuento de
+-- Marian's Sport desde descuento-marians.html. jugadora_nombre +
+-- jugadora_fecha_nacimiento identifican a la jugadora (no hay login); si
+-- vuelve a pedirla se le devuelve siempre el mismo código en vez de crear
+-- uno nuevo (ver check-descuento-marians.js), así el club sabe cuándo lo
+-- pidió por primera vez con creado_en.
+-- ----------------------------------------------------------------------------
+create table if not exists descuento_marians_reclamos (
+  id uuid primary key default gen_random_uuid(),
+  jugadora_nombre text not null,
+  jugadora_fecha_nacimiento date not null,
+  codigo text not null unique,
+  creado_en timestamptz not null default now()
+);
+
+create unique index if not exists descuento_marians_reclamos_jugadora_idx
+  on descuento_marians_reclamos(lower(jugadora_nombre), jugadora_fecha_nacimiento);
+
 -- ============================================================================
 -- Row Level Security
 -- Lectura pública en todo lo que se muestra en la web.
@@ -533,6 +553,7 @@ alter table pagos_extra enable row level security;
 alter table admin_push_subscriptions enable row level security;
 alter table user_favorites enable row level security;
 alter table ffib_sync_log enable row level security;
+alter table descuento_marians_reclamos enable row level security;
 
 -- teams
 create policy "teams_public_read" on teams for select using (true);
@@ -625,6 +646,11 @@ create policy "user_favorites_owner_all" on user_favorites for all using (auth.u
 
 -- ffib_sync_log: solo admin (la function usa service_role, que ignora RLS)
 create policy "synclog_admin_read" on ffib_sync_log for select using (is_app_admin());
+
+-- descuento_marians_reclamos: sin lectura/escritura pública — el alta la
+-- hace siempre check-descuento-marians.js con service_role; el admin solo
+-- puede leer la lista de quién lo ha reclamado.
+create policy "descuento_marians_reclamos_admin_read" on descuento_marians_reclamos for select using (is_app_admin());
 
 -- ============================================================================
 -- Storage: bucket público para fotos/vídeos (jugadoras, noticias, galería,

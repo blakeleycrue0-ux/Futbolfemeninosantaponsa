@@ -37,6 +37,7 @@ function wireMediaUpload(opts) {
     }
     const { data } = window.spfc.storage.from("spfc-media").getPublicUrl(path);
     urlInput.value = data.publicUrl;
+    urlInput.dispatchEvent(new Event("input", { bubbles: true }));
     if (statusEl) statusEl.textContent = "Subido ✓";
     fileInput.value = "";
   });

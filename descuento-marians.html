@@ -6,43 +6,17 @@
 <title>Tarjeta de descuento Marian's Sport — Fútbol Femenino Santa Ponça</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#17151b">
-<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png">
-<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .dm-hero {
-    position: relative; overflow: hidden; text-align: center;
-    background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
-    padding: 108px 1.5rem 3.4rem;
-  }
-  .dm-hero::after {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-    background-size: 46px 46px; pointer-events: none;
-  }
-  .dm-hero > * { position: relative; z-index: 1; }
-  .dm-eyebrow {
-    display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display);
-    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--accent-light); margin-bottom: 18px;
-  }
-  .dm-eyebrow::before, .dm-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
-  .dm-title {
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(1.7rem, 5.5vw, 3.1rem); line-height: 1.05; letter-spacing: -0.01em;
-    color: #fff; margin: 0 0 0.9rem;
-  }
-  .dm-title em { font-style: normal; color: var(--accent-light); }
-  .dm-sub { color: rgba(244,240,232,0.72); max-width: 460px; margin: 0 auto 2.6rem; font-size: 0.98rem; line-height: 1.65; }
-  .dm-card-wrap { max-width: 420px; margin: 0 auto; perspective: 900px; }
+  .dm-card-wrap { max-width: 460px; margin: 0 auto; }
   .dm-card {
-    width: 100%; border-radius: 18px; overflow: hidden; display: block;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4);
-    transform: rotate(-3deg); transition: transform 0.4s ease;
+    width: 100%; border-radius: var(--radius-lg); overflow: hidden; display: block;
+    border: 1px solid rgba(10,10,10,0.08); box-shadow: var(--shadow-sm);
   }
-  .dm-card-wrap:hover .dm-card { transform: rotate(0deg) scale(1.02); }
   .dm-card img { display: block; width: 100%; height: auto; }
 
   .dm-section { padding: 3.6rem 1.5rem; }
@@ -102,22 +76,29 @@
 
 <main id="main">
 
-  <section class="dm-hero">
-    <span class="dm-eyebrow">Acuerdo con el club</span>
-    <h1 class="dm-title">Marian's Sport<br>os regala un <em>10%</em></h1>
-    <p class="dm-sub">Marian's Sport Santa Ponça ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del club. Consigue tu tarjeta digital en un minuto.</p>
-    <div class="dm-card-wrap">
-      <div class="dm-card">
-        <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
-      </div>
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Acuerdo con el club</span>
+      <h1 class="hero__title">Marian's Sport os regala un 10%</h1>
     </div>
   </section>
 
   <section class="dm-section">
+    <div class="container">
+      <div class="dm-card-wrap sr">
+        <div class="dm-card">
+          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dm-section" style="padding-top:0;">
     <div class="dm-box">
 
       <div id="dm-form-state">
-        <p class="dm-lede">Escribe el nombre y la fecha de nacimiento de la jugadora — comprobamos que esté al día con el club y te damos la tarjeta al momento.</p>
+        <p class="dm-lede">Escribe el nombre y la fecha de nacimiento de la jugadora — comprobamos que esté al día con el club y te decimos si ya puedes conseguir la tarjeta.</p>
         <form class="dm-form" id="dm-form" novalidate>
           <div class="form-field">
             <label for="dm-nombre">Nombre de la jugadora *</label>
@@ -127,15 +108,18 @@
             <label for="dm-fecha">Fecha de nacimiento *</label>
             <input type="date" id="dm-fecha" required>
           </div>
-          <button type="submit" class="btn btn-primary btn-block" id="dm-submit-btn">Conseguir tarjeta de descuento</button>
+          <button type="submit" class="btn btn-primary btn-block" id="dm-submit-btn">Comprobar</button>
           <p id="dm-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
         </form>
+        <p style="margin:1.2rem 0 0;font-size:0.82rem;color:var(--text-on-cream-muted);text-align:center;">
+          ¿Prefieres que te la demos en persona? También te la damos cuando vengas a <a href="citas.html">probarte la equipación</a>.
+        </p>
       </div>
 
       <div class="dm-result" id="dm-result">
         <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça">
-        <h2 id="dm-result-nombre">¡Ya tienes tu tarjeta!</h2>
-        <p>Enseña esta pantalla en Marian's Sport Santa Ponça para conseguir tu 10% de descuento en productos sin descuento.</p>
+        <h2 id="dm-result-nombre">¡Genial, ya puedes conseguir la tuya!</h2>
+        <p>Ven a <a href="citas.html">probarte la equipación</a> y te damos allí mismo la tarjeta física — es la única forma de conseguirla.</p>
       </div>
 
       <div class="dm-not-eligible" id="dm-not-found">
@@ -211,6 +195,10 @@ function toggleNav() {
   document.body.style.overflow = open ? 'hidden' : '';
 }
 document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+const roChrome = new IntersectionObserver((entries) => {
+  entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.09 });
+document.querySelectorAll('.sr,.sr-l').forEach((el) => roChrome.observe(el));
 </script>
 <script>
 (function () {
@@ -244,7 +232,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
 
       formStateEl.style.display = 'none';
       if (json.eligible) {
-        resultNombreEl.textContent = '¡Ya tienes tu tarjeta, ' + json.jugadora_nombre + '!';
+        resultNombreEl.textContent = '¡Genial, ' + json.jugadora_nombre + ', ya puedes conseguir la tuya!';
         resultEl.style.display = 'block';
       } else if (json.motivo === 'pago_pendiente') {
         notPaidEl.style.display = 'block';

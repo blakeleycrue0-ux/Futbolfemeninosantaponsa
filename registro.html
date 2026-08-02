@@ -49,6 +49,24 @@
   .bienvenida-lema { font-style: italic; color: var(--accent-light); font-weight: 600; }
   .bienvenida-box p { text-align: left; font-size: 1rem; line-height: 1.75; color: rgba(244,240,232,0.86); }
   .bienvenida-box p.bienvenida-lema { text-align: center; font-size: 1.15rem; margin: 1.4rem 0 2rem; }
+  .bienvenida-slogan {
+    font-style: normal; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1.5rem, 4.5vw, 2.1rem); letter-spacing: 0.03em;
+    margin: 2.2rem 0 2.4rem !important;
+    background: linear-gradient(100deg, #b98cf0 0%, #fff 22%, #b98cf0 44%, #fff 66%, #b98cf0 88%, #fff 100%);
+    background-size: 260% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(168,85,247,0.4);
+    animation: spfc-slogan-shine 5s linear infinite, spfc-slogan-pop 0.9s cubic-bezier(.2,.85,.25,1) both;
+  }
+  @keyframes spfc-slogan-shine { to { background-position: -260% center; } }
+  @keyframes spfc-slogan-pop {
+    from { opacity: 0; transform: translateY(12px) scale(0.94); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bienvenida-slogan { animation: none; }
+  }
   .bienvenida-subtitulo { font-family: "Playfair Display", Georgia, serif; font-size: 1.3rem; font-weight: 700; text-align: left; margin: 1.6rem 0 0.9rem; color: #fff; }
   .bienvenida-valores { text-align: left; margin: 0; padding-left: 1.2rem; font-size: 0.98rem; line-height: 1.95; color: rgba(244,240,232,0.86); }
   .bienvenida-valores strong { color: #fff; }
@@ -136,7 +154,7 @@
       <p>Familias y jugadoras, bienvenidas a Fútbol Femenino Santa Ponça. Nace un nuevo club y empieza un camino que queremos construir juntas: con humildad, trabajo serio y una idea clara de lo que debe ser el fútbol femenino.</p>
       <p>Queremos un entorno donde cada jugadora se sienta valorada, exigida de forma positiva y acompañada para crecer dentro y fuera del campo.</p>
       <p><em>No prometemos atajos. Prometemos honestidad, paciencia, constancia y corazón.</em></p>
-      <p class="bienvenida-lema">Más allá de los límites.</p>
+      <p class="bienvenida-lema bienvenida-slogan">Más allá de los límites.</p>
 
       <h3 class="bienvenida-subtitulo">Nuestros valores</h3>
       <ul class="bienvenida-valores">

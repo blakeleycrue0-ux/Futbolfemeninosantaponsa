@@ -75,6 +75,19 @@
   .destacado-modal-body { padding: 1.6rem; }
   .destacado-modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0 0 0.6rem; }
   .destacado-modal-text { font-size: 0.88rem; color: var(--text-on-cream-muted); line-height: 1.6; margin: 0 0 1.2rem; }
+
+  .slogan-sec { background: var(--dark, #0a0a0a); padding: 4.4rem 1.5rem; text-align: center; overflow: hidden; }
+  .slogan-text {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1.7rem, 6vw, 3.5rem); letter-spacing: -0.01em; margin: 0; line-height: 1.1;
+    background: linear-gradient(100deg, #b98cf0 0%, #fff 22%, #b98cf0 44%, #fff 66%, #b98cf0 88%, #fff 100%);
+    background-size: 260% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(168,85,247,0.35);
+    animation: spfc-home-slogan-shine 5s linear infinite;
+  }
+  @keyframes spfc-home-slogan-shine { to { background-position: -260% center; } }
+  @media (prefers-reduced-motion: reduce) { .slogan-text { animation: none; } }
 </style>
 </head>
 <body>
@@ -159,6 +172,10 @@
       <span>Formulario de interés abierto</span><span class="dot">✦</span>
     </div>
   </div>
+
+  <section class="slogan-sec">
+    <p class="slogan-text sr">Más allá de los límites</p>
+  </section>
 
   <!-- STATS -->
   <div class="stats-sec">

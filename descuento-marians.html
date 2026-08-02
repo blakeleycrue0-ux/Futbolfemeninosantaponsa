@@ -54,11 +54,6 @@
   .dm-result img { max-width: 100%; border-radius: 14px; margin-bottom: 1.2rem; box-shadow: var(--shadow-sm); }
   .dm-result h2 { font-family: var(--font-display); font-size: 1.25rem; text-transform: uppercase; margin: 0 0 0.6rem; }
   .dm-result p { color: var(--text-on-cream-muted); font-size: 0.92rem; line-height: 1.6; }
-  .dm-codigo {
-    margin-top: 1.4rem; padding: 0.9rem 1.2rem; border: 1.5px dashed var(--accent); border-radius: var(--radius-md);
-    font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; letter-spacing: 0.08em;
-    color: var(--accent-dark); background: var(--accent-soft);
-  }
   .dm-not-eligible { display: none; text-align: center; }
   .dm-not-eligible h2 { font-family: var(--font-display); font-size: 1.1rem; text-transform: uppercase; margin: 0 0 0.7rem; }
   .dm-not-eligible p { color: var(--text-on-cream-muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.4rem; }
@@ -140,8 +135,7 @@
       <div class="dm-result" id="dm-result">
         <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça">
         <h2 id="dm-result-nombre">¡Ya tienes tu tarjeta!</h2>
-        <p>Enseña esta pantalla y tu código en Marian's Sport Santa Ponça para conseguir tu 10% de descuento en productos sin descuento.</p>
-        <div class="dm-codigo" id="dm-codigo"></div>
+        <p>Enseña esta pantalla en Marian's Sport Santa Ponça para conseguir tu 10% de descuento en productos sin descuento.</p>
       </div>
 
       <div class="dm-not-eligible" id="dm-not-found">
@@ -251,7 +245,6 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
       formStateEl.style.display = 'none';
       if (json.eligible) {
         resultNombreEl.textContent = '¡Ya tienes tu tarjeta, ' + json.jugadora_nombre + '!';
-        document.getElementById('dm-codigo').textContent = 'Código: ' + json.codigo;
         resultEl.style.display = 'block';
       } else if (json.motivo === 'pago_pendiente') {
         notPaidEl.style.display = 'block';

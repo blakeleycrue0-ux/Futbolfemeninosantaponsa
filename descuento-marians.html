@@ -12,37 +12,11 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .dm-hero {
-    position: relative; overflow: hidden; text-align: center;
-    background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
-    padding: 108px 1.5rem 3.4rem;
-  }
-  .dm-hero::after {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-    background-size: 46px 46px; pointer-events: none;
-  }
-  .dm-hero > * { position: relative; z-index: 1; }
-  .dm-eyebrow {
-    display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display);
-    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--accent-light); margin-bottom: 18px;
-  }
-  .dm-eyebrow::before, .dm-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
-  .dm-title {
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(1.7rem, 5.5vw, 3.1rem); line-height: 1.05; letter-spacing: -0.01em;
-    color: #fff; margin: 0 0 0.9rem;
-  }
-  .dm-title em { font-style: normal; color: var(--accent-light); }
-  .dm-sub { color: rgba(244,240,232,0.72); max-width: 460px; margin: 0 auto 2.6rem; font-size: 0.98rem; line-height: 1.65; }
-  .dm-card-wrap { max-width: 420px; margin: 0 auto; perspective: 900px; }
+  .dm-card-wrap { max-width: 460px; margin: 0 auto; }
   .dm-card {
-    width: 100%; border-radius: 18px; overflow: hidden; display: block;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4);
-    transform: rotate(-3deg); transition: transform 0.4s ease;
+    width: 100%; border-radius: var(--radius-lg); overflow: hidden; display: block;
+    border: 1px solid rgba(10,10,10,0.08); box-shadow: var(--shadow-sm);
   }
-  .dm-card-wrap:hover .dm-card { transform: rotate(0deg) scale(1.02); }
   .dm-card img { display: block; width: 100%; height: auto; }
 
   .dm-section { padding: 3.6rem 1.5rem; }
@@ -102,18 +76,25 @@
 
 <main id="main">
 
-  <section class="dm-hero">
-    <span class="dm-eyebrow">Acuerdo con el club</span>
-    <h1 class="dm-title">Marian's Sport<br>os regala un <em>10%</em></h1>
-    <p class="dm-sub">Marian's Sport Santa Ponça ofrece un 10% de descuento en productos sin descuento a todas las jugadoras del club. Comprueba en un minuto si ya puedes conseguir la tuya.</p>
-    <div class="dm-card-wrap">
-      <div class="dm-card">
-        <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
-      </div>
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Acuerdo con el club</span>
+      <h1 class="hero__title">Marian's Sport os regala un 10%</h1>
     </div>
   </section>
 
   <section class="dm-section">
+    <div class="container">
+      <div class="dm-card-wrap sr">
+        <div class="dm-card">
+          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dm-section" style="padding-top:0;">
     <div class="dm-box">
 
       <div id="dm-form-state">
@@ -214,6 +195,10 @@ function toggleNav() {
   document.body.style.overflow = open ? 'hidden' : '';
 }
 document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
+const roChrome = new IntersectionObserver((entries) => {
+  entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.09 });
+document.querySelectorAll('.sr,.sr-l').forEach((el) => roChrome.observe(el));
 </script>
 <script>
 (function () {

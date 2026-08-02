@@ -1,5 +1,15 @@
 const { createClient } = require("@supabase/supabase-js");
 
+const CODIGO_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin 0/O ni 1/I, para que se lea bien
+
+function generarCodigo() {
+  let codigo = "";
+  for (let i = 0; i < 6; i++) {
+    codigo += CODIGO_CHARS[Math.floor(Math.random() * CODIGO_CHARS.length)];
+  }
+  return "FFSP-" + codigo;
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
@@ -48,14 +58,43 @@ exports.handler = async function (event) {
 
   const eligible = inscripcion.estado === "pagado" || inscripcion.estado === "pago_parcial";
 
+  if (!eligible) {
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ok: true, eligible: false, motivo: "pago_pendiente" }),
+    };
+  }
+
+  // Si esta jugadora ya había reclamado la tarjeta antes, se le devuelve
+  // siempre el mismo código en vez de crear uno nuevo cada vez que entra.
+  const { data: existente } = await supabase
+    .from("descuento_marians_reclamos")
+    .select("codigo")
+    .ilike("jugadora_nombre", nombre)
+    .eq("jugadora_fecha_nacimiento", fechaNacimiento)
+    .limit(1);
+
+  let codigo = existente && existente[0] && existente[0].codigo;
+
+  if (!codigo) {
+    codigo = generarCodigo();
+    const { error: insertError } = await supabase
+      .from("descuento_marians_reclamos")
+      .insert({ jugadora_nombre: inscripcion.jugadora_nombre, jugadora_fecha_nacimiento: fechaNacimiento, codigo });
+    if (insertError) {
+      return { statusCode: 500, body: "No se ha podido generar el código: " + insertError.message };
+    }
+  }
+
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ok: true,
-      eligible,
-      motivo: eligible ? null : "pago_pendiente",
+      eligible: true,
       jugadora_nombre: inscripcion.jugadora_nombre,
+      codigo,
     }),
   };
 };

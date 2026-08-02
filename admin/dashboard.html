@@ -69,6 +69,21 @@
     </div>
 
     <div class="admin-card">
+      <h2>Tarjeta descuento Marian's Sport</h2>
+      <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">
+        Jugadoras que han conseguido la tarjeta desde
+        <a href="../descuento-marians.html" target="_blank" rel="noopener">descuento-marians.html</a>.
+        Cada una tiene siempre el mismo código, así que si vuelve a entrar no se genera uno nuevo.
+      </p>
+      <div class="admin-table-wrap" style="margin-top:1rem;">
+        <table class="admin-table">
+          <thead><tr><th>Jugadora</th><th>Fecha nacimiento</th><th>Código</th><th>Conseguida el</th></tr></thead>
+          <tbody id="descuento-marians-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="admin-card">
       <h2>Sincronización FFIB</h2>
       <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">
         La clasificación y los resultados se sincronizan automáticamente cada pocas horas
@@ -171,6 +186,23 @@
         <span style="color:var(--text-on-cream-muted);white-space:nowrap;">${n.publicado ? "" : "<span class=\"pill pill-warn\" style=\"margin-right:0.5rem;\">Borrador</span>"}${new Date(n.fecha).toLocaleDateString("es-ES")}</span>
       </li>`).join("")
     : `<li style="color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</li>`;
+
+  async function loadDescuentoMarians() {
+    const { data } = await window.spfc.from("descuento_marians_reclamos").select("*").order("creado_en", { ascending: false });
+    const body = document.getElementById("descuento-marians-body");
+    if (!data || !data.length) {
+      body.innerHTML = '<tr><td colspan="4">Todavía no la ha conseguido nadie.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.jugadora_nombre)}</td>
+        <td>${new Date(r.jugadora_fecha_nacimiento + "T00:00:00").toLocaleDateString("es-ES")}</td>
+        <td>${r.codigo}</td>
+        <td>${new Date(r.creado_en).toLocaleString("es-ES")}</td>
+      </tr>`).join("");
+  }
+  loadDescuentoMarians();
 
   async function loadLog() {
     const { data } = await window.spfc.from("ffib_sync_log").select("*").order("ejecutado_en", { ascending: false }).limit(8);

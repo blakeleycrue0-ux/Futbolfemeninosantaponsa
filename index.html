@@ -80,14 +80,15 @@
   .slogan-text {
     font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
     font-size: clamp(1.7rem, 6vw, 3.5rem); letter-spacing: -0.01em; margin: 0; line-height: 1.1;
-    background: linear-gradient(100deg, #b98cf0 0%, #fff 22%, #b98cf0 44%, #fff 66%, #b98cf0 88%, #fff 100%);
-    background-size: 260% auto;
-    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 40px rgba(168,85,247,0.35);
-    animation: spfc-home-slogan-shine 5s linear infinite;
+    color: #fff;
   }
-  @keyframes spfc-home-slogan-shine { to { background-position: -260% center; } }
-  @media (prefers-reduced-motion: reduce) { .slogan-text { animation: none; } }
+  .slogan-text .sc-char { display: inline-block; color: #fff; }
+  .slogan-text .sc-char.sc-pending { color: rgba(168,85,247,0.6); }
+  .slogan-text .sc-char.sc-lock { animation: spfc-sc-lock 0.5s ease; }
+  @keyframes spfc-sc-lock {
+    0% { color: var(--accent-light); text-shadow: 0 0 18px rgba(168,85,247,0.9); transform: translateY(-4px); }
+    100% { color: #fff; text-shadow: none; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
@@ -174,7 +175,7 @@
   </div>
 
   <section class="slogan-sec">
-    <p class="slogan-text sr">Más allá de los límites</p>
+    <p class="slogan-text" id="sloganText">Más allá de los límites</p>
   </section>
 
   <!-- STATS -->
@@ -393,6 +394,47 @@ const ro = new IntersectionObserver((entries) => {
   entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
 }, { threshold: 0.09 });
 document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
+
+/* ── SLOGAN DECODE EFFECT ── */
+(function () {
+  const sec = document.querySelector('.slogan-sec');
+  const el = document.getElementById('sloganText');
+  if (!sec || !el) return;
+  const finalText = el.textContent.trim();
+  const glyphs = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ#%&$*+';
+  let started = false;
+
+  function scramble() {
+    if (started) return;
+    started = true;
+    const chars = finalText.split('');
+    el.innerHTML = chars.map((c) => `<span class="sc-char sc-pending">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+    const spans = Array.from(el.querySelectorAll('.sc-char'));
+    let revealed = 0;
+    const timer = setInterval(() => {
+      spans.forEach((span, i) => {
+        if (i < revealed || chars[i] === ' ') return;
+        span.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      });
+      if (spans[revealed] && chars[revealed] !== ' ') {
+        spans[revealed].textContent = chars[revealed];
+        spans[revealed].classList.remove('sc-pending');
+        spans[revealed].classList.add('sc-lock');
+      }
+      revealed++;
+      if (revealed >= spans.length) clearInterval(timer);
+    }, 45);
+  }
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = finalText;
+  } else {
+    const sloganObs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) scramble(); });
+    }, { threshold: 0.4 });
+    sloganObs.observe(sec);
+  }
+})();
 
 /* ── STAT COUNTERS ── */
 function countUp(el, target, suffix) {

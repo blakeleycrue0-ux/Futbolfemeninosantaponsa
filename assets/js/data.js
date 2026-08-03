@@ -7,7 +7,7 @@
 window.SPFC_FALLBACK = {
   club: {
     nombre: "Fútbol Femenino Santa Ponça",
-    equipo_primero_id: "amateur",
+    equipo_primero_id: "3-rfef",
     ciudad: "Santa Ponça, Calvià, Mallorca",
   },
   teams: [],

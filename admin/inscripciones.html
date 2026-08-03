@@ -262,7 +262,10 @@
           ${p.estado !== "pagado" ? `
             <button type="button" class="btn btn-outline btn-sm" style="margin-left:0.6rem;" data-mark-pago="${p.id}">Marcar como pagada</button>
             <span data-mark-status="${p.id}" style="margin-left:0.4rem;font-size:0.82rem;"></span>
-          ` : ""}
+          ` : `
+            <button type="button" class="btn btn-outline btn-sm" style="margin-left:0.6rem;" data-unmark-pago="${p.id}">Deshacer (marcar pendiente)</button>
+            <span data-unmark-status="${p.id}" style="margin-left:0.4rem;font-size:0.82rem;"></span>
+          `}
         </li>`).join("") +
       `</ul>` +
       (hayPagado
@@ -292,6 +295,30 @@
           loadInscripciones();
         } catch (err) {
           markBtn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      });
+    });
+
+    pagosEl.querySelectorAll("[data-unmark-pago]").forEach((unmarkBtn) => {
+      unmarkBtn.addEventListener("click", async () => {
+        if (!confirm("¿Marcar esta cuota como pendiente otra vez? Es para corregir un error, no envía ningún aviso a la familia.")) return;
+        const pagoId = unmarkBtn.dataset.unmarkPago;
+        const status = pagosEl.querySelector(`[data-unmark-status="${pagoId}"]`);
+        unmarkBtn.disabled = true;
+        status.textContent = "Guardando…";
+        try {
+          const { error } = await window.spfc.from("inscripcion_pagos").update({ estado: "pendiente" }).eq("id", pagoId);
+          if (error) throw error;
+          const { data: pagosActualizados } = await window.spfc.from("inscripcion_pagos").select("estado").eq("inscripcion_id", item.id);
+          const algunoPagado = (pagosActualizados || []).some((p) => p.estado === "pagado");
+          const nuevoEstado = algunoPagado ? "pago_parcial" : "pendiente";
+          await window.spfc.from("inscripciones").update({ estado: nuevoEstado }).eq("id", item.id);
+          status.textContent = "Corregido ✓";
+          openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+          loadInscripciones();
+        } catch (err) {
+          unmarkBtn.disabled = false;
           status.textContent = "Error: " + err.message;
         }
       });

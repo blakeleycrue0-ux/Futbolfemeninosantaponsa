@@ -719,5 +719,21 @@ update teams
 set nombre = 'Benjamín Alevín Femenino', categoria = 'Benjamín Alevín'
 where categoria = 'Alevín';
 
+-- Ahora son 5 categorías: se renombra "Amateur" a "3ª RFEF" y se añade
+-- "Regional" como segundo equipo sénior. La edad para el precio de 450€
+-- (19 años o más) no cambia — sigue calculándose solo por fecha de
+-- nacimiento, sin depender del nombre de la categoría.
+update teams
+set nombre = '3ª RFEF', categoria = '3ª RFEF', orden = 0
+where categoria = 'Amateur';
+
+insert into teams (nombre, categoria, temporada, slug, orden)
+values ('Regional', 'Regional', '2026/27', 'regional', 1)
+on conflict do nothing;
+
+update teams set orden = 2 where categoria = 'Cadete Juvenil';
+update teams set orden = 3 where categoria = 'Infantil';
+update teams set orden = 4 where categoria = 'Benjamín Alevín';
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

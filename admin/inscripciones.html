@@ -256,7 +256,13 @@
     pagosEl.innerHTML = `<p><strong>Plazos (pago por transferencia):</strong></p><ul style="margin:0 0 0 1.2rem;padding:0;">` +
       pagos.map((p) => `
         <li style="margin-bottom:0.3rem;">
-          Cuota ${p.numero_cuota}: ${p.importe} € · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}
+          Cuota ${p.numero_cuota}:
+          <span data-importe-view="${p.id}">${p.importe} €</span>
+          <input type="number" step="0.01" min="0" data-importe-input="${p.id}" value="${p.importe}" style="display:none;width:5.5em;">
+          <button type="button" class="btn-icon" data-edit-importe="${p.id}" title="Cambiar cantidad">✎</button>
+          <button type="button" class="btn-icon" data-save-importe="${p.id}" title="Guardar" style="display:none;">✓</button>
+          <span data-importe-status="${p.id}" style="font-size:0.8rem;"></span>
+          · vence ${escapeHtml(p.fecha_vencimiento || "—")} · ${pagoEstadoLabels[p.estado] || p.estado}
           ${p.comprobante_url ? ` · <a href="${escapeHtml(p.comprobante_url)}" target="_blank" rel="noopener">Ver justificante</a>` : ` · <span class="pill pill-warn">Sin justificante</span>`}
           ${p.estado === "pendiente" ? ` · <span style="font-size:0.8rem;color:var(--text-on-cream-muted);">Recordatorios: ${p.recordatorio_enviado ? "día antes ✓" : "día antes pendiente"} · ${p.recordatorio_mismo_dia_enviado ? "mismo día ✓" : "mismo día pendiente"}</span>` : ""}
           ${p.estado !== "pagado" ? `
@@ -295,6 +301,41 @@
           loadInscripciones();
         } catch (err) {
           markBtn.disabled = false;
+          status.textContent = "Error: " + err.message;
+        }
+      });
+    });
+
+    pagosEl.querySelectorAll("[data-edit-importe]").forEach((editBtn) => {
+      editBtn.addEventListener("click", () => {
+        const pagoId = editBtn.dataset.editImporte;
+        pagosEl.querySelector(`[data-importe-view="${pagoId}"]`).style.display = "none";
+        pagosEl.querySelector(`[data-importe-input="${pagoId}"]`).style.display = "inline-block";
+        editBtn.style.display = "none";
+        pagosEl.querySelector(`[data-save-importe="${pagoId}"]`).style.display = "inline-block";
+      });
+    });
+
+    pagosEl.querySelectorAll("[data-save-importe]").forEach((saveBtn) => {
+      saveBtn.addEventListener("click", async () => {
+        const pagoId = saveBtn.dataset.saveImporte;
+        const input = pagosEl.querySelector(`[data-importe-input="${pagoId}"]`);
+        const status = pagosEl.querySelector(`[data-importe-status="${pagoId}"]`);
+        const nuevoImporte = Number(input.value);
+        if (!Number.isFinite(nuevoImporte) || nuevoImporte < 0) {
+          status.textContent = "Cantidad no válida";
+          return;
+        }
+        if (!confirm(`¿Cambiar esta cuota a ${nuevoImporte} €? (por ejemplo, para aplicar un descuento)`)) return;
+        saveBtn.disabled = true;
+        status.textContent = "Guardando…";
+        try {
+          const { error } = await window.spfc.from("inscripcion_pagos").update({ importe: nuevoImporte }).eq("id", pagoId);
+          if (error) throw error;
+          status.textContent = "Guardado ✓";
+          openDetail((await window.spfc.from("inscripciones").select("*").eq("id", item.id).single()).data || item);
+        } catch (err) {
+          saveBtn.disabled = false;
           status.textContent = "Error: " + err.message;
         }
       });

@@ -7,7 +7,7 @@ const CATEGORIA_POR_ANIO = [
   { min: 2015, max: 2018, categoria: "Benjamín Alevín" },
   { min: 2013, max: 2014, categoria: "Infantil" },
   { min: 2008, max: 2012, categoria: "Cadete Juvenil" },
-  { min: -Infinity, max: 2007, categoria: "Amateur" },
+  { min: -Infinity, max: 2007, categoria: "3ª RFEF" },
 ];
 function categoriaPorAnio(anio) {
   const rango = CATEGORIA_POR_ANIO.find((r) => anio >= r.min && anio <= r.max);

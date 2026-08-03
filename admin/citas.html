@@ -53,7 +53,8 @@
         <div class="form-row">
           <div class="form-field"><label for="c-categoria">Categoría</label>
             <select id="c-categoria" required>
-              <option value="Amateur">Amateur</option>
+              <option value="3ª RFEF">3ª RFEF</option>
+              <option value="Regional">Regional</option>
               <option value="Cadete Juvenil">Cadete Juvenil</option>
               <option value="Infantil">Infantil</option>
               <option value="Benjamín Alevín">Benjamín Alevín</option>
@@ -83,7 +84,8 @@
         <div style="display:flex;gap:0.6rem;align-items:center;">
           <select id="filtro-categoria" style="max-width:220px;">
             <option value="">Todas las categorías</option>
-            <option value="Amateur">Amateur</option>
+            <option value="3ª RFEF">3ª RFEF</option>
+            <option value="Regional">Regional</option>
             <option value="Cadete Juvenil">Cadete Juvenil</option>
             <option value="Infantil">Infantil</option>
             <option value="Benjamín Alevín">Benjamín Alevín</option>
@@ -111,7 +113,7 @@
 (async function () {
   if (!window.spfc) return;
 
-  const CATEGORIAS = ["Amateur", "Cadete Juvenil", "Infantil", "Benjamín Alevín"];
+  const CATEGORIAS = ["3ª RFEF", "Regional", "Cadete Juvenil", "Infantil", "Benjamín Alevín"];
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

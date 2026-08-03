@@ -152,22 +152,29 @@
 
   // Categorías por año de nacimiento (temporada 2026/27), tal como las usa
   // el club — cada jugadora nueva se asigna sola a su equipo según esto.
+  // La categoría sénior (2007 o antes) queda sin auto-seleccionar porque
+  // hay dos equipos posibles a esa edad (3ª RFEF y Regional) y la fecha de
+  // nacimiento no basta para saber cuál — el admin elige el equipo a mano.
   const CATEGORIA_POR_ANIO = [
     { min: 2015, max: 2018, categoria: "Benjamín Alevín" },
     { min: 2013, max: 2014, categoria: "Infantil" },
     { min: 2008, max: 2012, categoria: "Cadete Juvenil" },
-    { min: -Infinity, max: 2007, categoria: "Amateur" },
+    { min: -Infinity, max: 2007, categoria: null, senior: true },
   ];
   function categoriaPorAnio(anio) {
-    const rango = CATEGORIA_POR_ANIO.find((r) => anio >= r.min && anio <= r.max);
-    return rango ? rango.categoria : null;
+    return CATEGORIA_POR_ANIO.find((r) => anio >= r.min && anio <= r.max) || null;
   }
   document.getElementById("p-nacimiento").addEventListener("change", () => {
     const val = document.getElementById("p-nacimiento").value;
     const hintEl = document.getElementById("p-team-hint");
     if (!val) { hintEl.textContent = ""; return; }
-    const categoria = categoriaPorAnio(Number(val.slice(0, 4)));
-    if (!categoria) { hintEl.textContent = ""; return; }
+    const rango = categoriaPorAnio(Number(val.slice(0, 4)));
+    if (!rango) { hintEl.textContent = ""; return; }
+    if (rango.senior) {
+      hintEl.textContent = `Por su fecha de nacimiento es una categoría sénior — elige tú misma si es 3ª RFEF o Regional en el desplegable de arriba.`;
+      return;
+    }
+    const categoria = rango.categoria;
     const equipo = teams.find((t) =>
       (t.categoria || "").toLowerCase().includes(categoria.toLowerCase()) ||
       (t.nombre || "").toLowerCase().includes(categoria.toLowerCase()));

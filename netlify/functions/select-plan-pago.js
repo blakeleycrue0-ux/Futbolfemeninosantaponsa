@@ -14,8 +14,8 @@ const PLANES_MENOR = {
   ],
 };
 
-// Cuota Amateur (mayores de edad): 450 €.
-const PLANES_AMATEUR = {
+// Cuota categorías sénior (3ª RFEF / Regional, mayores de edad): 450 €.
+const PLANES_ADULTO = {
   unico: [{ numero_cuota: 1, importe: 450, fecha_vencimiento: "2026-07-01" }],
   "2_cuotas": [
     { numero_cuota: 1, importe: 225, fecha_vencimiento: "2026-07-01" },
@@ -76,7 +76,7 @@ exports.handler = async function (event) {
     return { statusCode: 403, body: "Esta inscripción todavía no está lista para elegir plan de pago" };
   }
 
-  const planes = esMayorDeEdad(inscripcion.jugadora_fecha_nacimiento) ? PLANES_AMATEUR : PLANES_MENOR;
+  const planes = esMayorDeEdad(inscripcion.jugadora_fecha_nacimiento) ? PLANES_ADULTO : PLANES_MENOR;
   const cuotas = planes[plan_pago];
   if (!cuotas) {
     return { statusCode: 400, body: "Ese plan de pago no está disponible" };

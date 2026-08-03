@@ -60,8 +60,15 @@
           <div class="form-field"><label for="m-fecha">Fecha</label><input type="date" id="m-fecha" required></div>
           <div class="form-field"><label for="m-hora">Hora</label><input type="time" id="m-hora"></div>
         </div>
-        <div class="form-field"><label for="m-rival-escudo">Escudo del rival (URL)</label><input type="url" id="m-rival-escudo" placeholder="https://…"></div>
-        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Opcional. Si lo dejas vacío se mostrarán las iniciales del rival. Sube el logo a un sitio como Supabase Storage o Imgur y pega aquí la URL.</p>
+        <div class="form-field">
+          <label for="m-rival-escudo">Escudo del rival</label>
+          <input type="url" id="m-rival-escudo" placeholder="https://…">
+          <div class="media-upload">
+            <input type="file" id="m-rival-escudo-file" accept="image/*">
+            <span class="media-upload-status" id="m-rival-escudo-status"></span>
+          </div>
+        </div>
+        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Opcional. Si lo dejas vacío se mostrarán las iniciales del rival.</p>
         <div class="form-row">
           <div class="form-field"><label for="m-condicion">Condición</label>
             <select id="m-condicion"><option value="local">Local</option><option value="visitante">Visitante</option></select>
@@ -76,14 +83,24 @@
           </div>
         </div>
         <div class="form-row">
+          <div class="form-field"><label for="m-tipo">Tipo de partido</label>
+            <select id="m-tipo">
+              <option value="Liga">Liga</option>
+              <option value="Copa">Copa</option>
+              <option value="Torneo">Torneo</option>
+              <option value="Amistoso">Amistoso</option>
+            </select>
+          </div>
           <div class="form-field"><label for="m-competicion">Competición</label><input type="text" id="m-competicion" placeholder="Preferente Femenina"></div>
+        </div>
+        <div class="form-row">
           <div class="form-field"><label for="m-jornada">Jornada</label><input type="text" id="m-jornada"></div>
+          <div class="form-field"><label for="m-campo">Campo</label><input type="text" id="m-campo" placeholder="Camp Municipal Santa Ponça"></div>
         </div>
         <div class="form-row">
           <div class="form-field"><label for="m-goles-equipo">Goles equipo</label><input type="number" id="m-goles-equipo" min="0"></div>
           <div class="form-field"><label for="m-goles-rival">Goles rival</label><input type="number" id="m-goles-rival" min="0"></div>
         </div>
-        <div class="form-field"><label for="m-campo">Campo</label><input type="text" id="m-campo" placeholder="Camp Municipal Santa Ponça"></div>
         <div class="form-field"><label for="m-video">URL vídeo (YouTube)</label><input type="url" id="m-video" placeholder="https://youtube.com/watch?v=…"></div>
         <div class="form-field"><label for="m-cronica">Crónica</label><textarea id="m-cronica" rows="6"></textarea></div>
         <div style="display:flex;gap:0.8rem;">
@@ -134,9 +151,11 @@
 <script src="../assets/js/supabase-client.js"></script>
 <script src="js/admin-auth.js"></script>
 <script src="../assets/js/nav.js"></script>
+<script src="js/media-upload.js"></script>
 <script>
 (async function () {
   if (!window.spfc) return;
+  wireMediaUpload({ fileInputId: "m-rival-escudo-file", urlInputId: "m-rival-escudo", statusId: "m-rival-escudo-status", folder: "escudos" });
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -164,6 +183,7 @@
     document.getElementById("m-hora").value = item ? (item.hora || "") : "";
     document.getElementById("m-condicion").value = item ? item.condicion : "local";
     document.getElementById("m-estado").value = item ? item.estado : "programado";
+    document.getElementById("m-tipo").value = item ? (item.tipo || "Liga") : "Liga";
     document.getElementById("m-competicion").value = item ? (item.competicion || "") : "";
     document.getElementById("m-jornada").value = item ? (item.jornada || "") : "";
     document.getElementById("m-goles-equipo").value = item && item.goles_equipo != null ? item.goles_equipo : "";
@@ -265,6 +285,7 @@
       hora: document.getElementById("m-hora").value || null,
       condicion: document.getElementById("m-condicion").value,
       estado: document.getElementById("m-estado").value,
+      tipo: document.getElementById("m-tipo").value,
       competicion: document.getElementById("m-competicion").value.trim(),
       jornada: document.getElementById("m-jornada").value.trim(),
       goles_equipo: document.getElementById("m-goles-equipo").value === "" ? null : Number(document.getElementById("m-goles-equipo").value),

@@ -263,7 +263,7 @@
 
   headerEl.innerHTML = `
     <div class="match-card match-hero">
-      <span class="match-card__comp">${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
+      <span class="match-card__comp">${match.tipo && match.tipo !== "Liga" ? match.tipo + " · " : ""}${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
       <div class="match-card__teams">
         <div class="match-team">
           <span class="match-team__crest">${crestHtml(esLocal, rivalName, match.rival_escudo_url)}</span>

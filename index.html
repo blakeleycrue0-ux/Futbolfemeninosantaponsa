@@ -579,7 +579,7 @@ function countUp(el, target, suffix) {
         </div>
         <div class="mc-foot">
           <div class="mc-info">${spfcFormatDate(m.fecha, { day: "2-digit", month: "short" })}${m.hora ? " · " + m.hora.slice(0,5) + "h" : ""}</div>
-          ${m.competicion ? `<div class="mc-info">${escapeHtml(m.competicion)}</div>` : m.campo ? `<div class="mc-info">${escapeHtml(m.campo)}</div>` : ""}
+          ${m.competicion ? `<div class="mc-info">${m.tipo && m.tipo !== "Liga" ? escapeHtml(m.tipo) + " · " : ""}${escapeHtml(m.competicion)}</div>` : m.campo ? `<div class="mc-info">${escapeHtml(m.campo)}</div>` : ""}
         </div>
       </a>`;
     }).join("");

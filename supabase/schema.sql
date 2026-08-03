@@ -735,5 +735,12 @@ update teams set orden = 2 where categoria = 'Cadete Juvenil';
 update teams set orden = 3 where categoria = 'Infantil';
 update teams set orden = 4 where categoria = 'Benjamín Alevín';
 
+-- Tipo de partido (Liga/Copa/Torneo/Amistoso), elegible al programar un
+-- partido desde el admin. Los partidos ya existentes se marcan como "Liga"
+-- por defecto (es lo que eran hasta ahora).
+alter table matches add column if not exists tipo text not null default 'Liga';
+alter table matches drop constraint if exists matches_tipo_check;
+alter table matches add constraint matches_tipo_check check (tipo in ('Liga','Copa','Torneo','Amistoso'));
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

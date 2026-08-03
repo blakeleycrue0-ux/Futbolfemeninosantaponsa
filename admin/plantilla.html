@@ -230,7 +230,7 @@
     document.getElementById("p-nombre").value = item ? item.nombre : "";
     if (item) document.getElementById("p-team").value = item.team_id;
     document.getElementById("p-dorsal").value = item ? (item.dorsal || "") : "";
-    document.getElementById("p-posicion").value = item ? item.posicion : "Portera";
+    document.getElementById("p-posicion").value = (item && item.posicion) ? item.posicion : "Portera";
     document.getElementById("p-nacimiento").value = item ? (item.fecha_nacimiento || "") : "";
     document.getElementById("p-foto").value = item ? (item.foto_url || "") : "";
     document.getElementById("p-goles").value = item ? item.goles : 0;

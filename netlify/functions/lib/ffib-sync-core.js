@@ -5,11 +5,20 @@ const { createClient } = require("@supabase/supabase-js");
 // confirmadas a mano por el club, no adivinadas. Si el año que viene la
 // FFIB cambia los códigos de competición, sobrescribe con las variables de
 // entorno FFIB_JORNADA_URL / FFIB_CLASIFICACION_URL en vez de tocar esto.
-const DEFAULT_JORNADA_URL =
-  "https://www.ffib.es/Fed/NPcd/NFG_VisCalendario_Vis?cod_primaria=1000110&codtemporada=22&codcompeticion=23348501&codgrupo=23348502";
+// Sin "&CodJornada=N" esta página devuelve el cuerpo vacío — es un
+// parámetro obligatorio, no opcional. Se añade número a número al
+// sincronizar (ver MAX_JORNADAS más abajo).
+const DEFAULT_JORNADA_URL_BASE =
+  "https://www.ffib.es/Fed/NPcd/NFG_VisCalendario_Vis?cod_primaria=1000110&codtemporada=22&codcompeticion=23348501&codgrupo=23348502&CodJornada=";
 const DEFAULT_CLASIFICACION_URL =
   "https://www.ffib.es/Fed/NPcd/NFG_VisClasificacion?cod_primaria=1000110&codgrupo=23348502&codcompeticion=23348501&codjornada=";
 const DEFAULT_TEAM_CATEGORIA = "3ª RFEF";
+// Cuántas jornadas probar como máximo en cada sincronización, parando en
+// cuanto se encuentran MAX_JORNADAS_VACIAS_SEGUIDAS seguidas sin partidos
+// (fin de las jugadas hasta ahora) — para no tardar demasiado ni golpear
+// ffib.es con peticiones de más.
+const MAX_JORNADAS = 12;
+const MAX_JORNADAS_VACIAS_SEGUIDAS = 2;
 
 // ffib.es es una web antigua (ASP.NET) que puede exigir cookie de sesión
 // entre peticiones y bloquear en silencio (200 con cuerpo vacío) a
@@ -166,7 +175,7 @@ async function ejecutarSincronizacion() {
   }
 
   const clasifUrl = FFIB_CLASIFICACION_URL || DEFAULT_CLASIFICACION_URL;
-  const jornadaUrl = FFIB_JORNADA_URL || DEFAULT_JORNADA_URL;
+  const jornadaUrlBase = FFIB_JORNADA_URL || DEFAULT_JORNADA_URL_BASE;
 
   const results = { standings: false, matches: false, errors: [] };
 
@@ -209,14 +218,29 @@ async function ejecutarSincronizacion() {
   }
 
   // --- Jornada / resultados ---
+  // Se recorren las jornadas una a una (CodJornada=1, 2, 3…) porque la
+  // página de calendario de la FFIB no acepta pedirlas todas de golpe.
+  // Se para en cuanto encuentra varias jornadas seguidas sin partidos —
+  // eso quiere decir que ya se ha llegado a las que aún no se han jugado.
   try {
-    const { html } = await fetchHtml(jornadaUrl, cookie);
-    const parsed = parseJornada(html);
-    if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido — " + diagnosticoHtml(html, cheerio.load(html)));
-
-    const ownMatches = parsed.filter(
-      (m) => m.local.toLowerCase().includes(NOMBRE_EN_FFIB) || m.visitante.toLowerCase().includes(NOMBRE_EN_FFIB)
-    );
+    let ownMatches = [];
+    let vaciasSeguidas = 0;
+    let ultimoDiagnostico = "";
+    for (let jornada = 1; jornada <= MAX_JORNADAS && vaciasSeguidas < MAX_JORNADAS_VACIAS_SEGUIDAS; jornada++) {
+      const { html } = await fetchHtml(jornadaUrlBase + jornada, cookie);
+      const parsed = parseJornada(html);
+      const delClub = parsed.filter(
+        (m) => m.local.toLowerCase().includes(NOMBRE_EN_FFIB) || m.visitante.toLowerCase().includes(NOMBRE_EN_FFIB)
+      );
+      if (!delClub.length) {
+        vaciasSeguidas += 1;
+        ultimoDiagnostico = diagnosticoHtml(html, cheerio.load(html));
+      } else {
+        vaciasSeguidas = 0;
+        ownMatches = ownMatches.concat(delClub);
+      }
+    }
+    if (!ownMatches.length) throw new Error("Ninguna jornada con partidos del club — " + ultimoDiagnostico);
 
     let upserted = 0;
     for (const m of ownMatches) {

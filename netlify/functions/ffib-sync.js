@@ -1,12 +1,15 @@
 const cheerio = require("cheerio");
 const { createClient } = require("@supabase/supabase-js");
 
-const DEFAULT_JORNADA_TEMPLATE = "https://www.ffib.es/Fed/NPcd/NFG_CmpJornada?cod_primaria=1000114&cod_competicion={cod}";
-const DEFAULT_CLASIFICACION_TEMPLATE = "https://www.ffib.es/Fed/NPcd/NFG_CmpClasificacion?cod_primaria=1000114&cod_competicion={cod}";
-
-function buildUrl(template, cod) {
-  return template.replace("{cod}", encodeURIComponent(cod));
-}
+// URLs reales de la FFIB para el equipo de 3ª RFEF (temporada 2026/27) —
+// confirmadas a mano por el club, no adivinadas. Si el año que viene la
+// FFIB cambia los códigos de competición, sobrescribe con las variables de
+// entorno FFIB_JORNADA_URL / FFIB_CLASIFICACION_URL en vez de tocar esto.
+const DEFAULT_JORNADA_URL =
+  "https://www.ffib.es/Fed/NPcd/NFG_VisCalendario_Vis?cod_primaria=1000110&codtemporada=22&codcompeticion=23348501&codgrupo=23348502";
+const DEFAULT_CLASIFICACION_URL =
+  "https://www.ffib.es/Fed/NPcd/NFG_VisClasificacion?cod_primaria=1000110&codgrupo=23348502&codcompeticion=23348501&codjornada=";
+const DEFAULT_TEAM_CATEGORIA = "3ª RFEF";
 
 async function fetchHtml(url) {
   const res = await fetch(url, {
@@ -92,26 +95,44 @@ async function logResult(supabase, teamId, ok, mensaje) {
   await supabase.from("ffib_sync_log").insert({ team_id: teamId, ok, mensaje });
 }
 
+// Nombre con el que aparece el club en ffib.es — comparten club con el
+// equipo masculino porque todavía no tienen federado uno propio, así que
+// en la FFIB salen como "Santa Ponsa CF" (sin cedilla), no como "Fútbol
+// Femenino Santa Ponça". Confirmado a mano por el club, no adivinado.
+const NOMBRE_EN_FFIB = "santa ponsa";
+
+async function resolverTeamId(supabase, teamIdEnv) {
+  if (teamIdEnv) return teamIdEnv;
+  const { data: team } = await supabase
+    .from("teams")
+    .select("id")
+    .eq("categoria", DEFAULT_TEAM_CATEGORIA)
+    .limit(1)
+    .maybeSingle();
+  return team && team.id;
+}
+
 exports.handler = async function () {
   const {
     SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY,
-    FFIB_COMPETITION_ID,
     FFIB_TEAM_ID,
-    FFIB_JORNADA_URL_TEMPLATE,
-    FFIB_CLASIFICACION_URL_TEMPLATE,
+    FFIB_JORNADA_URL,
+    FFIB_CLASIFICACION_URL,
   } = process.env;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return { statusCode: 500, body: "Faltan SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY" };
   }
-  if (!FFIB_COMPETITION_ID || !FFIB_TEAM_ID) {
-    return { statusCode: 500, body: "Faltan FFIB_COMPETITION_ID / FFIB_TEAM_ID" };
-  }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const clasifUrl = buildUrl(FFIB_CLASIFICACION_URL_TEMPLATE || DEFAULT_CLASIFICACION_TEMPLATE, FFIB_COMPETITION_ID);
-  const jornadaUrl = buildUrl(FFIB_JORNADA_URL_TEMPLATE || DEFAULT_JORNADA_TEMPLATE, FFIB_COMPETITION_ID);
+  const teamId = await resolverTeamId(supabase, FFIB_TEAM_ID);
+  if (!teamId) {
+    return { statusCode: 500, body: `No se ha encontrado ningún equipo con categoría "${DEFAULT_TEAM_CATEGORIA}" para sincronizar` };
+  }
+
+  const clasifUrl = FFIB_CLASIFICACION_URL || DEFAULT_CLASIFICACION_URL;
+  const jornadaUrl = FFIB_JORNADA_URL || DEFAULT_JORNADA_URL;
 
   const results = { standings: false, matches: false, errors: [] };
 
@@ -121,27 +142,24 @@ exports.handler = async function () {
     const standings = parseClasificacion(html);
     if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido");
 
-    const { data: team } = await supabase.from("teams").select("nombre").eq("id", FFIB_TEAM_ID).single();
-    const clubNombre = (team && team.nombre) || "Fútbol Femenino Santa Ponça";
-
     const rows = standings.map((s) => ({
-      team_id: FFIB_TEAM_ID,
+      team_id: teamId,
       posicion: s.posicion,
       equipo: s.equipo,
-      es_club: s.equipo.toLowerCase().includes("santa ponsa") || s.equipo.toLowerCase().includes(clubNombre.toLowerCase().split(" ")[0]),
+      es_club: s.equipo.toLowerCase().includes(NOMBRE_EN_FFIB),
       pj: s.pj, pg: s.pg, pe: s.pe, pp: s.pp, gf: s.gf, gc: s.gc, puntos: s.puntos,
       actualizado_en: new Date().toISOString(),
     }));
 
-    await supabase.from("ffib_standings").delete().eq("team_id", FFIB_TEAM_ID);
+    await supabase.from("ffib_standings").delete().eq("team_id", teamId);
     const { error: insertErr } = await supabase.from("ffib_standings").insert(rows);
     if (insertErr) throw insertErr;
 
     results.standings = true;
-    await logResult(supabase, FFIB_TEAM_ID, true, `Clasificación actualizada (${rows.length} equipos)`);
+    await logResult(supabase, teamId, true, `Clasificación actualizada (${rows.length} equipos)`);
   } catch (err) {
     results.errors.push(`clasificacion: ${err.message}`);
-    await logResult(supabase, FFIB_TEAM_ID, false, `Error clasificación: ${err.message}`);
+    await logResult(supabase, teamId, false, `Error clasificación: ${err.message}`);
   }
 
   // --- Jornada / resultados ---
@@ -150,25 +168,21 @@ exports.handler = async function () {
     const parsed = parseJornada(html);
     if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido");
 
-    const { data: team } = await supabase.from("teams").select("nombre").eq("id", FFIB_TEAM_ID).single();
-    const clubNombre = ((team && team.nombre) || "Santa Ponça").toLowerCase();
-
     const ownMatches = parsed.filter(
-      (m) => m.local.toLowerCase().includes("santa ponsa") || m.visitante.toLowerCase().includes("santa ponsa") ||
-             m.local.toLowerCase().includes(clubNombre) || m.visitante.toLowerCase().includes(clubNombre)
+      (m) => m.local.toLowerCase().includes(NOMBRE_EN_FFIB) || m.visitante.toLowerCase().includes(NOMBRE_EN_FFIB)
     );
 
     let upserted = 0;
     for (const m of ownMatches) {
-      const esLocal = m.local.toLowerCase().includes("santa ponsa") || m.local.toLowerCase().includes(clubNombre);
+      const esLocal = m.local.toLowerCase().includes(NOMBRE_EN_FFIB);
       const rival = esLocal ? m.visitante : m.local;
       const golesEquipo = esLocal ? m.goles_local : m.goles_visitante;
       const golesRival = esLocal ? m.goles_visitante : m.goles_local;
-      const sourceId = `${FFIB_COMPETITION_ID}-${m.local}-${m.visitante}`.replace(/\s+/g, "_");
+      const sourceId = `${m.local}-${m.visitante}`.replace(/\s+/g, "_");
 
       const { error } = await supabase.from("matches").upsert(
         {
-          team_id: FFIB_TEAM_ID,
+          team_id: teamId,
           rival,
           condicion: esLocal ? "local" : "visitante",
           estado: "jugado",
@@ -185,10 +199,10 @@ exports.handler = async function () {
     }
 
     results.matches = true;
-    await logResult(supabase, FFIB_TEAM_ID, true, `Jornada sincronizada (${upserted}/${ownMatches.length} partidos)`);
+    await logResult(supabase, teamId, true, `Jornada sincronizada (${upserted}/${ownMatches.length} partidos)`);
   } catch (err) {
     results.errors.push(`jornada: ${err.message}`);
-    await logResult(supabase, FFIB_TEAM_ID, false, `Error jornada: ${err.message}`);
+    await logResult(supabase, teamId, false, `Error jornada: ${err.message}`);
   }
 
   const statusCode = results.errors.length ? 207 : 200;

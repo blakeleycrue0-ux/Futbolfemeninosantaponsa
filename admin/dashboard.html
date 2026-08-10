@@ -226,7 +226,7 @@
     btn.disabled = true;
     status.textContent = "Sincronizando…";
     try {
-      const res = await fetch("/.netlify/functions/ffib-sync");
+      const res = await fetch("/.netlify/functions/ffib-sync-manual");
       status.textContent = res.ok ? "Sincronización completada." : `Terminado con avisos (código ${res.status}).`;
     } catch (err) {
       status.textContent = "Error al llamar a la función: " + err.message;

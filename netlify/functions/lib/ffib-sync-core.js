@@ -91,6 +91,23 @@ function parseJornada(html) {
   return matches;
 }
 
+// Cuando el parser no reconoce el formato, describe qué hay realmente en la
+// página (número de tablas, filas y una muestra de celdas) para poder
+// ajustar el parser sin tener que abrir ffib.es directamente.
+function diagnosticoHtml($) {
+  const tablas = $("table").toArray();
+  if (!tablas.length) return `0 tablas <table> en la página`;
+  const resumen = tablas.slice(0, 3).map((t, i) => {
+    const $t = $(t);
+    const filas = $t.find("tr").toArray();
+    const muestra = filas.slice(0, 2).map((tr) =>
+      $(tr).find("td,th").toArray().map((c) => $(c).text().trim()).filter(Boolean).join(" | ")
+    );
+    return `tabla ${i + 1}: ${filas.length} filas — ${muestra.join(" // ")}`;
+  });
+  return `${tablas.length} tablas. ${resumen.join(" · ")}`;
+}
+
 async function logResult(supabase, teamId, ok, mensaje) {
   await supabase.from("ffib_sync_log").insert({ team_id: teamId, ok, mensaje });
 }
@@ -140,7 +157,7 @@ async function ejecutarSincronizacion() {
   try {
     const html = await fetchHtml(clasifUrl);
     const standings = parseClasificacion(html);
-    if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido");
+    if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido — " + diagnosticoHtml(cheerio.load(html)));
 
     const rows = standings.map((s) => ({
       team_id: teamId,
@@ -166,7 +183,7 @@ async function ejecutarSincronizacion() {
   try {
     const html = await fetchHtml(jornadaUrl);
     const parsed = parseJornada(html);
-    if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido");
+    if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido — " + diagnosticoHtml(cheerio.load(html)));
 
     const ownMatches = parsed.filter(
       (m) => m.local.toLowerCase().includes(NOMBRE_EN_FFIB) || m.visitante.toLowerCase().includes(NOMBRE_EN_FFIB)

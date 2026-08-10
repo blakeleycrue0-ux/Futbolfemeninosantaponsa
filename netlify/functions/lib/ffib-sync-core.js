@@ -11,15 +11,25 @@ const DEFAULT_CLASIFICACION_URL =
   "https://www.ffib.es/Fed/NPcd/NFG_VisClasificacion?cod_primaria=1000110&codgrupo=23348502&codcompeticion=23348501&codjornada=";
 const DEFAULT_TEAM_CATEGORIA = "3ª RFEF";
 
-async function fetchHtml(url) {
+// ffib.es es una web antigua (ASP.NET) que puede exigir cookie de sesión
+// entre peticiones y bloquear en silencio (200 con cuerpo vacío) a
+// clientes que se identifican como bot. Usamos una cabecera de navegador
+// normal y corriente, y dejamos pasar la cookie de sesión de una petición
+// a la siguiente en vez de hacerlas totalmente sueltas.
+async function fetchHtml(url, cookie) {
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; SPFC-Web/1.0; +https://futbolfemeninosantaponsa.netlify.app)",
-      Accept: "text/html",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "es-ES,es;q=0.9",
+      Referer: "https://www.ffib.es/",
+      ...(cookie ? { Cookie: cookie } : {}),
     },
   });
   if (!res.ok) throw new Error(`FFIB respondió ${res.status} en ${url}`);
-  return res.text();
+  const setCookie = res.headers.get("set-cookie");
+  const html = await res.text();
+  return { html, setCookie };
 }
 
 // -- Parseo de clasificación --------------------------------------------
@@ -160,9 +170,21 @@ async function ejecutarSincronizacion() {
 
   const results = { standings: false, matches: false, errors: [] };
 
+  // Visita primero la portada de ffib.es para conseguir una cookie de
+  // sesión válida y usarla en las dos peticiones siguientes — sin ella,
+  // esta web antigua puede responder 200 con el cuerpo vacío.
+  let cookie;
+  try {
+    const inicio = await fetchHtml("https://www.ffib.es/");
+    cookie = inicio.setCookie || undefined;
+  } catch (err) {
+    // Si falla, seguimos sin cookie — puede que no haga falta.
+  }
+
   // --- Clasificación ---
   try {
-    const html = await fetchHtml(clasifUrl);
+    const { html, setCookie } = await fetchHtml(clasifUrl, cookie);
+    if (setCookie) cookie = setCookie;
     const standings = parseClasificacion(html);
     if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido — " + diagnosticoHtml(html, cheerio.load(html)));
 
@@ -188,7 +210,7 @@ async function ejecutarSincronizacion() {
 
   // --- Jornada / resultados ---
   try {
-    const html = await fetchHtml(jornadaUrl);
+    const { html } = await fetchHtml(jornadaUrl, cookie);
     const parsed = parseJornada(html);
     if (!parsed.length) throw new Error("Jornada vacía o formato no reconocido — " + diagnosticoHtml(html, cheerio.load(html)));
 

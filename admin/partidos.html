@@ -102,6 +102,7 @@
           <div class="form-field"><label for="m-goles-rival">Goles rival</label><input type="number" id="m-goles-rival" min="0"></div>
         </div>
         <div class="form-field"><label for="m-video">URL vídeo (YouTube)</label><input type="url" id="m-video" placeholder="https://youtube.com/watch?v=…"></div>
+        <div class="form-field"><label for="m-video-2">URL vídeo 2 (opcional — p.ej. 2ª parte)</label><input type="url" id="m-video-2" placeholder="https://youtube.com/watch?v=…"></div>
         <div class="form-field"><label for="m-cronica">Crónica</label><textarea id="m-cronica" rows="6"></textarea></div>
         <div style="display:flex;gap:0.8rem;">
           <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
@@ -190,6 +191,7 @@
     document.getElementById("m-goles-rival").value = item && item.goles_rival != null ? item.goles_rival : "";
     document.getElementById("m-campo").value = item ? (item.campo || "") : "";
     document.getElementById("m-video").value = item ? (item.video_url || "") : "";
+    document.getElementById("m-video-2").value = item ? (item.video_url_2 || "") : "";
     document.getElementById("m-cronica").value = item ? (item.cronica || "") : "";
     formCard.style.display = "block";
     formCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -292,6 +294,7 @@
       goles_rival: document.getElementById("m-goles-rival").value === "" ? null : Number(document.getElementById("m-goles-rival").value),
       campo: document.getElementById("m-campo").value.trim(),
       video_url: document.getElementById("m-video").value.trim() || null,
+      video_url_2: document.getElementById("m-video-2").value.trim() || null,
       cronica: document.getElementById("m-cronica").value,
       fuente: "manual",
       actualizado_en: new Date().toISOString(),

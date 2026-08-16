@@ -13,7 +13,7 @@
   hay que poner el ID una vez, aquí.
   ============================================================================
 */
-window.GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+window.GA_MEASUREMENT_ID = "G-MP20DBMMSV";
 
 (function () {
   var id = window.GA_MEASUREMENT_ID;

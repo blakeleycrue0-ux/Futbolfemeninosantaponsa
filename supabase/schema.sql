@@ -764,5 +764,8 @@ alter table page_views enable row level security;
 create policy "page_views_public_insert" on page_views for insert with check (true);
 create policy "page_views_admin_read" on page_views for select using (is_app_admin());
 
+-- Segundo vídeo opcional por partido (p.ej. 1ª y 2ª parte por separado).
+alter table matches add column if not exists video_url_2 text;
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

@@ -742,5 +742,27 @@ alter table matches add column if not exists tipo text not null default 'Liga';
 alter table matches drop constraint if exists matches_tipo_check;
 alter table matches add constraint matches_tipo_check check (tipo in ('Liga','Copa','Torneo','Amistoso'));
 
+-- ============================================================================
+-- page_views
+-- Visitas anónimas de la web pública, para el contador de "visitas hoy /
+-- esta semana" del panel de admin (Resumen). No guarda ningún dato
+-- personal, solo un id aleatorio de visitante (localStorage) y la página.
+-- El "conectados ahora" no usa esta tabla — va por un canal de presencia
+-- de Supabase Realtime (assets/js/site-analytics.js), no se guarda en BD.
+-- ----------------------------------------------------------------------------
+create table if not exists page_views (
+  id uuid primary key default gen_random_uuid(),
+  pagina text not null,
+  visitante_id text not null,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists page_views_creado_idx on page_views(creado_en);
+
+alter table page_views enable row level security;
+
+create policy "page_views_public_insert" on page_views for insert with check (true);
+create policy "page_views_admin_read" on page_views for select using (is_app_admin());
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

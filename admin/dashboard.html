@@ -50,6 +50,15 @@
       <div class="admin-stat admin-stat--warn"><strong>—</strong><span>Formularios de interés</span></div>
     </div>
 
+    <div class="admin-card" id="visitas-card">
+      <h2>Quién visita la web</h2>
+      <div class="admin-stat-grid">
+        <div class="admin-stat admin-stat--accent"><strong id="stat-online">—</strong><span>Conectados ahora</span></div>
+        <div class="admin-stat admin-stat--ok"><strong id="stat-visitas-hoy">—</strong><span>Visitas hoy</span></div>
+        <div class="admin-stat admin-stat--ok"><strong id="stat-visitas-semana">—</strong><span>Visitas esta semana</span></div>
+      </div>
+    </div>
+
     <div class="admin-card" id="proximo-partido-card">
       <h2>Próximo partido</h2>
       <div id="proximo-partido-body" style="font-size:0.9rem;color:var(--text-on-cream-muted);">Cargando…</div>
@@ -234,6 +243,39 @@
     btn.disabled = false;
     loadLog();
   });
+
+  /* Quién visita la web */
+  async function contarVisitantesUnicos(desde) {
+    const { data } = await window.spfc.from("page_views").select("visitante_id").gte("creado_en", desde);
+    return new Set((data || []).map((r) => r.visitante_id)).size;
+  }
+
+  async function loadVisitas() {
+    const inicioHoy = new Date();
+    inicioHoy.setHours(0, 0, 0, 0);
+    const inicioSemana = new Date();
+    inicioSemana.setDate(inicioSemana.getDate() - 6);
+    inicioSemana.setHours(0, 0, 0, 0);
+
+    const [hoy, semana] = await Promise.all([
+      contarVisitantesUnicos(inicioHoy.toISOString()),
+      contarVisitantesUnicos(inicioSemana.toISOString()),
+    ]);
+    document.getElementById("stat-visitas-hoy").textContent = hoy;
+    document.getElementById("stat-visitas-semana").textContent = semana;
+  }
+  loadVisitas();
+
+  // "Conectados ahora": se une al mismo canal de presencia que usan las
+  // páginas públicas (assets/js/site-analytics.js) — mismo nombre de canal,
+  // pero sin hacer .track() aquí, para no contarse a sí mismo como visita.
+  const presenciaCanal = window.spfc.channel("site-presence");
+  presenciaCanal
+    .on("presence", { event: "sync" }, () => {
+      const estado = presenciaCanal.presenceState();
+      document.getElementById("stat-online").textContent = Object.keys(estado).length;
+    })
+    .subscribe();
 
 })();
 </script>

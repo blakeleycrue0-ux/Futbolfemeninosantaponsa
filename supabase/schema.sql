@@ -745,5 +745,13 @@ alter table matches add constraint matches_tipo_check check (tipo in ('Liga','Co
 -- Segundo vídeo opcional por partido (p.ej. 1ª y 2ª parte por separado).
 alter table matches add column if not exists video_url_2 text;
 
+-- "EN DIRECTO": el club lo activa a mano desde el panel (Partidos) al
+-- empezar a retransmitir con la cámara Falcon (XbotGo) a YouTube — no hay
+-- forma de detectarlo automáticamente, la cámara no avisa a la web.
+-- en_directo_desde sirve para que la portada deje de mostrarlo sola pasadas
+-- unas horas, por si se olvida quitarlo a mano.
+alter table matches add column if not exists en_directo boolean not null default false;
+alter table matches add column if not exists en_directo_desde timestamptz;
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

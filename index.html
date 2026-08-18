@@ -89,48 +89,6 @@
   @keyframes spfc-mini-shine { to { background-position: -260% center; } }
   @media (prefers-reduced-motion: reduce) { .slogan-mini-text { animation: none; } }
 
-  .mns-hero {
-    position: relative; overflow: hidden;
-    background: radial-gradient(120% 160% at 50% -10%, #2a1638 0%, #0a0a0a 65%);
-    min-height: min(72vh, 620px);
-    display: flex; align-items: center;
-    padding: 108px var(--gutter) 2.5rem;
-  }
-  .mns-hero::after {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-    background-size: 46px 46px; pointer-events: none;
-  }
-  .mns-inner {
-    position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; width: 100%;
-    display: flex; align-items: center; gap: 3.5rem;
-  }
-  @media (max-width: 860px) { .mns-inner { flex-direction: column; text-align: center; gap: 2rem; } }
-  .mns-card-wrap { flex: 0 0 320px; max-width: 320px; perspective: 900px; }
-  @media (max-width: 860px) { .mns-card-wrap { flex: 0 0 auto; max-width: 280px; } }
-  .mns-card {
-    width: 100%; border-radius: 18px; overflow: hidden; display: block;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4);
-    transform: rotate(-3deg); transition: transform 0.4s ease;
-  }
-  .mns-card-wrap:hover .mns-card { transform: rotate(0deg) scale(1.02); }
-  .mns-card img { display: block; width: 100%; height: auto; }
-  .mns-eyebrow {
-    display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display);
-    font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--accent-light); margin-bottom: 16px;
-  }
-  .mns-eyebrow::before { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
-  @media (max-width: 860px) { .mns-eyebrow { justify-content: center; } }
-  .mns-title {
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(1.6rem, 4vw, 2.5rem); line-height: 1.08; letter-spacing: -0.01em;
-    color: #fff; margin: 0 0 0.8rem;
-  }
-  .mns-title em { font-style: normal; color: var(--accent-light); }
-  .mns-desc { color: rgba(244,240,232,0.72); font-size: 0.98rem; line-height: 1.65; max-width: 420px; margin: 0 0 1.6rem; }
-  @media (max-width: 860px) { .mns-desc { margin-left: auto; margin-right: auto; } }
-
   .live-banner { background: #0a0a0a; padding: 1.4rem var(--gutter) 1.8rem; }
   .live-banner-inner { max-width: 900px; margin: 0 auto; }
   .live-banner-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
@@ -226,22 +184,6 @@
     <button type="button" class="news-slider-arrow news-slider-arrow--prev" id="newsPrev" aria-label="Noticia anterior">‹</button>
     <button type="button" class="news-slider-arrow news-slider-arrow--next" id="newsNext" aria-label="Noticia siguiente">›</button>
     <div class="news-slider-dots" id="newsDots"></div>
-  </section>
-
-  <section class="mns-hero" id="mnsHero" style="display:none;">
-    <div class="mns-inner">
-      <div class="mns-card-wrap">
-        <div class="mns-card">
-          <img src="assets/img/sponsors/marians-sport-descuento.jpg" alt="Tarjeta de descuento Marian's Sport Santa Ponça — 10% en productos sin descuento">
-        </div>
-      </div>
-      <div>
-        <span class="mns-eyebrow">Nuevo colaborador</span>
-        <h2 class="mns-title">Marian's Sport os regala un <em>10%</em></h2>
-        <p class="mns-desc">10% de descuento en productos sin descuento para todas las jugadoras del club.</p>
-        <a href="noticia-marians.html" class="btn btn-primary">Leer más</a>
-      </div>
-    </div>
   </section>
 
   <!-- MARQUEE -->
@@ -628,8 +570,12 @@ function countUp(el, target, suffix) {
       cta: "Leer más",
     })));
   } else {
-    document.getElementById("newsSlider").style.display = "none";
-    document.getElementById("mnsHero").style.display = "flex";
+    SPFC_INIT_NEWS_SLIDER([{
+      bg: "assets/img/escudo-santa-ponsa.png",
+      eyebrow: "Fútbol Femenino Santa Ponça",
+      title: "Pasión por el fútbol femenino",
+      desc: "Proyecto a largo plazo por el fútbol femenino en Santa Ponça.",
+    }]);
   }
 
   /* News */

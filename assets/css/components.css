@@ -767,3 +767,40 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .sr-l { opacity: 0; transform: translateX(-38px); transition: opacity 0.9s ease, transform 0.9s ease; }
 .sr-l.in { opacity: 1; transform: translateX(0); }
 @keyframes dots { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+/* ─── Llama mascot easter egg (assets/js/llama-mascot.js) ───
+   position: fixed in a bottom corner only, pointer-events: none, and a
+   z-index below the header/burger/nav-overlay (500/600/490) and well below
+   any modal (2000) — so it can never sit on top of real navigation and can
+   never intercept a click, no matter which page it appears on. */
+.spfc-llama-mascot {
+  position: fixed;
+  bottom: 16px;
+  width: 60px;
+  height: auto;
+  z-index: 450;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  filter: drop-shadow(0 6px 12px rgba(10,10,10,0.28));
+}
+.spfc-llama-mascot--left { left: 12px; }
+.spfc-llama-mascot--right { right: 12px; }
+.spfc-llama-mascot.is-visible {
+  opacity: 1;
+  animation: spfc-llama-hop 1.6s ease-in-out 2;
+}
+@keyframes spfc-llama-hop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-11px) scale(1.02); }
+  55% { transform: translateY(0) scale(1); }
+  75% { transform: translateY(-5px) scale(1.01); }
+}
+@media (min-width: 780px) {
+  .spfc-llama-mascot { width: 88px; bottom: 22px; }
+  .spfc-llama-mascot--left { left: 20px; }
+  .spfc-llama-mascot--right { right: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spfc-llama-mascot.is-visible { animation: none; }
+}

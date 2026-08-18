@@ -130,6 +130,23 @@
   .mns-title em { font-style: normal; color: var(--accent-light); }
   .mns-desc { color: rgba(244,240,232,0.72); font-size: 0.98rem; line-height: 1.65; max-width: 420px; margin: 0 0 1.6rem; }
   @media (max-width: 860px) { .mns-desc { margin-left: auto; margin-right: auto; } }
+
+  .live-banner { background: #0a0a0a; padding: 1.4rem var(--gutter) 1.8rem; }
+  .live-banner-inner { max-width: 900px; margin: 0 auto; }
+  .live-banner-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .live-dot { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; flex-shrink: 0; animation: live-pulse 1.4s ease-in-out infinite; }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+    50% { opacity: 0.65; box-shadow: 0 0 0 9px rgba(239,68,68,0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  .live-label {
+    font-family: var(--font-display); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 0.9rem; color: #ef4444;
+  }
+  .live-teams { font-size: 0.92rem; color: #fff; }
+  .live-video-wrap { position: relative; aspect-ratio: 16/9; border-radius: var(--radius-lg); overflow: hidden; background: #000; }
+  .live-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 </style>
 </head>
 <body>
@@ -187,6 +204,18 @@
 </div>
 
 <main id="main">
+
+  <section class="live-banner" id="liveBanner" style="display:none;">
+    <div class="live-banner-inner">
+      <div class="live-banner-head">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-label">En directo</span>
+        <span class="live-teams" id="liveTeams"></span>
+      </div>
+      <div class="live-video-wrap" id="liveVideoWrap"></div>
+      <a href="#" id="liveFallbackLink" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="margin-top:0.9rem;color:#fff;border-color:rgba(255,255,255,0.35);">Ver el directo aquí ↗</a>
+    </div>
+  </section>
 
   <!-- Sin display:none: el hueco (alto fijo por CSS) se reserva desde el
        primer render para que no haya salto de maquetación mientras se
@@ -618,6 +647,49 @@ function countUp(el, target, suffix) {
         </div>
       </a>`).join("")
     : `<p style="padding:24px;color:var(--text-on-cream-muted);">Todavía no hay noticias publicadas.</p>`;
+
+  /* En directo — activado a mano desde el panel al retransmitir con la
+     cámara Falcon. Deja de mostrarse solo pasadas unas horas, por si se
+     olvida quitarlo desde el admin. */
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([\w-]{6,})/,
+      /(?:youtu\.be\/)([\w-]{6,})/,
+      /(?:youtube\.com\/embed\/)([\w-]{6,})/,
+    ];
+    for (const re of patterns) {
+      const m = url.match(re);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  if (window.spfc) {
+    const haceUnasHoras = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
+    const { data: enDirecto } = await window.spfc
+      .from("matches")
+      .select("*")
+      .eq("en_directo", true)
+      .gte("en_directo_desde", haceUnasHoras)
+      .order("en_directo_desde", { ascending: false })
+      .limit(1);
+    const partidoDirecto = enDirecto && enDirecto[0];
+    if (partidoDirecto && partidoDirecto.video_url) {
+      document.getElementById("liveTeams").textContent =
+        (partidoDirecto.condicion === "local" ? "Santa Ponça" : partidoDirecto.rival) +
+        " vs " +
+        (partidoDirecto.condicion === "local" ? partidoDirecto.rival : "Santa Ponça");
+      const ytId = extractYouTubeId(partidoDirecto.video_url);
+      const src = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=0` : partidoDirecto.video_url;
+      document.getElementById("liveVideoWrap").innerHTML =
+        `<iframe src="${src}" title="Partido en directo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+      // No todos los directos son de YouTube (p.ej. el enlace propio de la
+      // app de XbotGo) — algunas webs no dejan incrustarse dentro de otra,
+      // así que este enlace siempre funciona pase lo que pase con el vídeo.
+      document.getElementById("liveFallbackLink").href = partidoDirecto.video_url;
+      document.getElementById("liveBanner").style.display = "block";
+    }
+  }
 })();
 </script>
 <script src="assets/js/search.js" defer></script>

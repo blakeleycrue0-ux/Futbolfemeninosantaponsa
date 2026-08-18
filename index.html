@@ -213,6 +213,7 @@
         <span class="live-teams" id="liveTeams"></span>
       </div>
       <div class="live-video-wrap" id="liveVideoWrap"></div>
+      <a href="#" id="liveFallbackLink" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="margin-top:0.9rem;color:#fff;border-color:rgba(255,255,255,0.35);">Ver el directo aquí ↗</a>
     </div>
   </section>
 
@@ -682,6 +683,10 @@ function countUp(el, target, suffix) {
       const src = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=0` : partidoDirecto.video_url;
       document.getElementById("liveVideoWrap").innerHTML =
         `<iframe src="${src}" title="Partido en directo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+      // No todos los directos son de YouTube (p.ej. el enlace propio de la
+      // app de XbotGo) — algunas webs no dejan incrustarse dentro de otra,
+      // así que este enlace siempre funciona pase lo que pase con el vídeo.
+      document.getElementById("liveFallbackLink").href = partidoDirecto.video_url;
       document.getElementById("liveBanner").style.display = "block";
     }
   }

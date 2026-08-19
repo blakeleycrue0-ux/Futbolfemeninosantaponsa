@@ -767,17 +767,3 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .sr-l { opacity: 0; transform: translateX(-38px); transition: opacity 0.9s ease, transform 0.9s ease; }
 .sr-l.in { opacity: 1; transform: translateX(0); }
 @keyframes dots { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
-
-/* ─── Llama asomándose detrás de una tarjeta/bloque (assets/js/llama-peek.js) ───
-   assets/img/llama-peek.png ya viene recortada en esa pose (cabeza y
-   patas, sin cuerpo). Se coloca con el borde inferior apoyado sobre el
-   borde superior del elemento y, al añadirse más tarde en el DOM, se
-   pinta por delante de él sin necesidad de z-index especial.
-   pointer-events: none — nunca puede robar un clic. */
-.llama-peek {
-  position: absolute;
-  height: auto;
-  pointer-events: none;
-  z-index: 250;
-  filter: drop-shadow(0 4px 7px rgba(10,10,10,0.18));
-}

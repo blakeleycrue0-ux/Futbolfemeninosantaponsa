@@ -337,9 +337,7 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
-<script src="assets/js/nav.js"></script>
-<script src="assets/js/llama-peek.js"></script>
-<script>
+<script src="assets/js/nav.js"></script><script>
 /* ── CARRUSEL DE NOTICIAS (portada) ── */
 (function () {
   const wrap = document.getElementById('newsSlider');
@@ -424,26 +422,6 @@ const ro = new IntersectionObserver((entries) => {
   entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
 }, { threshold: 0.09 });
 document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
-
-/* ── LLAMA ASOMÁNDOSE (tarjeta "Competición") ── */
-(function () {
-  const tarjeta = document.querySelector('.about-right .pc:nth-child(2)');
-  if (!tarjeta || !window.SPFC_LLAMA_PEEK) return;
-  let colocada = false;
-  function colocar() {
-    if (colocada) return;
-    colocada = true;
-    SPFC_LLAMA_PEEK(tarjeta, { centroX: 0.5, solape: 28 });
-  }
-  // Se coloca justo cuando la tarjeta termina de aparecer (scroll reveal),
-  // para que no se desalinee mientras la tarjeta todavía se está moviendo.
-  if (tarjeta.classList.contains('in')) {
-    colocar();
-  } else {
-    tarjeta.addEventListener('transitionend', colocar, { once: true });
-    setTimeout(colocar, 1600); // red de seguridad si no llega a disparar transitionend
-  }
-})();
 
 /* ── STAT COUNTERS ── */
 function countUp(el, target, suffix) {

@@ -40,6 +40,7 @@
   <main class="admin-main">
     <div class="admin-topbar">
       <h1>Citas para probar la equipación</h1>
+      <a href="citas-imprimir.html" class="btn btn-outline btn-sm" target="_blank" rel="noopener">Imprimir hoja del día</a>
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:680px;">
       Crea aquí los horarios de una categoría y comparte el enlace correspondiente (por email desde
@@ -79,6 +80,40 @@
     </div>
 
     <div class="admin-card">
+      <h2>Añadir manualmente</h2>
+      <p class="form-note" style="margin:-0.4rem 0 1rem;">Para cuando alguien se prueba la equipación sin haber reservado hora por la web — queda igualmente guardado en Citas, con sus tallas.</p>
+      <form id="manual-form">
+        <div class="form-row">
+          <div class="form-field"><label for="m-categoria">Categoría</label>
+            <select id="m-categoria" required>
+              <option value="3ª RFEF">3ª RFEF</option>
+              <option value="Regional">Regional</option>
+              <option value="Cadete Juvenil">Cadete Juvenil</option>
+              <option value="Infantil">Infantil</option>
+              <option value="Benjamín Alevín">Benjamín Alevín</option>
+            </select>
+          </div>
+          <div class="form-field"><label for="m-jugadora">Jugadora</label><input type="text" id="m-jugadora" required></div>
+          <div class="form-field"><label for="m-fecha">Fecha</label><input type="date" id="m-fecha" required></div>
+        </div>
+        <div class="form-row" id="manual-tallas-row"></div>
+        <button type="submit" class="btn btn-primary btn-sm" id="manual-btn">Guardar</button>
+        <span id="manual-status" style="margin-left:0.6rem;font-size:0.86rem;"></span>
+      </form>
+    </div>
+
+    <div class="admin-card admin-form-toggle" id="tallas-card" style="display:none;">
+      <h2>Tallas</h2>
+      <p class="form-note" id="tallas-sub" style="margin-top:-0.6rem;"></p>
+      <div class="form-row" id="tallas-form-row"></div>
+      <div style="display:flex;gap:0.8rem;">
+        <button type="button" class="btn btn-primary btn-sm" id="tallas-guardar-btn">Guardar tallas</button>
+        <button type="button" class="btn btn-outline btn-sm" id="tallas-cancel-btn">Cerrar</button>
+      </div>
+      <span id="tallas-status" style="margin-left:0.6rem;font-size:0.86rem;"></span>
+    </div>
+
+    <div class="admin-card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.8rem;">
         <h2 style="margin:0;">Horarios creados</h2>
         <div style="display:flex;gap:0.6rem;align-items:center;">
@@ -96,8 +131,8 @@
       <p class="form-note" style="margin:-0.4rem 0 0.8rem;">"Eliminar todos estos" borra los horarios de la categoría elegida arriba (o todos, si no filtras) — útil para quitar pruebas antes de tener claros los días definitivos. Si alguno ya está reservado, se cancela también esa reserva.</p>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Categoría</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Reservado por</th><th>Jugadora</th><th></th></tr></thead>
-          <tbody id="citas-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          <thead><tr><th>Categoría</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Reservado por</th><th>Jugadora</th><th></th><th></th></tr></thead>
+          <tbody id="citas-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -114,6 +149,24 @@
   if (!window.spfc) return;
 
   const CATEGORIAS = ["3ª RFEF", "Regional", "Cadete Juvenil", "Infantil", "Benjamín Alevín"];
+  let citas = [];
+  const PRENDAS = [
+    ["talla_camiseta_partido", "Camiseta partido/polo"],
+    ["talla_camiseta_entreno", "Camiseta entreno"],
+    ["talla_sudadera", "Sudadera"],
+    ["talla_chaqueta_chandal", "Chaqueta chándal"],
+    ["talla_pantalon", "Pantalón partido/entreno/bermuda"],
+    ["talla_pantalon_chandal", "Pantalón chándal"],
+  ];
+
+  function tallasInputsHtml(prefix, valores) {
+    valores = valores || {};
+    return PRENDAS.map(([campo, etiqueta]) => `
+      <div class="form-field">
+        <label for="${prefix}-${campo}">${etiqueta}</label>
+        <input type="text" id="${prefix}-${campo}" value="${escapeHtml(valores[campo] || "")}" placeholder="p.ej. 12 años, S, M…">
+      </div>`).join("");
+  }
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -204,21 +257,28 @@
     let query = window.spfc.from("citas_horario").select("*").order("fecha").order("hora");
     if (filtro) query = query.eq("categoria", filtro);
     const { data, error } = await query;
-    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay horarios creados.</td></tr>'; return; }
-    body.innerHTML = data.map((c) => `
+    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay horarios creados.</td></tr>'; return; }
+    citas = data;
+    body.innerHTML = data.map((c) => {
+      const tieneTallas = PRENDAS.some(([campo]) => c[campo]);
+      return `
       <tr>
         <td>${escapeHtml(c.categoria)}</td>
         <td>${c.fecha}</td>
         <td>${String(c.hora).slice(0, 5)}</td>
         <td>${c.disponible ? '<span class="pill">Libre</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Reservada</span>'}</td>
-        <td style="font-size:0.82rem;">${c.disponible ? "-" : escapeHtml(c.reservado_nombre) + "<br>" + escapeHtml(c.reservado_email)}</td>
+        <td style="font-size:0.82rem;">${c.disponible ? "-" : escapeHtml(c.reservado_nombre) + "<br>" + escapeHtml(c.reservado_email || "")}</td>
         <td>${c.disponible ? "-" : escapeHtml(c.jugadora_nombre)}</td>
+        <td class="actions">
+          ${c.disponible ? "" : `<button class="btn btn-outline btn-sm" data-tallas="${c.id}" type="button">${tieneTallas ? "Ver/editar tallas" : "Añadir tallas"}</button>`}
+        </td>
         <td class="actions">
           ${c.disponible ? "" : `<button class="btn-icon" data-liberar="${c.id}" type="button" title="Liberar hora">↺</button>`}
           <button class="btn-icon danger" data-del="${c.id}" type="button" title="Eliminar">✕</button>
         </td>
-      </tr>`).join("");
+      </tr>`;
+    }).join("");
 
     body.querySelectorAll("[data-liberar]").forEach((btn) =>
       btn.addEventListener("click", async () => {
@@ -234,7 +294,43 @@
         await window.spfc.from("citas_horario").delete().eq("id", btn.dataset.del);
         loadCitas();
       }));
+    body.querySelectorAll("[data-tallas]").forEach((btn) =>
+      btn.addEventListener("click", () => abrirTallas(citas.find((c) => c.id === btn.dataset.tallas))));
   }
+
+  // ---- Tallas ----
+  const tallasCard = document.getElementById("tallas-card");
+  let tallasCitaId = null;
+
+  function abrirTallas(cita) {
+    tallasCitaId = cita.id;
+    document.getElementById("tallas-sub").textContent = `${cita.jugadora_nombre} — ${cita.categoria} · ${cita.fecha}`;
+    document.getElementById("tallas-form-row").innerHTML = tallasInputsHtml("t", cita);
+    document.getElementById("tallas-status").textContent = "";
+    tallasCard.style.display = "block";
+    tallasCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("tallas-cancel-btn").addEventListener("click", () => (tallasCard.style.display = "none"));
+
+  document.getElementById("tallas-guardar-btn").addEventListener("click", async () => {
+    const status = document.getElementById("tallas-status");
+    const btn = document.getElementById("tallas-guardar-btn");
+    const payload = {};
+    PRENDAS.forEach(([campo]) => {
+      payload[campo] = document.getElementById("t-" + campo).value.trim() || null;
+    });
+    btn.disabled = true;
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("citas_horario").update(payload).eq("id", tallasCitaId);
+    btn.disabled = false;
+    if (error) {
+      status.textContent = "Error: " + error.message;
+      return;
+    }
+    status.textContent = "Guardado ✓";
+    loadCitas();
+  });
 
   document.getElementById("filtro-categoria").addEventListener("change", loadCitas);
 
@@ -246,6 +342,47 @@
     query = filtro ? query.eq("categoria", filtro) : query.not("id", "is", null);
     const { error } = await query;
     if (error) { alert("Error al eliminar: " + error.message); return; }
+    loadCitas();
+  });
+
+  // ---- Añadir manualmente ----
+  document.getElementById("manual-tallas-row").innerHTML = tallasInputsHtml("m", {});
+  document.getElementById("m-fecha").value = new Date().toISOString().slice(0, 10);
+
+  document.getElementById("manual-form").addEventListener("submit", async (evt) => {
+    evt.preventDefault();
+    const status = document.getElementById("manual-status");
+    const btn = document.getElementById("manual-btn");
+    const ahora = new Date();
+    const payload = {
+      categoria: document.getElementById("m-categoria").value,
+      jugadora_nombre: document.getElementById("m-jugadora").value.trim(),
+      fecha: document.getElementById("m-fecha").value,
+      hora: ahora.toTimeString().slice(0, 8),
+      duracion_min: 15,
+      disponible: false,
+      reservado_nombre: document.getElementById("m-jugadora").value.trim(),
+      reservado_en: ahora.toISOString(),
+    };
+    PRENDAS.forEach(([campo]) => {
+      payload[campo] = document.getElementById("m-" + campo).value.trim() || null;
+    });
+    if (!payload.jugadora_nombre) {
+      status.textContent = "Falta el nombre de la jugadora.";
+      return;
+    }
+    btn.disabled = true;
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("citas_horario").insert(payload);
+    btn.disabled = false;
+    if (error) {
+      status.textContent = "Error: " + error.message;
+      return;
+    }
+    status.textContent = "Guardado ✓";
+    document.getElementById("manual-form").reset();
+    document.getElementById("manual-tallas-row").innerHTML = tallasInputsHtml("m", {});
+    document.getElementById("m-fecha").value = new Date().toISOString().slice(0, 10);
     loadCitas();
   });
 

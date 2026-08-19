@@ -769,38 +769,35 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 @keyframes dots { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
 
 /* ─── Llama mascot easter egg (assets/js/llama-mascot.js) ───
-   position: fixed in a bottom corner only, pointer-events: none, and a
-   z-index below the header/burger/nav-overlay (500/600/490) and well below
-   any modal (2000) — so it can never sit on top of real navigation and can
-   never intercept a click, no matter which page it appears on. */
-.spfc-llama-mascot {
-  position: fixed;
-  bottom: 16px;
-  width: 60px;
+   Se posiciona con position: absolute sobre el contenido de la página (no
+   fixed, no fuera de flujo respecto al scroll) y pointer-events: none — no
+   puede robar ningún clic aunque se solape con algo. z-index por debajo de
+   la cabecera/menú (500/600) para que nunca quede por encima de la nav. */
+.spfc-llama-sleeping {
+  position: absolute;
+  width: 66px;
   height: auto;
-  z-index: 450;
+  z-index: 300;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.6s ease;
-  filter: drop-shadow(0 6px 12px rgba(10,10,10,0.28));
+  transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(0.9);
+  transition: opacity 1.4s ease, transform 1.4s ease;
+  filter: drop-shadow(0 8px 14px rgba(10,10,10,0.22));
 }
-.spfc-llama-mascot--left { left: 12px; }
-.spfc-llama-mascot--right { right: 12px; }
-.spfc-llama-mascot.is-visible {
+.spfc-llama-sleeping.is-visible {
   opacity: 1;
-  animation: spfc-llama-hop 1.6s ease-in-out 2;
+  transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1);
 }
-@keyframes spfc-llama-hop {
-  0%, 100% { transform: translateY(0) scale(1); }
-  30% { transform: translateY(-11px) scale(1.02); }
-  55% { transform: translateY(0) scale(1); }
-  75% { transform: translateY(-5px) scale(1.01); }
+.spfc-llama-breathing.is-visible {
+  animation: spfc-llama-breathe 4.2s ease-in-out 1.4s infinite;
+}
+@keyframes spfc-llama-breathe {
+  0%, 100% { transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1); }
+  50% { transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1.025); }
 }
 @media (min-width: 780px) {
-  .spfc-llama-mascot { width: 88px; bottom: 22px; }
-  .spfc-llama-mascot--left { left: 20px; }
-  .spfc-llama-mascot--right { right: 20px; }
+  .spfc-llama-sleeping { width: 96px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spfc-llama-mascot.is-visible { animation: none; }
+  .spfc-llama-breathing.is-visible { animation: none; }
 }

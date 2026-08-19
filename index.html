@@ -433,7 +433,7 @@ document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
   function colocar() {
     if (colocada) return;
     colocada = true;
-    SPFC_LLAMA_PEEK(tarjeta, { centroX: 0.62 });
+    SPFC_LLAMA_PEEK(tarjeta, { centroX: 0.5, solape: 28 });
   }
   // Se coloca justo cuando la tarjeta termina de aparecer (scroll reveal),
   // para que no se desalinee mientras la tarjeta todavía se está moviendo.

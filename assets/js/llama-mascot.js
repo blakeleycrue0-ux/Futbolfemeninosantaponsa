@@ -1,14 +1,15 @@
 /*
   llama-mascot.js
   ============================================================================
-  Easter egg del club: una llama que aparece dormidita, tumbada encima de
-  una letra de un título de la página — solo una vez por visita, y solo
-  después de que la persona lleve unos 5 minutos navegando por la web (el
-  tiempo se cuenta entre páginas, no se reinicia al cambiar de página).
+  Easter egg del club: una llama dormidita, tumbada literalmente ENCIMA del
+  título del carrusel de noticias del home. Solo vive en index.html, sale
+  desde el minuto 0 (en cuanto ese título está en pantalla) y se muestra
+  cada vez que se carga el home, no solo la primera vez.
 
   Reglas de seguridad, para que nunca estorbe:
   - Se coloca dentro del contenido (position: absolute sobre la página),
-    nunca sobre la cabecera ni el menú.
+    nunca sobre la cabecera ni el menú (se fuerza un margen mínimo respecto
+    a la cabecera fija para que no le tape nunca las orejas).
   - pointer-events: none — no puede robar ningún clic aunque se solape
     visualmente con algo.
   - Respeta prefers-reduced-motion (aparece igualmente, pero sin la
@@ -16,18 +17,12 @@
   ============================================================================
 */
 (function () {
-  var YA_MOSTRADA_KEY = "spfc_llama_mostrada";
-  var INICIO_VISITA_KEY = "spfc_llama_visita_desde";
-  var ESPERA_MS = 5 * 60 * 1000;
-
-  if (sessionStorage.getItem(YA_MOSTRADA_KEY)) return;
-
-  var inicio = Number(sessionStorage.getItem(INICIO_VISITA_KEY));
-  if (!inicio) {
-    inicio = Date.now();
-    sessionStorage.setItem(INICIO_VISITA_KEY, String(inicio));
-  }
-  var restante = ESPERA_MS - (Date.now() - inicio);
+  var CABECERA_ALTO = 72;
+  var MARGEN_CABECERA = 16;
+  var CLEARANCE_MIN = CABECERA_ALTO + MARGEN_CABECERA;
+  var SOLAPE = 0.1; // solo un poco de la llama se apoya sobre la letra
+  var INTENTOS_MAX = 30; // ~6s esperando a que cargue el carrusel de noticias
+  var ESPERA_INTENTO_MS = 200;
 
   function escaparHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -35,7 +30,7 @@
     });
   }
 
-  // Envuelve una letra del encabezado en un span (sin tocar espacios) para
+  // Envuelve una letra del título en un span (sin tocar espacios) para
   // medir su posición exacta, y deshace el cambio justo después.
   function medirLetraDe(h) {
     var original = h.innerHTML;
@@ -65,9 +60,16 @@
     return rect;
   }
 
-  // h1 primero; si la página no tiene (o está vacío/oculto), prueba con
-  // cada h2 en orden hasta encontrar uno visible con texto.
+  // Sitio fijo: el título del carrusel de noticias del home (lo primero
+  // visible al entrar, sin hacer scroll). Si por lo que sea no existe,
+  // recurre a un h1/h2 de la página como red de seguridad.
   function elegirLetra() {
+    var titulo = document.querySelector(".news-slide-title");
+    if (titulo && titulo.textContent && titulo.textContent.trim()) {
+      var resultadoTitulo = medirLetraDe(titulo);
+      if (resultadoTitulo) return resultadoTitulo;
+    }
+
     var encabezados = [];
     var h1 = document.querySelector("h1");
     if (h1) encabezados.push(h1);
@@ -103,31 +105,42 @@
 
     document.body.appendChild(img);
 
-    // Centra la llama sobre la letra, apoyada justo en su borde superior.
+    // Apoyada literalmente ENCIMA de la letra: casi toda la llama queda por
+    // encima del título, con solo un pequeño solape para que se vea que
+    // está tumbada sobre el borde superior, no colgando sobre el texto.
     var anchoLlama = img.getBoundingClientRect().width || (window.innerWidth < 780 ? 66 : 96);
     var letraCentroX = rect.left + window.scrollX + rect.width / 2;
     var letraTopY = rect.top + window.scrollY;
+    var top = letraTopY - anchoLlama * (1 - SOLAPE);
+    top = Math.max(top, CLEARANCE_MIN); // nunca por debajo de la cabecera fija
+
     img.style.left = (letraCentroX - anchoLlama / 2) + "px";
-    img.style.top = (letraTopY - anchoLlama * 0.62) + "px";
+    img.style.top = top + "px";
 
     requestAnimationFrame(function () {
       img.classList.add("is-visible");
     });
-
-    sessionStorage.setItem(YA_MOSTRADA_KEY, "1");
   }
 
-  function programar() {
-    if (restante <= 0) {
+  // El carrusel de noticias del home carga desde Supabase de forma
+  // asíncrona, así que se espera un poco a que exista antes de rendirse.
+  function intentarMostrar(intentosRestantes) {
+    if (document.querySelector(".news-slide-title") || intentosRestantes <= 0) {
       mostrarLlama();
     } else {
-      setTimeout(mostrarLlama, restante);
+      setTimeout(function () {
+        intentarMostrar(intentosRestantes - 1);
+      }, ESPERA_INTENTO_MS);
     }
   }
 
+  function iniciar() {
+    intentarMostrar(INTENTOS_MAX);
+  }
+
   if (document.readyState === "complete") {
-    programar();
+    iniciar();
   } else {
-    window.addEventListener("load", programar);
+    window.addEventListener("load", iniciar);
   }
 })();

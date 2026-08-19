@@ -20,7 +20,7 @@
                  elemento, de 0 (borde izquierdo) a 1 (borde derecho). 0.5 por defecto.
     desplazX   — ajuste fino horizontal en px, se suma a centroX
     solape     — cuántos px de las patas invaden el elemento por debajo
-                 de su borde superior (14px por defecto)
+                 de su borde superior (26px por defecto)
   ============================================================================
 */
 (function () {
@@ -38,7 +38,7 @@
     var ancho = opciones.ancho || (window.innerWidth < 780 ? 64 : 84);
     var alto = ancho * RATIO_ALTO;
     var centroX = opciones.centroX != null ? opciones.centroX : 0.5;
-    var solape = opciones.solape != null ? opciones.solape : 14;
+    var solape = opciones.solape != null ? opciones.solape : 26;
 
     var left = rect.left + window.scrollX + rect.width * centroX - ancho / 2 + (opciones.desplazX || 0);
     var bordeSuperior = rect.top + window.scrollY;

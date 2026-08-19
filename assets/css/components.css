@@ -801,3 +801,20 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   .spfc-llama-breathing.is-visible { animation: none; }
 }
+
+/* ─── Llama asomándose detrás de una tarjeta/bloque (assets/js/llama-peek.js) ───
+   Dos capas de la MISMA imagen (llama-mascot-sleeping.png), sin recortar
+   el archivo ni redibujar nada: se recortan con clip-path. La cabeza se
+   coloca por encima del borde superior del bloque (no llega a solaparse
+   con él), y las patas se colocan apoyadas justo sobre ese borde, pintadas
+   por delante. La franja del cuerpo entre ambas nunca se dibuja, dando la
+   sensación de que la llama sale de detrás del bloque. pointer-events:
+   none — nunca puede robar un clic aunque se solape visualmente. */
+.llama-peek {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+  z-index: 250;
+}
+.llama-peek--cabeza { clip-path: inset(0 0 40% 0); }
+.llama-peek--patas { clip-path: inset(76% 0 0 0); filter: drop-shadow(0 3px 5px rgba(10,10,10,0.16)); }

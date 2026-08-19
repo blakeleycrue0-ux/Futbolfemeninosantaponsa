@@ -768,53 +768,16 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .sr-l.in { opacity: 1; transform: translateX(0); }
 @keyframes dots { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
 
-/* ─── Llama mascot easter egg (assets/js/llama-mascot.js) ───
-   Se posiciona con position: absolute sobre el contenido de la página (no
-   fixed, no fuera de flujo respecto al scroll) y pointer-events: none — no
-   puede robar ningún clic aunque se solape con algo. z-index por debajo de
-   la cabecera/menú (500/600) para que nunca quede por encima de la nav. */
-.spfc-llama-sleeping {
-  position: absolute;
-  width: 66px;
-  height: auto;
-  z-index: 300;
-  pointer-events: none;
-  opacity: 0;
-  transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(0.9);
-  transition: opacity 1.4s ease, transform 1.4s ease;
-  filter: drop-shadow(0 8px 14px rgba(10,10,10,0.22));
-}
-.spfc-llama-sleeping.is-visible {
-  opacity: 1;
-  transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1);
-}
-.spfc-llama-breathing.is-visible {
-  animation: spfc-llama-breathe 4.2s ease-in-out 1.4s infinite;
-}
-@keyframes spfc-llama-breathe {
-  0%, 100% { transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1); }
-  50% { transform: rotate(var(--spfc-llama-tilt, 0deg)) scale(1.025); }
-}
-@media (min-width: 780px) {
-  .spfc-llama-sleeping { width: 96px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .spfc-llama-breathing.is-visible { animation: none; }
-}
-
 /* ─── Llama asomándose detrás de una tarjeta/bloque (assets/js/llama-peek.js) ───
-   Dos capas de la MISMA imagen (llama-mascot-sleeping.png), sin recortar
-   el archivo ni redibujar nada: se recortan con clip-path. La cabeza se
-   coloca por encima del borde superior del bloque (no llega a solaparse
-   con él), y las patas se colocan apoyadas justo sobre ese borde, pintadas
-   por delante. La franja del cuerpo entre ambas nunca se dibuja, dando la
-   sensación de que la llama sale de detrás del bloque. pointer-events:
-   none — nunca puede robar un clic aunque se solape visualmente. */
+   assets/img/llama-peek.png ya viene recortada en esa pose (cabeza y
+   patas, sin cuerpo). Se coloca con el borde inferior apoyado sobre el
+   borde superior del elemento y, al añadirse más tarde en el DOM, se
+   pinta por delante de él sin necesidad de z-index especial.
+   pointer-events: none — nunca puede robar un clic. */
 .llama-peek {
   position: absolute;
   height: auto;
   pointer-events: none;
   z-index: 250;
+  filter: drop-shadow(0 4px 7px rgba(10,10,10,0.18));
 }
-.llama-peek--cabeza { clip-path: inset(0 0 40% 0); }
-.llama-peek--patas { clip-path: inset(76% 0 0 0); filter: drop-shadow(0 3px 5px rgba(10,10,10,0.16)); }

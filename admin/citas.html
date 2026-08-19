@@ -43,45 +43,12 @@
       <a href="citas-imprimir.html" class="btn btn-outline btn-sm" target="_blank" rel="noopener">Imprimir hoja del día</a>
     </div>
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:680px;">
-      Crea aquí los horarios de una categoría y comparte el enlace correspondiente (por email desde
-      <a href="emails.html">Emails</a> o en una noticia). Cada familia elige su hora en esa página pública —
-      en cuanto una la coge, desaparece para las demás, así que no se puede duplicar.
+      Apunta aquí a cada jugadora cuando se prueba la equipación, con sus tallas — no hace falta que haya
+      reservado hora, se añade directamente.
     </p>
 
     <div class="admin-card">
-      <h2>Crear horarios</h2>
-      <form id="crear-form">
-        <div class="form-row">
-          <div class="form-field"><label for="c-categoria">Categoría</label>
-            <select id="c-categoria" required>
-              <option value="3ª RFEF">3ª RFEF</option>
-              <option value="Regional">Regional</option>
-              <option value="Cadete Juvenil">Cadete Juvenil</option>
-              <option value="Infantil">Infantil</option>
-              <option value="Benjamín Alevín">Benjamín Alevín</option>
-            </select>
-          </div>
-          <div class="form-field"><label for="c-fecha">Fecha</label><input type="date" id="c-fecha" required></div>
-        </div>
-        <div class="form-row">
-          <div class="form-field"><label for="c-inicio">Hora inicio</label><input type="time" id="c-inicio" required></div>
-          <div class="form-field"><label for="c-fin">Hora fin</label><input type="time" id="c-fin" required></div>
-          <div class="form-field"><label for="c-duracion">Minutos por cita</label><input type="number" id="c-duracion" value="15" min="5" step="5" required></div>
-        </div>
-        <p class="form-note" id="crear-preview" style="margin:-0.4rem 0 1rem;"></p>
-        <button type="submit" class="btn btn-primary btn-sm" id="crear-btn">Crear horarios</button>
-        <span id="crear-status" style="margin-left:0.6rem;font-size:0.86rem;"></span>
-      </form>
-    </div>
-
-    <div class="admin-card">
-      <h2>Enlaces para compartir</h2>
-      <div id="enlaces-lista" style="display:flex;flex-direction:column;gap:0.7rem;"></div>
-    </div>
-
-    <div class="admin-card">
-      <h2>Añadir manualmente</h2>
-      <p class="form-note" style="margin:-0.4rem 0 1rem;">Para cuando alguien se prueba la equipación sin haber reservado hora por la web — queda igualmente guardado en Citas, con sus tallas.</p>
+      <h2>Añadir jugadora</h2>
       <form id="manual-form">
         <div class="form-row">
           <div class="form-field"><label for="m-categoria">Categoría</label>
@@ -115,7 +82,7 @@
 
     <div class="admin-card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.8rem;">
-        <h2 style="margin:0;">Horarios creados</h2>
+        <h2 style="margin:0;">Jugadoras apuntadas</h2>
         <div style="display:flex;gap:0.6rem;align-items:center;">
           <select id="filtro-categoria" style="max-width:220px;">
             <option value="">Todas las categorías</option>
@@ -128,11 +95,11 @@
           <button type="button" class="btn btn-outline btn-sm" id="vaciar-btn">Eliminar todos estos</button>
         </div>
       </div>
-      <p class="form-note" style="margin:-0.4rem 0 0.8rem;">"Eliminar todos estos" borra los horarios de la categoría elegida arriba (o todos, si no filtras) — útil para quitar pruebas antes de tener claros los días definitivos. Si alguno ya está reservado, se cancela también esa reserva.</p>
+      <p class="form-note" style="margin:-0.4rem 0 0.8rem;">"Eliminar todos estos" borra los registros de la categoría elegida arriba (o todos, si no filtras).</p>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Categoría</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Reservado por</th><th>Jugadora</th><th></th><th></th></tr></thead>
-          <tbody id="citas-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          <thead><tr><th>Categoría</th><th>Fecha</th><th>Jugadora</th><th></th><th></th></tr></thead>
+          <tbody id="citas-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -148,7 +115,6 @@
 (async function () {
   if (!window.spfc) return;
 
-  const CATEGORIAS = ["3ª RFEF", "Regional", "Cadete Juvenil", "Infantil", "Benjamín Alevín"];
   let citas = [];
   const PRENDAS = [
     ["talla_camiseta_partido", "Camiseta partido/polo"],
@@ -158,13 +124,21 @@
     ["talla_pantalon", "Pantalón partido/entreno/bermuda"],
     ["talla_pantalon_chandal", "Pantalón chándal"],
   ];
+  const TALLAS_OPCIONES = ["6 años", "8 años", "10 años", "12 años", "14 años", "16 años", "XS", "S", "M", "L", "XL", "XXL"];
+
+  function tallaSelectHtml(id, valorActual) {
+    return `<select id="${id}">
+      <option value="">—</option>
+      ${TALLAS_OPCIONES.map((t) => `<option value="${escapeHtml(t)}" ${t === valorActual ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
+    </select>`;
+  }
 
   function tallasInputsHtml(prefix, valores) {
     valores = valores || {};
     return PRENDAS.map(([campo, etiqueta]) => `
       <div class="form-field">
         <label for="${prefix}-${campo}">${etiqueta}</label>
-        <input type="text" id="${prefix}-${campo}" value="${escapeHtml(valores[campo] || "")}" placeholder="p.ej. 12 años, S, M…">
+        ${tallaSelectHtml(`${prefix}-${campo}`, valores[campo] || "")}
       </div>`).join("");
   }
 
@@ -172,93 +146,15 @@
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  // ---- Enlaces para compartir ----
-  const baseUrl = location.origin + "/citas.html";
-  document.getElementById("enlaces-lista").innerHTML = CATEGORIAS.map((cat) => {
-    const url = baseUrl + "?categoria=" + encodeURIComponent(cat);
-    return `
-      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
-        <strong style="min-width:150px;">${escapeHtml(cat)}</strong>
-        <input type="text" readonly value="${escapeHtml(url)}" style="flex:1;min-width:220px;font-size:0.82rem;" onclick="this.select()">
-        <button type="button" class="btn btn-outline btn-sm" data-copy="${escapeHtml(url)}">Copiar</button>
-      </div>`;
-  }).join("");
-  document.getElementById("enlaces-lista").querySelectorAll("[data-copy]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(btn.dataset.copy);
-      const original = btn.textContent;
-      btn.textContent = "¡Copiado!";
-      setTimeout(() => (btn.textContent = original), 1500);
-    });
-  });
-
-  // ---- Crear horarios ----
-  function generarHoras(inicio, fin, duracion) {
-    const horas = [];
-    let [h, m] = inicio.split(":").map(Number);
-    const [hFin, mFin] = fin.split(":").map(Number);
-    let actual = h * 60 + m;
-    const limite = hFin * 60 + mFin;
-    while (actual < limite) {
-      horas.push(String(Math.floor(actual / 60)).padStart(2, "0") + ":" + String(actual % 60).padStart(2, "0"));
-      actual += duracion;
-    }
-    return horas;
-  }
-
-  function actualizarPreview() {
-    const inicio = document.getElementById("c-inicio").value;
-    const fin = document.getElementById("c-fin").value;
-    const duracion = Number(document.getElementById("c-duracion").value) || 15;
-    const preview = document.getElementById("crear-preview");
-    if (!inicio || !fin) { preview.textContent = ""; return; }
-    const horas = generarHoras(inicio, fin, duracion);
-    preview.textContent = horas.length
-      ? `Se crearán ${horas.length} citas: ${horas[0]} a ${horas[horas.length - 1]}.`
-      : "La hora de fin tiene que ser posterior a la de inicio.";
-  }
-  ["c-inicio", "c-fin", "c-duracion"].forEach((id) =>
-    document.getElementById(id).addEventListener("input", actualizarPreview));
-
-  document.getElementById("crear-form").addEventListener("submit", async (evt) => {
-    evt.preventDefault();
-    const categoria = document.getElementById("c-categoria").value;
-    const fecha = document.getElementById("c-fecha").value;
-    const inicio = document.getElementById("c-inicio").value;
-    const fin = document.getElementById("c-fin").value;
-    const duracion = Number(document.getElementById("c-duracion").value) || 15;
-    const horas = generarHoras(inicio, fin, duracion);
-    const status = document.getElementById("crear-status");
-    if (!fecha || !horas.length) {
-      status.textContent = "Revisa la fecha y las horas.";
-      return;
-    }
-    const btn = document.getElementById("crear-btn");
-    btn.disabled = true;
-    status.textContent = "Creando…";
-    const filas = horas.map((hora) => ({ categoria, fecha, hora, duracion_min: duracion }));
-    const { error } = await window.spfc.from("citas_horario").insert(filas);
-    btn.disabled = false;
-    if (error) {
-      status.textContent = "Error: " + error.message;
-      return;
-    }
-    status.textContent = `${horas.length} horarios creados ✓`;
-    document.getElementById("crear-form").reset();
-    document.getElementById("c-duracion").value = 15;
-    document.getElementById("crear-preview").textContent = "";
-    loadCitas();
-  });
-
-  // ---- Tabla de horarios ----
+  // ---- Tabla ----
   async function loadCitas() {
     const body = document.getElementById("citas-body");
     const filtro = document.getElementById("filtro-categoria").value;
-    let query = window.spfc.from("citas_horario").select("*").order("fecha").order("hora");
+    let query = window.spfc.from("citas_horario").select("*").order("fecha", { ascending: false });
     if (filtro) query = query.eq("categoria", filtro);
     const { data, error } = await query;
-    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay horarios creados.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay ninguna jugadora apuntada.</td></tr>'; return; }
     citas = data;
     body.innerHTML = data.map((c) => {
       const tieneTallas = PRENDAS.some(([campo]) => c[campo]);
@@ -266,31 +162,19 @@
       <tr>
         <td>${escapeHtml(c.categoria)}</td>
         <td>${c.fecha}</td>
-        <td>${String(c.hora).slice(0, 5)}</td>
-        <td>${c.disponible ? '<span class="pill">Libre</span>' : '<span class="pill" style="background:rgba(234,179,8,0.15);color:#a16207;">Reservada</span>'}</td>
-        <td style="font-size:0.82rem;">${c.disponible ? "-" : escapeHtml(c.reservado_nombre) + "<br>" + escapeHtml(c.reservado_email || "")}</td>
-        <td>${c.disponible ? "-" : escapeHtml(c.jugadora_nombre)}</td>
+        <td>${escapeHtml(c.jugadora_nombre)}</td>
         <td class="actions">
-          ${c.disponible ? "" : `<button class="btn btn-outline btn-sm" data-tallas="${c.id}" type="button">${tieneTallas ? "Ver/editar tallas" : "Añadir tallas"}</button>`}
+          <button class="btn btn-outline btn-sm" data-tallas="${c.id}" type="button">${tieneTallas ? "Ver/editar tallas" : "Añadir tallas"}</button>
         </td>
         <td class="actions">
-          ${c.disponible ? "" : `<button class="btn-icon" data-liberar="${c.id}" type="button" title="Liberar hora">↺</button>`}
           <button class="btn-icon danger" data-del="${c.id}" type="button" title="Eliminar">✕</button>
         </td>
       </tr>`;
     }).join("");
 
-    body.querySelectorAll("[data-liberar]").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        if (!confirm("¿Liberar esta hora? La familia que la tenía reservada dejará de tenerla.")) return;
-        await window.spfc.from("citas_horario").update({
-          disponible: true, reservado_nombre: null, reservado_email: null, jugadora_nombre: null, reservado_en: null,
-        }).eq("id", btn.dataset.liberar);
-        loadCitas();
-      }));
     body.querySelectorAll("[data-del]").forEach((btn) =>
       btn.addEventListener("click", async () => {
-        if (!confirm("¿Eliminar este horario?")) return;
+        if (!confirm("¿Eliminar este registro?")) return;
         await window.spfc.from("citas_horario").delete().eq("id", btn.dataset.del);
         loadCitas();
       }));
@@ -318,7 +202,7 @@
     const btn = document.getElementById("tallas-guardar-btn");
     const payload = {};
     PRENDAS.forEach(([campo]) => {
-      payload[campo] = document.getElementById("t-" + campo).value.trim() || null;
+      payload[campo] = document.getElementById("t-" + campo).value || null;
     });
     btn.disabled = true;
     status.textContent = "Guardando…";
@@ -336,7 +220,7 @@
 
   document.getElementById("vaciar-btn").addEventListener("click", async () => {
     const filtro = document.getElementById("filtro-categoria").value;
-    const destino = filtro ? `todos los horarios de ${filtro}` : "TODOS los horarios de TODAS las categorías";
+    const destino = filtro ? `todos los registros de ${filtro}` : "TODOS los registros de TODAS las categorías";
     if (!confirm(`¿Eliminar ${destino}? Esto no se puede deshacer.`)) return;
     let query = window.spfc.from("citas_horario").delete();
     query = filtro ? query.eq("categoria", filtro) : query.not("id", "is", null);
@@ -345,7 +229,7 @@
     loadCitas();
   });
 
-  // ---- Añadir manualmente ----
+  // ---- Añadir jugadora ----
   document.getElementById("manual-tallas-row").innerHTML = tallasInputsHtml("m", {});
   document.getElementById("m-fecha").value = new Date().toISOString().slice(0, 10);
 
@@ -365,7 +249,7 @@
       reservado_en: ahora.toISOString(),
     };
     PRENDAS.forEach(([campo]) => {
-      payload[campo] = document.getElementById("m-" + campo).value.trim() || null;
+      payload[campo] = document.getElementById("m-" + campo).value || null;
     });
     if (!payload.jugadora_nombre) {
       status.textContent = "Falta el nombre de la jugadora.";

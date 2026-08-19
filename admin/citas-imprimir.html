@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoja de citas — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+  body { background: #fff; }
+  .hoja-wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .hoja-filtros {
+    display: flex; gap: 0.8rem; align-items: flex-end; flex-wrap: wrap;
+    margin-bottom: 2rem; padding-bottom: 1.4rem; border-bottom: 1px solid rgba(10,10,10,0.1);
+  }
+  .hoja-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.3rem; }
+  .hoja-head img { width: 42px; height: 42px; }
+  .hoja-head h1 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; margin: 0; }
+  .hoja-sub { font-size: 0.88rem; color: var(--text-on-cream-muted); margin: 0 0 1.6rem; }
+  table.hoja-tabla { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  table.hoja-tabla th, table.hoja-tabla td {
+    border: 1px solid #333; padding: 0.5rem 0.4rem; text-align: left; vertical-align: top;
+  }
+  table.hoja-tabla th { background: #f3f1ec; font-family: var(--font-display); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.03em; }
+  table.hoja-tabla td.talla-vacia { min-height: 2.2rem; }
+  @media print {
+    .no-print { display: none !important; }
+    .hoja-wrap { padding: 0; max-width: none; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body class="admin">
+<div class="hoja-wrap">
+
+  <div class="hoja-filtros no-print">
+    <div class="form-field">
+      <label for="f-categoria">Categoría</label>
+      <select id="f-categoria">
+        <option value="">Todas las categorías</option>
+        <option value="3ª RFEF">3ª RFEF</option>
+        <option value="Regional">Regional</option>
+        <option value="Cadete Juvenil">Cadete Juvenil</option>
+        <option value="Infantil">Infantil</option>
+        <option value="Benjamín Alevín">Benjamín Alevín</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="f-fecha">Fecha</label>
+      <input type="date" id="f-fecha">
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" id="generar-btn">Generar</button>
+    <button type="button" class="btn btn-primary btn-sm" id="imprimir-btn">Imprimir</button>
+    <a href="citas.html" class="btn btn-outline btn-sm">← Volver a Citas</a>
+  </div>
+
+  <div class="hoja-head">
+    <img src="../assets/img/escudo-santa-ponsa.png" alt="">
+    <h1>Fútbol Femenino Santa Ponça</h1>
+  </div>
+  <p class="hoja-sub" id="hoja-sub">Hoja de citas para probar la equipación</p>
+
+  <table class="hoja-tabla">
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Jugadora</th>
+        <th>Camiseta partido/polo</th>
+        <th>Camiseta entreno</th>
+        <th>Sudadera</th>
+        <th>Chaqueta chándal</th>
+        <th>Pantalón partido/entreno/bermuda</th>
+        <th>Pantalón chándal</th>
+      </tr>
+    </thead>
+    <tbody id="hoja-body"><tr><td colspan="8">Elige fecha y pulsa "Generar".</td></tr></tbody>
+  </table>
+
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+
+  const PRENDAS = [
+    "talla_camiseta_partido",
+    "talla_camiseta_entreno",
+    "talla_sudadera",
+    "talla_chaqueta_chandal",
+    "talla_pantalon",
+    "talla_pantalon_chandal",
+  ];
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  document.getElementById("f-fecha").value = new Date().toISOString().slice(0, 10);
+
+  async function generar() {
+    const categoria = document.getElementById("f-categoria").value;
+    const fecha = document.getElementById("f-fecha").value;
+    const body = document.getElementById("hoja-body");
+    const sub = document.getElementById("hoja-sub");
+    if (!fecha) {
+      body.innerHTML = '<tr><td colspan="8">Elige una fecha.</td></tr>';
+      return;
+    }
+    sub.textContent = `Citas del ${fecha}${categoria ? " · " + categoria : ""}`;
+    body.innerHTML = '<tr><td colspan="8">Cargando…</td></tr>';
+
+    let query = window.spfc.from("citas_horario").select("*").eq("fecha", fecha).eq("disponible", false).order("hora");
+    if (categoria) query = query.eq("categoria", categoria);
+    const { data, error } = await query;
+    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data.length) { body.innerHTML = '<tr><td colspan="8">No hay citas reservadas ese día.</td></tr>'; return; }
+
+    body.innerHTML = data.map((c) => `
+      <tr>
+        <td>${String(c.hora).slice(0, 5)}</td>
+        <td>${escapeHtml(c.jugadora_nombre)}</td>
+        ${PRENDAS.map((campo) => `<td class="talla-vacia">${escapeHtml(c[campo] || "")}</td>`).join("")}
+      </tr>`).join("");
+  }
+
+  document.getElementById("generar-btn").addEventListener("click", generar);
+  document.getElementById("imprimir-btn").addEventListener("click", () => window.print());
+
+  generar();
+})();
+</script>
+</body>
+</html>

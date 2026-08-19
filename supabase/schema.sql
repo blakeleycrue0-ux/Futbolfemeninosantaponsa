@@ -753,5 +753,15 @@ alter table matches add column if not exists video_url_2 text;
 alter table matches add column if not exists en_directo boolean not null default false;
 alter table matches add column if not exists en_directo_desde timestamptz;
 
+-- Tallas confirmadas al probarse la equipación en la cita (una columna por
+-- prenda). Se rellenan a mano en el admin, normalmente pasando lo apuntado
+-- en papel durante la propia cita — ver admin/citas-imprimir.html.
+alter table citas_horario add column if not exists talla_camiseta_partido text;
+alter table citas_horario add column if not exists talla_camiseta_entreno text;
+alter table citas_horario add column if not exists talla_sudadera text;
+alter table citas_horario add column if not exists talla_chaqueta_chandal text;
+alter table citas_horario add column if not exists talla_pantalon text;
+alter table citas_horario add column if not exists talla_pantalon_chandal text;
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

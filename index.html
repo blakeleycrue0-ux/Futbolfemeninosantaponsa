@@ -37,6 +37,25 @@
   .news-slide-content { position: relative; z-index: 2; padding: 40px var(--gutter) 56px; max-width: 680px; color: #fff; }
   .news-slide-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 10px; display: block; }
   .news-slide-title { font-family: var(--font-display); font-size: clamp(24px,4.2vw,44px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.08; margin: 0 0 12px; text-transform: uppercase; }
+  /* Variantes sin foto: resultado automático de un partido y aviso de
+     captación (se usan en vez de estirar el escudo como fondo). */
+  .news-slide--centrado { align-items: center; }
+  .news-slide--centrado::after { content: none; }
+  .news-slide--centrado .news-slide-content { max-width: 620px; width: 100%; text-align: center; margin: 0 auto; padding: 40px var(--gutter); }
+  .news-slide--marcador { background: radial-gradient(120% 140% at 50% -10%, rgba(168,85,247,0.32), transparent 60%), var(--dark); }
+  .news-slide--recluta { background: radial-gradient(120% 140% at 50% 110%, rgba(168,85,247,0.28), transparent 60%), var(--dark); }
+  .marcador-badge { display: inline-block; margin-bottom: 10px; padding: 4px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .marcador-badge--win { background: rgba(34,197,94,0.16); color: #4ade80; }
+  .marcador-badge--draw { background: rgba(234,179,8,0.16); color: #facc15; }
+  .marcador-badge--loss { background: rgba(239,68,68,0.16); color: #f87171; }
+  .marcador-row { display: flex; align-items: center; justify-content: center; gap: clamp(18px,5vw,48px); margin: 18px 0 26px; }
+  .marcador-team { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 112px; }
+  .marcador-crest { width: 62px; height: 62px; border-radius: 50%; background: rgba(244,240,232,0.08); border: 1px solid rgba(244,240,232,0.18); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .marcador-crest img { width: 100%; height: 100%; object-fit: contain; padding: 9px; }
+  .marcador-crest span { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: rgba(244,240,232,0.6); }
+  .marcador-name { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.3; }
+  .marcador-score { font-family: var(--font-display); font-weight: 900; font-size: clamp(34px,6vw,54px); letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .marcador-sep { font-size: 0.5em; color: rgba(244,240,232,0.35); }
   .news-slide-desc {
     font-size: 14px; line-height: 1.6; color: rgba(244,240,232,0.75); max-width: 520px; margin: 0 0 20px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -367,13 +386,15 @@
     slideCount = items.length;
     track.innerHTML = items.map((it) => {
       const tag = it.href ? 'a' : 'div';
-      return `<${tag} class="news-slide" ${it.href ? `href="${it.href}"` : ''} style="background-image:url('${it.bg}')">
-        <div class="news-slide-content">
+      const clase = 'news-slide' + (it.claseExtra ? ' ' + it.claseExtra : '');
+      const fondo = it.bg ? ` style="background-image:url('${it.bg}')"` : '';
+      const contenido = it.contenido != null ? it.contenido : `
           <span class="news-slide-eyebrow">${it.eyebrow}</span>
           <h2 class="news-slide-title">${it.title}</h2>
           ${it.desc ? `<p class="news-slide-desc">${it.desc}</p>` : ''}
-          ${it.cta ? `<span class="hero-pill"><span>${it.cta}</span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>` : ''}
-        </div>
+          ${it.cta ? `<span class="hero-pill"><span>${it.cta}</span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>` : ''}`;
+      return `<${tag} class="${clase}" ${it.href ? `href="${it.href}"` : ''}${fondo}>
+        <div class="news-slide-content">${contenido}</div>
       </${tag}>`;
     }).join('');
     if (slideCount > 1) {
@@ -556,25 +577,66 @@ function countUp(el, target, suffix) {
     }).join("");
   }
 
-  /* Carrusel de noticias (portada) */
-  const noticiasSlider = await SPFC_DATA.news(5);
-  if (noticiasSlider.length) {
-    SPFC_INIT_NEWS_SLIDER(noticiasSlider.map((n) => ({
-      href: `noticia.html?id=${n.id}`,
-      bg: n.imagen_url || "assets/img/escudo-santa-ponsa.png",
-      eyebrow: "Noticias · " + spfcFormatDate(n.fecha),
-      title: escapeHtml(n.titulo),
-      desc: escapeHtml(n.resumen || ""),
-      cta: "Leer más",
-    })));
-  } else {
-    SPFC_INIT_NEWS_SLIDER([{
-      bg: "assets/img/escudo-santa-ponsa.png",
-      eyebrow: "Fútbol Femenino Santa Ponça",
-      title: "Pasión por el fútbol femenino",
-      desc: "Proyecto a largo plazo por el fútbol femenino en Santa Ponça.",
-    }]);
+  /* Carrusel de noticias (portada). Si hay un partido jugado con resultado
+     desde hace al menos 4 horas (lo añadas tú a mano o, en el futuro,
+     la sincronización con la Federación), sale primero como una noticia
+     automática con marcador. Si no hay noticias reales tampoco, en vez de
+     estirar el escudo como fondo se muestra un aviso de captación. */
+  const [ultimoJugado, noticiasSlider] = await Promise.all([
+    SPFC_DATA.recentResults(undefined, 1),
+    SPFC_DATA.news(5),
+  ]);
+  const slidesPortada = [];
+
+  const partido = Array.isArray(ultimoJugado) ? ultimoJugado[0] : ultimoJugado;
+  if (partido && partido.goles_equipo != null && partido.goles_rival != null) {
+    const kickoff = new Date(partido.fecha + "T" + (partido.hora || "00:00") + ":00");
+    const horasDesde = (Date.now() - kickoff.getTime()) / 3600000;
+    if (horasDesde >= 4 && horasDesde <= 24 * 10) {
+      const esLocal = partido.condicion === "local";
+      const local = esLocal ? "Santa Ponça" : partido.rival;
+      const visitante = esLocal ? partido.rival : "Santa Ponça";
+      const golLocal = esLocal ? partido.goles_equipo : partido.goles_rival;
+      const golVisitante = esLocal ? partido.goles_rival : partido.goles_equipo;
+      const resultadoEquipo = partido.goles_equipo > partido.goles_rival ? "win" : partido.goles_equipo < partido.goles_rival ? "loss" : "draw";
+      const etiqueta = { win: "¡Victoria!", draw: "Empate", loss: "Derrota" }[resultadoEquipo];
+      slidesPortada.push({
+        href: `partido.html?id=${partido.id}`,
+        claseExtra: "news-slide--centrado news-slide--marcador",
+        contenido: `
+          <span class="marcador-badge marcador-badge--${resultadoEquipo}">${etiqueta}</span>
+          <span class="news-slide-eyebrow">${escapeHtml(partido.competicion || partido.tipo || "Partido")} · ${spfcFormatDate(partido.fecha, { day: "2-digit", month: "long" })}</span>
+          <div class="marcador-row">
+            <div class="marcador-team"><div class="marcador-crest">${crestHtml(esLocal, partido.rival, partido.rival_escudo_url)}</div><div class="marcador-name">${escapeHtml(local)}</div></div>
+            <div class="marcador-score"><span>${golLocal}</span><span class="marcador-sep">—</span><span>${golVisitante}</span></div>
+            <div class="marcador-team"><div class="marcador-crest">${crestHtml(!esLocal, partido.rival, partido.rival_escudo_url)}</div><div class="marcador-name">${escapeHtml(visitante)}</div></div>
+          </div>
+          <span class="hero-pill"><span>Ver partido</span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>`,
+      });
+    }
   }
+
+  noticiasSlider.forEach((n) => slidesPortada.push({
+    href: `noticia.html?id=${n.id}`,
+    bg: n.imagen_url || "assets/img/escudo-santa-ponsa.png",
+    eyebrow: "Noticias · " + spfcFormatDate(n.fecha),
+    title: escapeHtml(n.titulo),
+    desc: escapeHtml(n.resumen || ""),
+    cta: "Leer más",
+  }));
+
+  if (!slidesPortada.length) {
+    slidesPortada.push({
+      href: "inscripcion.html",
+      claseExtra: "news-slide--centrado news-slide--recluta",
+      eyebrow: "Únete al club",
+      title: "Buscamos jugadoras",
+      desc: "Todas las edades y niveles son bienvenidos. Escríbenos y te contamos cómo empezar.",
+      cta: "Quiero apuntarme",
+    });
+  }
+
+  SPFC_INIT_NEWS_SLIDER(slidesPortada);
 
   /* News */
   const noticias = await SPFC_DATA.news(3);

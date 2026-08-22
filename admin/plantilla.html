@@ -124,8 +124,8 @@
       <h2>Jugadoras</h2>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th></th><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th></th></tr></thead>
-          <tbody id="players-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          <thead><tr><th></th><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th>Ficha FFIB</th><th></th></tr></thead>
+          <tbody id="players-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -251,9 +251,9 @@
   async function loadPlayers() {
     const { data, error } = await window.spfc.from("players").select("*").order("dorsal");
     const body = document.getElementById("players-body");
-    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     players = data || [];
-    if (!players.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay jugadoras.</td></tr>'; return; }
+    if (!players.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay jugadoras.</td></tr>'; return; }
     body.innerHTML = players.map((p) => {
       const team = teams.find((t) => t.id === p.team_id);
       return `<tr>
@@ -262,6 +262,7 @@
         <td>${escapeHtml(p.nombre)}</td>
         <td>${team ? escapeHtml(team.nombre) : "-"}</td>
         <td>${escapeHtml(p.posicion || "")}</td>
+        <td>${p.foto_federacion_url ? `<a href="${escapeHtml(p.foto_federacion_url)}" target="_blank" rel="noopener" class="pill pill-ok">Recibida</a>` : `<span class="pill pill-warn">Falta</span>`}</td>
         <td class="actions">
           <button class="btn-icon" data-edit="${p.id}" type="button" title="Editar">✎</button>
           <button class="btn-icon" data-copy-link="${p.access_token}" type="button" title="Copiar enlace de Mi jugadora">🔗</button>

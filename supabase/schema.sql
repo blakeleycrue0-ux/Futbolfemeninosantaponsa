@@ -763,5 +763,12 @@ alter table citas_horario add column if not exists talla_chaqueta_chandal text;
 alter table citas_horario add column if not exists talla_pantalon text;
 alter table citas_horario add column if not exists talla_pantalon_chandal text;
 
+-- Foto para la ficha de la Federación de Fútbol de Illes Balears (FFIB),
+-- distinta de foto_url (esa sí es pública, se ve en la web). La familia la
+-- sube desde "Mi jugadora" con su enlace de siempre; el admin la ve en
+-- Plantilla, columna "Ficha FFIB".
+alter table players add column if not exists foto_federacion_url text;
+alter table players add column if not exists foto_federacion_subida_en timestamptz;
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

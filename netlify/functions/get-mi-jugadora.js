@@ -19,7 +19,7 @@ exports.handler = async function (event) {
 
   const { data: player, error: playerError } = await supabase
     .from("players")
-    .select("id, nombre, dorsal, posicion, foto_url, team_id, teams(nombre, categoria)")
+    .select("id, nombre, dorsal, posicion, foto_url, foto_federacion_url, team_id, teams(nombre, categoria)")
     .eq("access_token", token)
     .single();
   if (playerError || !player) {
@@ -99,6 +99,7 @@ exports.handler = async function (event) {
         dorsal: player.dorsal,
         posicion: player.posicion,
         foto_url: player.foto_url,
+        foto_federacion_url: player.foto_federacion_url,
         equipo: player.teams ? player.teams.nombre : null,
         categoria: player.teams ? player.teams.categoria : null,
       },

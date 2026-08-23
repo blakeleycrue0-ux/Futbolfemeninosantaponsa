@@ -51,16 +51,13 @@
 # ─── MODO MANTENIMIENTO (ACTIVO) ───
 # Para desactivarlo: vuelve a comentar todo este bloque (o bórralo) y
 # push a main. El panel de admin y las funciones siguen funcionando con
-# normalidad mientras tanto.
+# normalidad mientras tanto (Netlify no deja redirigir /.netlify/functions/*
+# — es una ruta reservada suya — pero por eso mismo el modo mantenimiento
+# tampoco puede interceptarla: las funciones ya siguen funcionando solas).
 
 [[redirects]]
   from = "/admin/*"
   to = "/admin/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
   status = 200
 
 [[redirects]]

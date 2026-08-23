@@ -19,7 +19,6 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .noticias-empty { grid-column: 1/-1; }
   .filters-bar .search-field { flex: 1 1 280px; }
   .filters-bar .search-field input { width: 100%; }
 </style>
@@ -51,9 +50,9 @@
           <input type="search" id="noticias-search" placeholder="Buscar noticias por título o resumen…" aria-label="Buscar noticias">
         </div>
       </div>
-      <div id="noticias-grid" class="grid grid-3">
-        <p class="empty-state noticias-empty">Cargando noticias…</p>
-      </div>
+      <div id="noticias-lead" class="news-grid-v2"></div>
+      <div id="noticias-rest" class="news-row-list"></div>
+      <p id="noticias-empty" class="empty-state" style="display:none;"></p>
     </div>
   </section>
 
@@ -74,30 +73,55 @@
     });
   }
 
-  const grid = document.getElementById("noticias-grid");
+  const leadGrid = document.getElementById("noticias-lead");
+  const restList = document.getElementById("noticias-rest");
+  const emptyState = document.getElementById("noticias-empty");
   const searchInput = document.getElementById("noticias-search");
   let allNews = [];
 
+  // Composición editorial: la más reciente de las tres primeras queda de
+  // protagonista, dos secundarias al lado (.news-grid-v2/.nc, igual que la
+  // portada), y el resto en una lista compacta — nada de repetir la misma
+  // tarjeta diez veces.
   function renderNews(list) {
     if (!list.length) {
-      grid.innerHTML = `<p class="empty-state noticias-empty">No se han encontrado noticias.</p>`;
+      leadGrid.innerHTML = "";
+      restList.innerHTML = "";
+      emptyState.textContent = "No se han encontrado noticias.";
+      emptyState.style.display = "";
       return;
     }
-    grid.innerHTML = list.map((n) => `
-      <a href="noticia.html?id=${encodeURIComponent(n.id)}" class="card">
-        <div class="card__media">${n.imagen_url ? `<img src="${escapeHtml(n.imagen_url)}" alt="${escapeHtml(n.titulo)}" loading="lazy">` : ""}</div>
-        <div class="card__body">
-          <span class="card__tag">${escapeHtml(spfcFormatDate(n.fecha))}</span>
-          <h3 class="card__title">${escapeHtml(n.titulo)}</h3>
-          <p class="card__meta">${escapeHtml(n.resumen || "")}</p>
+    emptyState.style.display = "none";
+
+    const destacadas = list.slice(0, 3);
+    const resto = list.slice(3);
+
+    leadGrid.innerHTML = destacadas.map((n) => `
+      <a class="nc" href="noticia.html?id=${encodeURIComponent(n.id)}">
+        ${n.imagen_url
+          ? `<img class="nc-img" src="${escapeHtml(n.imagen_url)}" alt="${escapeHtml(n.titulo)}" loading="lazy">`
+          : `<div class="nc-img nc-img-fallback"><img src="assets/img/escudo-santa-ponsa.png" alt=""></div>`}
+        <div class="nc-body">
+          <span class="nc-eq">${escapeHtml(spfcFormatDate(n.fecha))}</span>
+          <div class="nc-title">${escapeHtml(n.titulo)}</div>
+          <div class="nc-desc">${escapeHtml(n.resumen || "")}</div>
         </div>
+      </a>`).join("");
+
+    restList.innerHTML = resto.map((n) => `
+      <a class="news-row" href="noticia.html?id=${encodeURIComponent(n.id)}">
+        <span class="news-row__title">${escapeHtml(n.titulo)}</span>
+        <span class="news-row__date">${escapeHtml(spfcFormatDate(n.fecha))}</span>
       </a>`).join("");
   }
 
   allNews = await SPFC_DATA.news(50);
 
   if (!allNews.length) {
-    grid.innerHTML = `<p class="empty-state noticias-empty">Todavía no hay noticias publicadas. Vuelve pronto para conocer la actualidad del club.</p>`;
+    leadGrid.innerHTML = "";
+    restList.innerHTML = "";
+    emptyState.textContent = "Todavía no hay noticias publicadas. Vuelve pronto para conocer la actualidad del club.";
+    emptyState.style.display = "";
   } else {
     renderNews(allNews);
   }

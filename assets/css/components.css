@@ -559,6 +559,21 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .nc::before { content: '→'; position: absolute; bottom: 20px; right: 20px; font-size: 20px; color: var(--ink); transform: translate(10px,0); opacity: 0; transition: transform 0.3s, opacity 0.3s; }
 .nc:hover::before { transform: translate(0,0); opacity: 1; }
 
+/* ─── Fila de noticias — para el resto del listado bajo .news-grid-v2 ─── */
+.news-row-list { display: flex; flex-direction: column; }
+.news-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-6);
+  padding: var(--space-4) 0; border-bottom: 1px solid rgba(10,10,10,0.08);
+  text-decoration: none; color: var(--ink);
+}
+.news-row__title {
+  font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg);
+  text-transform: uppercase; letter-spacing: -0.01em; flex: 1;
+  transition: color 0.25s;
+}
+.news-row:hover .news-row__title { color: var(--accent-dark); }
+.news-row__date { font-size: var(--text-xs); color: var(--text-on-cream-muted); white-space: nowrap; flex-shrink: 0; }
+
 /* ─── Sponsors v2 (light) ─── */
 .sponsors-sec-v2 { background: var(--paper); padding: 80px var(--gutter); border-top: 1px solid rgba(10,10,10,0.07); }
 .sponsors-sec-v2 .tag-line { color: var(--text-on-cream-muted); }

@@ -36,12 +36,24 @@
     </div>
   </section>
 
+  <section class="section section-dark" id="protagonista-section" aria-labelledby="protagonista-heading" style="display:none;">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Próximo partido</span>
+          <h2 id="protagonista-heading" style="color:var(--text-on-dark);">A por los tres puntos</h2>
+        </div>
+      </div>
+      <div id="protagonista-match" style="max-width:660px;margin:0 auto;"></div>
+    </div>
+  </section>
+
   <section class="section" aria-labelledby="proximos-heading">
     <div class="container">
       <div class="section-head">
         <div>
           <span class="eyebrow">Calendario</span>
-          <h2 id="proximos-heading">Próximos partidos</h2>
+          <h2 id="proximos-heading">Todos los próximos partidos</h2>
         </div>
       </div>
 
@@ -94,16 +106,9 @@
   const proximosGrid = document.getElementById("proximos-grid");
   const resultadosGrid = document.getElementById("resultados-grid");
   const resultadosSection = document.getElementById("resultados-section");
-
-  function crest(name) {
-    return (name || "").trim().slice(0, 2).toUpperCase() || "--";
-  }
-
-  function crestHtml(esClub, rival, rivalEscudoUrl) {
-    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
-    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
-    return crest(rival);
-  }
+  const protagonistaSection = document.getElementById("protagonista-section");
+  const protagonistaMatch = document.getElementById("protagonista-match");
+  const crestHtml = spfcMatchCrest;
 
   function renderProximos(list) {
     if (!list.length) {
@@ -169,17 +174,23 @@
     const val = estadoSelect.value;
     document.getElementById("proximos-heading").closest("section").style.display = val === "jugados" ? "none" : "";
     resultadosSection.style.display = val === "proximos" ? "none" : "";
+    protagonistaSection.style.display = (val === "jugados" || !protagonistaMatch.innerHTML) ? "none" : "";
   }
 
   async function loadAndRender(teamId) {
     proximosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Cargando partidos…</p>`;
     resultadosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Cargando resultados…</p>`;
+    protagonistaMatch.innerHTML = "";
     const all = await SPFC_DATA.allMatches(teamId);
     const list = Array.isArray(all) ? all : [];
     const proximos = list.filter((m) => m.estado === "programado").sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
     const jugados = list.filter((m) => m.estado === "jugado").sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
     renderProximos(proximos);
     renderResultados(jugados);
+    if (proximos.length) {
+      protagonistaMatch.innerHTML = spfcMatchProtagonistHTML(proximos[0]);
+    }
+    applyEstadoFilter();
   }
 
   try {

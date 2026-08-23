@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restablecer contraseña — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .rc-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1.2rem; background: var(--dark); }
+  .rc-card { width: 100%; max-width: 400px; background: var(--paper); border-radius: var(--radius-lg); padding: 2.2rem; }
+</style>
+</head>
+<body>
+<div class="rc-shell">
+  <div class="rc-card">
+    <div class="brand" style="margin-bottom:1.6rem;">
+      <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
+    </div>
+    <h1 style="font-size:1.3rem;margin-top:0;">Elige una contraseña nueva</h1>
+    <div id="restablecer-loading" style="font-size:0.86rem;">Comprobando el enlace…</div>
+    <div class="form-error" id="restablecer-error" style="display:none;"></div>
+
+    <form id="restablecer-form" style="display:none;">
+      <div class="form-field">
+        <label for="password">Contraseña nueva</label>
+        <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="form-field">
+        <label for="password-confirm">Repite la contraseña</label>
+        <input type="password" id="password-confirm" name="password-confirm" required minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="restablecer-btn">Guardar contraseña</button>
+    </form>
+    <p class="form-note" style="margin-top:1.2rem;"><a href="cuenta.html">← Volver a mi cuenta</a></p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script>
+(async function () {
+  const loadingEl = document.getElementById("restablecer-loading");
+  const errorEl = document.getElementById("restablecer-error");
+  const form = document.getElementById("restablecer-form");
+
+  function showError(msg) {
+    loadingEl.style.display = "none";
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+  }
+
+  if (!window.spfc) {
+    showError("La web no está configurada para cuentas de socias todavía.");
+    return;
+  }
+
+  // El cliente de Supabase procesa el token de recuperación que llega en la
+  // URL (#access_token=...) al cargar la página y dispara este evento.
+  let handled = false;
+  window.spfc.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY" && !handled) {
+      handled = true;
+      loadingEl.style.display = "none";
+      form.style.display = "block";
+    }
+  });
+
+  setTimeout(async () => {
+    if (handled) return;
+    const { data: { session } } = await window.spfc.auth.getSession();
+    if (session) {
+      handled = true;
+      loadingEl.style.display = "none";
+      form.style.display = "block";
+    } else {
+      showError("Este enlace no es válido o ha caducado. Vuelve a pedirlo desde \"Mi cuenta\".");
+    }
+  }, 1500);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.style.display = "none";
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("password-confirm").value;
+    if (password !== passwordConfirm) {
+      showError("Las dos contraseñas no coinciden.");
+      form.style.display = "block";
+      return;
+    }
+
+    const btn = document.getElementById("restablecer-btn");
+    btn.disabled = true;
+    btn.textContent = "Guardando…";
+
+    const { error } = await window.spfc.auth.updateUser({ password });
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = "Guardar contraseña";
+      showError("No se ha podido guardar: " + error.message);
+      form.style.display = "block";
+      return;
+    }
+
+    location.href = "index.html";
+  });
+})();
+</script>
+</body>
+</html>

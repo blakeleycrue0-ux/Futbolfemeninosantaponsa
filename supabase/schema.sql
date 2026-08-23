@@ -770,5 +770,21 @@ alter table citas_horario add column if not exists talla_pantalon_chandal text;
 alter table players add column if not exists foto_federacion_url text;
 alter table players add column if not exists foto_federacion_subida_en timestamptz;
 
+-- Interruptor de "modo mantenimiento", controlado desde el admin (sin
+-- necesidad de tocar Netlify ni hacer un despliegue nuevo cada vez). Fila
+-- única: id siempre es "true". Lectura pública (todas las páginas la
+-- consultan al cargar), escritura solo admin.
+create table if not exists site_settings (
+  id boolean primary key default true,
+  constraint site_settings_singleton check (id),
+  modo_mantenimiento boolean not null default false,
+  actualizado_en timestamptz not null default now()
+);
+insert into site_settings (id) values (true) on conflict do nothing;
+
+alter table site_settings enable row level security;
+create policy "site_settings_public_read" on site_settings for select using (true);
+create policy "site_settings_admin_write" on site_settings for all using (is_app_admin()) with check (is_app_admin());
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

@@ -130,22 +130,6 @@
   .hero--sub .hero__content { padding: 6.2rem 0 2rem; }
 }
 
-.marquee-strip {
-  background: var(--accent);
-  border-top: 2px solid var(--dark);
-  border-bottom: 2px solid var(--dark);
-  overflow: hidden;
-  position: relative;
-}
-.marquee-inner { display: flex; white-space: nowrap; animation: marquee-scroll 22s linear infinite; width: max-content; }
-.marquee-inner span {
-  font-family: var(--font-display); font-size: 0.85rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
-  color: #fff; padding: 16px 26px; flex-shrink: 0;
-}
-.marquee-inner span.dot { padding: 16px 0; color: rgba(255,255,255,0.5); font-size: 0.6rem; }
-@keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .marquee-inner { animation: none; } }
-
 .stats-sec {
   background: var(--cream);
   border-bottom: 2px solid var(--dark);
@@ -346,7 +330,7 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 }
 .hdr .logo-wrap .logo-text, .hdr .hdr-nav a { color: #fff; }
 .hdr .burger { color: #fff; }
-.hdr.scrolled { background: rgba(255,255,255,0.95); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(10,10,10,0.12); }
+.hdr.scrolled { background: var(--paper); border-bottom: 1px solid rgba(10,10,10,0.12); }
 .hdr.scrolled .logo-wrap .logo-text, .hdr.scrolled .hdr-nav a { color: var(--ink); }
 .hdr.scrolled .burger { color: var(--ink); }
 .hdr.scrolled .logo-wrap .logo-sub { color: var(--text-on-cream-muted); }
@@ -607,7 +591,7 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 /* Aviso emergente a pantalla completa (assets/js/socios-gate.js), mismo
    patrón que .destacado-modal: aparece nada más cargar la página. */
 .socios-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.socios-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.72); backdrop-filter: blur(3px); }
+.socios-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.82); }
 .socios-modal-card {
   position: relative; z-index: 1; max-width: 400px; width: 100%; text-align: center;
   background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);

@@ -48,30 +48,7 @@
   status = 301
   force = true
 
-# ─── MODO MANTENIMIENTO (ACTIVO) ───
-# Para desactivarlo: vuelve a comentar todo este bloque (o bórralo) y
-# push a main. El panel de admin y las funciones siguen funcionando con
-# normalidad mientras tanto (Netlify no deja redirigir /.netlify/functions/*
-# — es una ruta reservada suya — pero por eso mismo el modo mantenimiento
-# tampoco puede interceptarla: las funciones ya siguen funcionando solas).
-
-[[redirects]]
-  from = "/admin/*"
-  to = "/admin/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/assets/*"
-  to = "/assets/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/mantenimiento.html"
-  to = "/mantenimiento.html"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/mantenimiento.html"
-  status = 200
-  force = true
+# El modo mantenimiento ya no se controla aquí — se activa/desactiva al
+# instante desde el panel de admin (Resumen → "Modo mantenimiento"), sin
+# necesidad de tocar este archivo ni desplegar nada. Ver
+# assets/js/mantenimiento-check.js y la tabla site_settings.

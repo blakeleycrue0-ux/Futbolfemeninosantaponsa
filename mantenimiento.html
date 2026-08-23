@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estamos mejorando la web — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<style>
+  html, body { height: 100%; }
+  body {
+    background: var(--dark); color: var(--text-on-dark);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1.4rem; overflow: hidden; position: relative;
+  }
+  .mnt-glow {
+    position: absolute; inset: -20%; z-index: 0; pointer-events: none;
+    background: radial-gradient(60% 50% at 50% 40%, rgba(168,85,247,0.22), transparent 70%);
+    animation: mntGlowPulse 5s ease-in-out infinite;
+  }
+  @keyframes mntGlowPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+  .mnt-wrap { position: relative; z-index: 1; max-width: 480px; text-align: center; }
+
+  .mnt-crest { width: 84px; height: 84px; object-fit: contain; margin: 0 auto 1.8rem; display: block; animation: mntCrestFloat 3.6s ease-in-out infinite; }
+  @keyframes mntCrestFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  .mnt-eyebrow {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent-light); margin-bottom: 0.9rem;
+  }
+  .mnt-title {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 1rem;
+  }
+  .mnt-sub { color: var(--text-on-dark-muted); font-size: 0.95rem; line-height: 1.6; margin: 0 0 2.2rem; }
+
+  .mnt-status {
+    display: inline-flex; align-items: center; gap: 0.7em; padding: 0.7em 1.3em;
+    border: 1px solid rgba(244,240,232,0.16); border-radius: var(--radius-pill, 999px);
+    background: rgba(244,240,232,0.04); font-size: 0.86rem; color: var(--text-on-dark);
+    min-height: 1.4em;
+  }
+  .mnt-status-text { transition: opacity 0.4s ease; }
+  .mnt-status-text.out { opacity: 0; }
+
+  .mnt-dots { display: inline-flex; gap: 4px; }
+  .mnt-dots span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-light);
+    animation: dots 1.3s infinite ease-in-out;
+  }
+  .mnt-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .mnt-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  .mnt-foot { margin-top: 2.4rem; font-size: 0.78rem; color: rgba(244,240,232,0.35); }
+  .mnt-foot a { color: var(--accent-light); text-decoration: none; }
+  .mnt-foot a:hover { text-decoration: underline; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mnt-glow, .mnt-crest, .mnt-dots span { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="mnt-glow" aria-hidden="true"></div>
+  <div class="mnt-wrap">
+    <img class="mnt-crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+    <div class="mnt-eyebrow">Fútbol Femenino Santa Ponça</div>
+    <h1 class="mnt-title">Estamos mejorando<br>la web</h1>
+    <p class="mnt-sub">Volvemos enseguida. Gracias por la paciencia.</p>
+    <div class="mnt-status">
+      <span class="mnt-status-text" id="mnt-status-text">Actualizando resultados…</span>
+      <span class="mnt-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+    </div>
+    <p class="mnt-foot">¿Es urgente? Escríbenos a <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a></p>
+  </div>
+
+  <script>
+    var mensajes = [
+      "Actualizando resultados…",
+      "Puliendo algunos detalles…",
+      "Preparando la próxima jornada…",
+      "Revisando la plantilla…",
+      "Casi listo…",
+    ];
+    var i = 0;
+    var el = document.getElementById("mnt-status-text");
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduceMotion) {
+      setInterval(function () {
+        el.classList.add("out");
+        setTimeout(function () {
+          i = (i + 1) % mensajes.length;
+          el.textContent = mensajes[i];
+          el.classList.remove("out");
+        }, 400);
+      }, 2600);
+    }
+  </script>
+</body>
+</html>

@@ -1,15 +1,15 @@
 /*
   socios-gate.js
   ============================================================================
-  Bloquea contenido (noticias, vídeo de partidos) a quien no ha iniciado
-  sesión. "Socia/o" es cualquier cuenta de Supabase Auth con email y
-  contraseña creada en cuenta.html — la misma sesión que ya usa el panel
-  de admin, sin ninguna tabla nueva. No distingue entre socias y personal
-  del club: cualquiera con sesión iniciada cuenta.
+  Bloquea contenido (por ahora, solo el vídeo de los partidos) a quien no
+  ha iniciado sesión. "Socia/o" es cualquier cuenta de Supabase Auth con
+  email y contraseña creada en cuenta.html — la misma sesión que ya usa
+  el panel de admin, sin ninguna tabla nueva. No distingue entre socias
+  y personal del club: cualquiera con sesión iniciada cuenta.
 
   Uso:
     const dentro = await SPFC_SOCIOS.haySesion();
-    if (!dentro) elemento.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver esto.");
+    if (!dentro) elemento.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo.");
   ============================================================================
 */
 window.SPFC_SOCIOS = {
@@ -23,10 +23,13 @@ window.SPFC_SOCIOS = {
     const volver = encodeURIComponent(location.pathname + location.search);
     return `
       <div class="socios-candado">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.6"/></svg>
+        <img class="socios-candado-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+        <p class="socios-candado-titulo">Solo para socias y socios</p>
         <p class="socios-candado-texto">${mensaje}</p>
-        <a class="btn btn-primary btn-sm" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
-        <a class="socios-candado-crear" href="cuenta.html?crear=1&volver=${volver}">¿No tienes cuenta? Crear una</a>
+        <div class="socios-candado-acciones">
+          <a class="btn btn-primary btn-sm" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
+          <a class="btn btn-outline btn-sm" href="cuenta.html?crear=1&volver=${volver}">Crear cuenta</a>
+        </div>
       </div>`;
   },
 
@@ -44,7 +47,7 @@ window.SPFC_SOCIOS = {
       <div class="socios-modal-card" role="dialog" aria-modal="true" aria-labelledby="socios-modal-title">
         <button type="button" class="socios-modal-close" aria-label="Cerrar">✕</button>
         <img class="socios-modal-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
-        <h2 id="socios-modal-title" class="socios-modal-title">Contenido de socias y socios</h2>
+        <h2 id="socios-modal-title" class="socios-modal-title">Solo para socias y socios</h2>
         <p class="socios-modal-texto">${mensaje}</p>
         <a class="btn btn-primary btn-block" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
         <a class="btn btn-outline btn-block" href="cuenta.html?crear=1&volver=${volver}" style="margin-top:0.6rem;">Crear cuenta</a>

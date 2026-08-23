@@ -160,9 +160,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/data.js"></script>
-<script src="assets/js/socios-gate.js"></script>
-<script src="assets/js/nav.js"></script>
+<script src="assets/js/data.js"></script><script src="assets/js/nav.js"></script>
 <script>
 window.addEventListener('scroll', () => {
   document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
@@ -250,14 +248,9 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     .map((p) => p.trim())
     .filter(Boolean);
 
-  const dentro = await SPFC_SOCIOS.haySesion();
-  if (!dentro) SPFC_SOCIOS.mostrarModal("Esta noticia es solo para socias y socios del club. Inicia sesión para leerla entera.");
-
-  const bodyHtml = !dentro
-    ? SPFC_SOCIOS.candado("Esta noticia es solo para socias y socios del club. Inicia sesión para leerla entera.")
-    : paragraphs.length
-      ? paragraphs.map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("")
-      : `<p>Esta noticia todavía no tiene contenido detallado.</p>`;
+  const bodyHtml = paragraphs.length
+    ? paragraphs.map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("")
+    : `<p>Esta noticia todavía no tiene contenido detallado.</p>`;
 
   const shareUrl = window.location.href;
   contentEl.innerHTML = `

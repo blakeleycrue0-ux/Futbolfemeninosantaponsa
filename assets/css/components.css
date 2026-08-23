@@ -775,6 +775,26 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .socios-candado-texto { max-width: 42ch; font-size: 0.92rem; color: var(--text-on-cream-muted); margin: 0; }
 .socios-candado-crear { font-size: 0.82rem; margin-top: 0.2rem; color: var(--accent-dark); }
 
+/* Aviso emergente a pantalla completa (assets/js/socios-gate.js), mismo
+   patrón que .destacado-modal: aparece nada más cargar la página. */
+.socios-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.socios-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.72); backdrop-filter: blur(3px); }
+.socios-modal-card {
+  position: relative; z-index: 1; max-width: 400px; width: 100%; text-align: center;
+  background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  padding: 2.4rem 1.8rem 2rem; animation: sociosModalPop 0.35s var(--ease-out);
+}
+@keyframes sociosModalPop { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.socios-modal-close {
+  position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+  border: none; background: rgba(10,10,10,0.06); color: var(--text-on-cream); display: flex;
+  align-items: center; justify-content: center; cursor: pointer; font-size: 15px;
+}
+.socios-modal-crest { width: 52px; height: 52px; object-fit: contain; margin: 0 auto 1rem; display: block; }
+.socios-modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0 0 0.6rem; }
+.socios-modal-texto { font-size: 0.9rem; color: var(--text-on-cream-muted); line-height: 1.6; margin: 0 0 1.4rem; }
+@media (prefers-reduced-motion: reduce) { .socios-modal-card { animation: none; } }
+
 /* ─── Scroll reveal utility (v2) ─── */
 .sr { opacity: 0; transform: translateY(44px); transition: opacity 0.9s ease, transform 0.9s ease; }
 .sr.in { opacity: 1; transform: translateY(0); }

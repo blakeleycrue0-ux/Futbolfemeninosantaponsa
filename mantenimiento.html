@@ -56,8 +56,18 @@
   .mnt-dots span:nth-child(3) { animation-delay: 0.3s; }
 
   .mnt-foot { margin-top: 2.4rem; font-size: 0.78rem; color: rgba(244,240,232,0.35); }
-  .mnt-foot a { color: var(--accent-light); text-decoration: none; }
-  .mnt-foot a:hover { text-decoration: underline; }
+  .mnt-foot a, .mnt-foot button { color: var(--accent-light); text-decoration: none; }
+  .mnt-foot a:hover, .mnt-foot button:hover { text-decoration: underline; }
+  .mnt-foot button { background: none; border: none; font: inherit; cursor: pointer; padding: 0; }
+
+  .mnt-acceso { margin-top: 1rem; display: none; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .mnt-acceso.mostrar { display: flex; }
+  .mnt-acceso input {
+    width: 100%; max-width: 220px; padding: 0.6em 0.9em; border-radius: var(--radius-md, 8px);
+    border: 1px solid rgba(244,240,232,0.2); background: rgba(244,240,232,0.06); color: var(--text-on-dark);
+    font-size: 0.86rem; text-align: center;
+  }
+  .mnt-acceso-error { font-size: 0.78rem; color: #f87171; min-height: 1.1em; margin: 0; }
 
   @media (prefers-reduced-motion: reduce) {
     .mnt-glow, .mnt-crest, .mnt-dots span { animation: none; }
@@ -75,7 +85,12 @@
       <span class="mnt-status-text" id="mnt-status-text">Actualizando resultados…</span>
       <span class="mnt-dots" aria-hidden="true"><span></span><span></span><span></span></span>
     </div>
-    <p class="mnt-foot">¿Es urgente? Escríbenos a <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a></p>
+    <p class="mnt-foot">¿Es urgente? Escríbenos a <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a> · <button type="button" id="mnt-acceso-link">Acceso del equipo</button></p>
+    <div class="mnt-acceso" id="mnt-acceso-form">
+      <input type="password" id="mnt-acceso-pass" placeholder="Contraseña" autocomplete="off">
+      <button type="button" class="btn btn-primary btn-sm" id="mnt-acceso-btn">Entrar</button>
+      <p class="mnt-acceso-error" id="mnt-acceso-error"></p>
+    </div>
   </div>
 
   <script>
@@ -99,6 +114,31 @@
         }, 400);
       }, 2600);
     }
+
+    // Acceso del equipo: contraseña sencilla, solo para que el club pueda
+    // seguir viendo la web real mientras el resto ve esta pantalla. Se
+    // puede cambiar en cualquier momento editando SPFC_MNT_PASS.
+    var SPFC_MNT_PASS = "santaponsa2026";
+    document.getElementById("mnt-acceso-link").addEventListener("click", function () {
+      document.getElementById("mnt-acceso-form").classList.add("mostrar");
+      document.getElementById("mnt-acceso-pass").focus();
+    });
+    function intentarAcceso() {
+      var pass = document.getElementById("mnt-acceso-pass").value;
+      var errorEl = document.getElementById("mnt-acceso-error");
+      if (pass === SPFC_MNT_PASS) {
+        localStorage.setItem("spfc_preview_ok", "1");
+        var params = new URLSearchParams(location.search);
+        var volver = params.get("volver");
+        location.href = volver ? decodeURIComponent(volver) : "index.html";
+      } else {
+        errorEl.textContent = "Contraseña incorrecta.";
+      }
+    }
+    document.getElementById("mnt-acceso-btn").addEventListener("click", intentarAcceso);
+    document.getElementById("mnt-acceso-pass").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") intentarAcceso();
+    });
   </script>
 </body>
 </html>

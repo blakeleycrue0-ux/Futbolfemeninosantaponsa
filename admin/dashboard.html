@@ -43,6 +43,23 @@
       <a href="../index.html" class="btn btn-outline btn-sm" target="_blank" rel="noopener">Ver web pública</a>
     </div>
 
+    <div class="admin-card" id="mantenimiento-card" style="border:1px solid rgba(168,85,247,0.3);">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.8rem;">
+        <div>
+          <h2 style="margin-bottom:0.3rem;">Modo mantenimiento</h2>
+          <p style="font-size:0.86rem;color:var(--text-on-cream-muted);margin:0;">
+            Mientras esté activo, cualquiera que entre a la web pública ve la pantalla de "Estamos mejorando la web".
+            Tú sigues viéndolo todo con normalidad en este navegador en cuanto entras una vez con la contraseña de
+            <a href="../mantenimiento.html" target="_blank" rel="noopener">mantenimiento.html</a> ("Acceso del equipo").
+          </p>
+        </div>
+        <div style="text-align:right;">
+          <p id="mnt-estado" style="margin:0 0 0.5rem;font-weight:700;">Cargando…</p>
+          <button class="btn btn-primary btn-sm" id="mnt-toggle-btn" type="button" disabled>Cargando…</button>
+        </div>
+      </div>
+    </div>
+
     <div class="admin-stat-grid" id="stat-grid">
       <div class="admin-stat"><strong>—</strong><span>Noticias</span></div>
       <div class="admin-stat"><strong>—</strong><span>Jugadoras</span></div>
@@ -112,6 +129,41 @@
 <script>
 (async function () {
   if (!window.spfc) return;
+
+  // ---- Modo mantenimiento ----
+  (async function () {
+    const estadoEl = document.getElementById("mnt-estado");
+    const btn = document.getElementById("mnt-toggle-btn");
+
+    async function cargar() {
+      const { data, error } = await window.spfc.from("site_settings").select("modo_mantenimiento").eq("id", true).single();
+      if (error || !data) {
+        estadoEl.textContent = "No se ha podido comprobar.";
+        return;
+      }
+      const activo = data.modo_mantenimiento;
+      estadoEl.textContent = activo ? "Activo" : "Desactivado";
+      estadoEl.style.color = activo ? "var(--accent-dark)" : "var(--text-on-cream-muted)";
+      btn.textContent = activo ? "Desactivar" : "Activar";
+      btn.className = activo ? "btn btn-outline btn-sm" : "btn btn-primary btn-sm";
+      btn.disabled = false;
+      btn.dataset.activo = activo ? "1" : "0";
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      const nuevoValor = btn.dataset.activo !== "1";
+      const { error } = await window.spfc.from("site_settings").update({ modo_mantenimiento: nuevoValor, actualizado_en: new Date().toISOString() }).eq("id", true);
+      if (error) {
+        alert("No se ha podido cambiar: " + error.message);
+        btn.disabled = false;
+        return;
+      }
+      await cargar();
+    });
+
+    await cargar();
+  })();
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

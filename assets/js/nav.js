@@ -31,42 +31,34 @@
     if (a.getAttribute("href") === path) a.setAttribute("aria-current", "page");
   });
 
-  // Scroll-reveal de la cabecera/pie compartidos — progressive enhancement.
+  // Scroll-reveal — un solo sistema (.sr / .sr-l + clase "in" al entrar en
+  // vista) para todo: elementos marcados a mano en el HTML (p.ej. index.html)
+  // y componentes genéricos (tarjetas, tablas...) que lo reciben aquí.
+  // Antes había dos sistemas por separado con nombres de clase distintos
+  // (.sr/.sr-l aquí, .reveal-init/.reveal-in solo para estos componentes) que
+  // hacían lo mismo — ver assets/css/components.css.
   if ("IntersectionObserver" in window) {
-    const roChrome = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add("in");
-        });
-      },
-      { threshold: 0.09 }
-    );
-    document.querySelectorAll(".sr,.sr-l").forEach((el) => roChrome.observe(el));
-  }
-
-  // Scroll-reveal para tarjetas/secciones de contenido — progressive enhancement.
-  const revealSelectors = [
-    ".card", ".match-card", ".player-card",
-    ".stats-sec .stat-cell", ".stat-item",
-    ".section-head", "table.standings", ".sponsor-strip img",
-  ];
-  const revealables = document.querySelectorAll(revealSelectors.join(","));
-  if (revealables.length && "IntersectionObserver" in window) {
-    revealables.forEach((el, i) => {
-      el.classList.add("reveal-init");
-      el.style.transitionDelay = Math.min(i % 4, 3) * 0.09 + "s";
+    const genericSelectors = [
+      ".card", ".match-card", ".player-card",
+      ".stat-item", ".section-head", "table.standings", ".sponsor-strip img",
+    ];
+    const generics = document.querySelectorAll(genericSelectors.join(","));
+    generics.forEach((el, i) => {
+      el.classList.add("sr");
+      if (!el.style.transitionDelay) el.style.transitionDelay = Math.min(i % 4, 3) * 0.09 + "s";
     });
-    const io = new IntersectionObserver(
+
+    const revealer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("reveal-in");
-            io.unobserve(entry.target);
+            entry.target.classList.add("in");
+            revealer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
-    revealables.forEach((el) => io.observe(el));
+    document.querySelectorAll(".sr,.sr-l").forEach((el) => revealer.observe(el));
   }
 })();

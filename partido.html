@@ -119,16 +119,6 @@
   const bodyEl = document.getElementById("match-body");
   const breadcrumbCurrent = document.getElementById("breadcrumb-current");
 
-  function crest(name) {
-    return (name || "").trim().slice(0, 2).toUpperCase() || "--";
-  }
-
-  function crestHtml(esClub, rival, rivalEscudoUrl) {
-    if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
-    if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
-    return crest(rival);
-  }
-
   function extractYouTubeId(url) {
     if (!url) return null;
     const patterns = [
@@ -179,46 +169,11 @@
 
   const esLocal = match.condicion === "local";
   const jugado = match.estado === "jugado";
-  const res = jugado ? spfcResultLabel(match) : null;
-  const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : res === "D" ? "Empate" : "";
   const rivalName = match.rival || "Rival";
 
   breadcrumbCurrent.textContent = `Santa Ponça vs ${rivalName}`;
 
-  let metaLine1;
-  if (match.estado === "aplazado") {
-    metaLine1 = "Partido aplazado";
-  } else if (match.estado === "suspendido") {
-    metaLine1 = "Partido suspendido";
-  } else if (jugado) {
-    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-  } else {
-    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
-  }
-
-  headerEl.innerHTML = `
-    <div class="match-card match-hero">
-      <span class="match-card__comp">${match.tipo && match.tipo !== "Liga" ? match.tipo + " · " : ""}${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
-      <div class="match-card__teams">
-        <div class="match-team">
-          <span class="match-team__crest">${crestHtml(esLocal, rivalName, match.rival_escudo_url)}</span>
-          <span class="match-team__name">${esLocal ? "Santa Ponça" : rivalName}</span>
-        </div>
-        ${jugado
-          ? `<span class="match-card__score">${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}</span>`
-          : `<span class="match-card__vs">VS</span>`}
-        <div class="match-team">
-          <span class="match-team__crest">${crestHtml(!esLocal, rivalName, match.rival_escudo_url)}</span>
-          <span class="match-team__name">${esLocal ? rivalName : "Santa Ponça"}</span>
-        </div>
-      </div>
-      <div class="match-card__meta">
-        <span>${metaLine1}</span>
-        <span>${match.campo || ""}</span>
-      </div>
-      ${jugado && res ? `<div style="text-align:center;margin-top:1.2rem;"><span class="match-card__result result-${res}">${resLabel}</span></div>` : ""}
-    </div>
-  `;
+  headerEl.innerHTML = spfcMatchProtagonistHTML(match);
 
   const resultLine = jugado
     ? `${esLocal ? match.goles_equipo : match.goles_rival}-${esLocal ? match.goles_rival : match.goles_equipo}`

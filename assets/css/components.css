@@ -766,14 +766,16 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
    verse bien tanto en secciones claras (cuerpo de una noticia) como
    oscuras (vídeo de un partido, banner en directo). */
 .socios-candado {
-  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
-  padding: 2.6rem 1.8rem; border-radius: var(--radius-lg);
-  background: var(--paper); border: 1px solid rgba(168,85,247,0.25);
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+  padding: 2.8rem 1.8rem; border-radius: var(--radius-lg);
+  background: radial-gradient(120% 160% at 50% 0%, rgba(168,85,247,0.12), transparent 60%), var(--paper);
+  border: 1px solid rgba(168,85,247,0.22);
   color: var(--text-on-cream);
 }
-.socios-candado svg { color: var(--accent); flex-shrink: 0; }
-.socios-candado-texto { max-width: 42ch; font-size: 0.92rem; color: var(--text-on-cream-muted); margin: 0; }
-.socios-candado-crear { font-size: 0.82rem; margin-top: 0.2rem; color: var(--accent-dark); }
+.socios-candado-crest { width: 48px; height: 48px; object-fit: contain; margin-bottom: 0.6rem; }
+.socios-candado-titulo { font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: -0.01em; margin: 0; }
+.socios-candado-texto { max-width: 38ch; font-size: 0.88rem; color: var(--text-on-cream-muted); margin: 0 0 0.8rem; }
+.socios-candado-acciones { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
 
 /* Aviso emergente a pantalla completa (assets/js/socios-gate.js), mismo
    patrón que .destacado-modal: aparece nada más cargar la página. */

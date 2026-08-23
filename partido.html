@@ -313,8 +313,8 @@
 
     if (!dentroVideo) {
       videoWrap.style.display = "block";
-      videoWrap.innerHTML = SPFC_SOCIOS.candado("Los vídeos de los partidos son solo para socias y socios del club.");
-      SPFC_SOCIOS.mostrarModal("Los vídeos de los partidos son solo para socias y socios del club.");
+      videoWrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo del partido.");
+      SPFC_SOCIOS.mostrarModal("Inicia sesión para ver el vídeo del partido.");
     } else {
       videoWrap.style.display = videoUrls.length > 1 ? "grid" : "block";
       if (videoUrls.length > 1) {

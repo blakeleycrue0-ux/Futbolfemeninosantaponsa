@@ -1,3 +1,14 @@
+/* Textura de rejilla compartida — antes duplicada en .hero--sub::after y .join-sec::after */
+.hero--sub::after, .join-sec::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -186,45 +197,15 @@
   background: var(--dark);
   color: var(--text-on-dark);
 }
-.hero__media {
-  position: absolute; inset: 0;
-  background: linear-gradient(165deg, var(--dark-3) 0%, var(--dark) 60%, #050505 100%);
-  animation: hero-zoom 26s ease-in-out infinite alternate;
-}
-.hero__media::before {
-  content: "";
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 55% 60% at 72% 28%, rgba(168,85,247,0.16) 0%, transparent 70%);
-  animation: hero-spot 8s ease-in-out infinite alternate;
-}
-.hero__media::after {
-  content: "";
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/></svg>");
-  opacity: 0.16;
-  mix-blend-mode: overlay;
-}
-@keyframes hero-zoom {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.08); }
-}
-@keyframes hero-spot {
-  from { opacity: 0.7; }
-  to { opacity: 1; }
-}
-
-/* Homepage hero: real photo instead of the abstract dark gradient. */
-.hero__media--photo {
-  background-image:
-    linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.6) 38%, rgba(10,10,10,0.2) 70%),
-    linear-gradient(to right, rgba(10,10,10,0.55) 0%, transparent 55%),
-    url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=85');
-  background-size: cover;
-  background-position: center 30%;
-  background-repeat: no-repeat;
-  filter: saturate(0.75) brightness(0.85);
-}
-.hero__media--photo::before { opacity: 0.6; }
+/*
+  .hero__media siempre se oculta con .hero--sub (única variante en uso —
+  ver comentario más abajo), así que aquí no lleva ya fondo/animación:
+  antes había un degradado con zoom automático + mancha radial + grano
+  SVG que nunca llegaba a pintarse en ninguna página real (confirmado por
+  grep en todo el HTML del sitio). Se deja el selector vacío porque el
+  <div class="hero__media"> sigue en el marcado de las páginas
+  secundarias hasta que se limpie ese HTML en el rediseño por página.
+*/
 .hero__content { position: relative; z-index: 2; padding: 8rem 0 4rem; width: 100%; }
 .hero__tag { display: inline-flex; align-items: center; gap: 0.7em; color: var(--accent-light); font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; margin-bottom: 1.6rem; }
 .hero__tag::before { content: ""; width: 24px; height: 1px; background: var(--accent-light); display: inline-block; }
@@ -233,17 +214,6 @@
 .hero__title .accent { color: var(--accent-light); -webkit-text-stroke: 0; }
 .hero__lede { max-width: 520px; color: var(--text-on-dark-muted); font-size: 1.05rem; }
 .hero__actions { display: flex; gap: 1rem; margin-top: 1.8rem; flex-wrap: wrap; }
-
-.hero__crest {
-  position: absolute;
-  z-index: 1;
-  right: clamp(1rem, 7vw, 7rem);
-  bottom: 0;
-  width: clamp(160px, 20vw, 300px);
-  filter: drop-shadow(0 24px 40px rgba(0,0,0,0.5));
-  pointer-events: none;
-  opacity: 0.9;
-}
 
 /*
   Cabecera de página secundaria (Contacto, Equipos, Clasificación...) —
@@ -258,11 +228,7 @@
   background: var(--accent);
   color: var(--text-on-dark);
 }
-.hero--sub::after {
-  content: ''; position: absolute; inset: 0;
-  background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
-  background-size: 60px 60px; pointer-events: none;
-}
+.hero--sub::after { pointer-events: none; }
 .hero--sub .hero__media { display: none; }
 .hero--sub .hero__content { position: relative; z-index: 1; padding: 6.7rem 0 2.4rem; text-align: center; }
 .hero--sub .hero__tag { color: rgba(255,255,255,0.85); }
@@ -271,10 +237,6 @@
 .hero--sub .hero__lede { color: rgba(255,255,255,0.8); max-width: 460px; margin-left: auto; margin-right: auto; }
 @media (max-width: 640px) {
   .hero--sub .hero__content { padding: 6.2rem 0 2rem; }
-}
-
-@media (max-width: 780px) {
-  .hero__crest { width: 110px; opacity: 0.45; right: var(--gutter); }
 }
 
 .marquee-strip {
@@ -690,7 +652,6 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
   font-family: var(--font-display); font-weight: 900; font-size: clamp(80px,22vw,260px);
   color: rgba(255,255,255,0.1); pointer-events: none; white-space: nowrap; letter-spacing: -0.04em;
 }
-.join-sec::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 60px 60px; }
 .join-sec > * { position: relative; z-index: 1; }
 .join-eyebrow { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
 .join-eyebrow::before, .join-eyebrow::after { content: ''; width: 22px; height: 1px; background: rgba(255,255,255,0.55); }

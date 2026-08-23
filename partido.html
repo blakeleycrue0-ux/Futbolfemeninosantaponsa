@@ -178,6 +178,7 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/data.js"></script>
+<script src="assets/js/socios-gate.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
@@ -308,19 +309,26 @@
   if (videoUrls.length) {
     const videoSection = document.getElementById("video-section");
     const videoWrap = document.getElementById("video-wrap");
-    videoWrap.style.display = videoUrls.length > 1 ? "grid" : "block";
-    if (videoUrls.length > 1) {
-      videoWrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
-      videoWrap.style.gap = "1.2rem";
+    const dentroVideo = await SPFC_SOCIOS.haySesion();
+
+    if (!dentroVideo) {
+      videoWrap.style.display = "block";
+      videoWrap.innerHTML = SPFC_SOCIOS.candado("Los vídeos de los partidos son solo para socias y socios del club.");
+    } else {
+      videoWrap.style.display = videoUrls.length > 1 ? "grid" : "block";
+      if (videoUrls.length > 1) {
+        videoWrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+        videoWrap.style.gap = "1.2rem";
+      }
+      videoWrap.innerHTML = videoUrls.map((url) => {
+        const ytId = extractYouTubeId(url);
+        const src = ytId ? `https://www.youtube.com/embed/${ytId}` : url;
+        return `
+          <div style="position:relative;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#000;">
+            <iframe src="${src}" title="Vídeo del partido" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>`;
+      }).join("");
     }
-    videoWrap.innerHTML = videoUrls.map((url) => {
-      const ytId = extractYouTubeId(url);
-      const src = ytId ? `https://www.youtube.com/embed/${ytId}` : url;
-      return `
-        <div style="position:relative;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#000;">
-          <iframe src="${src}" title="Vídeo del partido" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-        </div>`;
-    }).join("");
     videoSection.style.display = "";
   }
 

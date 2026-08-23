@@ -761,6 +761,20 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .ft-v2 a { color: rgba(244,240,232,0.3); text-decoration: none; transition: color 0.3s; }
 .ft-v2 a:hover { color: var(--accent-light); }
 
+/* ─── Candado de contenido para socias (assets/js/socios-gate.js) ───
+   Tarjeta autosuficiente: define su propio fondo y color de texto para
+   verse bien tanto en secciones claras (cuerpo de una noticia) como
+   oscuras (vídeo de un partido, banner en directo). */
+.socios-candado {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+  padding: 2.6rem 1.8rem; border-radius: var(--radius-lg);
+  background: var(--paper); border: 1px solid rgba(168,85,247,0.25);
+  color: var(--text-on-cream);
+}
+.socios-candado svg { color: var(--accent); flex-shrink: 0; }
+.socios-candado-texto { max-width: 42ch; font-size: 0.92rem; color: var(--text-on-cream-muted); margin: 0; }
+.socios-candado-crear { font-size: 0.82rem; margin-top: 0.2rem; color: var(--accent-dark); }
+
 /* ─── Scroll reveal utility (v2) ─── */
 .sr { opacity: 0; transform: translateY(44px); transition: opacity 0.9s ease, transform 0.9s ease; }
 .sr.in { opacity: 1; transform: translateY(0); }

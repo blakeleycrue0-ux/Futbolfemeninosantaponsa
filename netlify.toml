@@ -48,36 +48,33 @@
   status = 301
   force = true
 
-# ─── MODO MANTENIMIENTO (desactivado) ───
-# Para poner la web pública en mantenimiento mientras se prueba un
-# cambio en producción: descomenta TODO este bloque tal cual está, haz
-# commit y push a main — en segundos, la web pública empieza a mostrar
-# mantenimiento.html. El panel de admin y las funciones siguen
-# funcionando con normalidad mientras tanto. Para desactivarlo: vuelve
-# a comentar el bloque (o bórralo) y push de nuevo.
-#
-# [[redirects]]
-#   from = "/admin/*"
-#   to = "/admin/:splat"
-#   status = 200
-#
-# [[redirects]]
-#   from = "/.netlify/functions/*"
-#   to = "/.netlify/functions/:splat"
-#   status = 200
-#
-# [[redirects]]
-#   from = "/assets/*"
-#   to = "/assets/:splat"
-#   status = 200
-#
-# [[redirects]]
-#   from = "/mantenimiento.html"
-#   to = "/mantenimiento.html"
-#   status = 200
-#
-# [[redirects]]
-#   from = "/*"
-#   to = "/mantenimiento.html"
-#   status = 200
-#   force = true
+# ─── MODO MANTENIMIENTO (ACTIVO) ───
+# Para desactivarlo: vuelve a comentar todo este bloque (o bórralo) y
+# push a main. El panel de admin y las funciones siguen funcionando con
+# normalidad mientras tanto.
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/mantenimiento.html"
+  to = "/mantenimiento.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/mantenimiento.html"
+  status = 200
+  force = true

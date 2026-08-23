@@ -251,6 +251,7 @@ document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('cl
     .filter(Boolean);
 
   const dentro = await SPFC_SOCIOS.haySesion();
+  if (!dentro) SPFC_SOCIOS.mostrarModal("Esta noticia es solo para socias y socios del club. Inicia sesión para leerla entera.");
 
   const bodyHtml = !dentro
     ? SPFC_SOCIOS.candado("Esta noticia es solo para socias y socios del club. Inicia sesión para leerla entera.")

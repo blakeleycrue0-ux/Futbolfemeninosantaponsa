@@ -694,6 +694,7 @@ function countUp(el, target, suffix) {
         document.getElementById("liveVideoWrap").innerHTML =
           SPFC_SOCIOS.candado("El directo es solo para socias y socios del club.");
         document.getElementById("liveFallbackLink").style.display = "none";
+        SPFC_SOCIOS.mostrarModal("El directo es solo para socias y socios del club.");
       } else {
         const ytId = extractYouTubeId(partidoDirecto.video_url);
         const src = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=0` : partidoDirecto.video_url;

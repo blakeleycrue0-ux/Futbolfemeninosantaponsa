@@ -29,4 +29,29 @@ window.SPFC_SOCIOS = {
         <a class="socios-candado-crear" href="cuenta.html?crear=1&volver=${volver}">¿No tienes cuenta? Crear una</a>
       </div>`;
   },
+
+  // Aviso emergente que sale nada más cargar la página, además del
+  // candado colocado en el propio contenido. Se cierra con la X o
+  // tocando fuera, pero el contenido sigue bloqueado igualmente.
+  mostrarModal(mensaje) {
+    if (document.getElementById("socios-modal")) return;
+    const volver = encodeURIComponent(location.pathname + location.search);
+    const overlay = document.createElement("div");
+    overlay.id = "socios-modal";
+    overlay.className = "socios-modal";
+    overlay.innerHTML = `
+      <div class="socios-modal-backdrop"></div>
+      <div class="socios-modal-card" role="dialog" aria-modal="true" aria-labelledby="socios-modal-title">
+        <button type="button" class="socios-modal-close" aria-label="Cerrar">✕</button>
+        <img class="socios-modal-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+        <h2 id="socios-modal-title" class="socios-modal-title">Contenido de socias y socios</h2>
+        <p class="socios-modal-texto">${mensaje}</p>
+        <a class="btn btn-primary btn-block" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
+        <a class="btn btn-outline btn-block" href="cuenta.html?crear=1&volver=${volver}" style="margin-top:0.6rem;">Crear cuenta</a>
+      </div>`;
+    document.body.appendChild(overlay);
+    function cerrar() { overlay.remove(); }
+    overlay.querySelector(".socios-modal-close").addEventListener("click", cerrar);
+    overlay.querySelector(".socios-modal-backdrop").addEventListener("click", cerrar);
+  },
 };

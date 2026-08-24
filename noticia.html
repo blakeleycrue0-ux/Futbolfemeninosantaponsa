@@ -25,8 +25,9 @@
   .article-head h1 { max-width: 780px; margin-bottom: 0.6em; }
   .article-byline { display: flex; gap: 1em; flex-wrap: wrap; color: var(--text-on-dark-muted); font-size: 0.85rem; }
   .article-byline strong { color: var(--text-on-dark); font-weight: 600; }
-  .article-media { aspect-ratio: 16/7; border-radius: var(--radius-lg); overflow: hidden; background: linear-gradient(140deg, var(--accent-dark), var(--accent)); margin-bottom: 2.5rem; }
+  .article-media { position: relative; aspect-ratio: 16/7; border-radius: var(--radius-lg); overflow: hidden; background: linear-gradient(140deg, var(--accent-dark), var(--accent)); margin-bottom: 2.5rem; }
   .article-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .article-media-blur { position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(18px) brightness(0.55) saturate(1.15); transform: scale(1.08); }
   @media (max-width: 720px) { .article-media { aspect-ratio: 4/3; } }
   .article-body { max-width: 700px; margin: 0 auto; }
   .article-body p { color: var(--text-on-cream); font-size: 1.05rem; line-height: 1.7; margin-bottom: 1.2em; }
@@ -82,7 +83,9 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/mantenimiento-check.js"></script>
-<script src="assets/js/data.js"></script><script src="assets/js/nav.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/socios-gate.js"></script>
+<script src="assets/js/nav.js"></script>
 <script>
 (async function () {
   function escapeHtml(str) {
@@ -154,11 +157,24 @@
     ? paragraphs.map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("")
     : `<p>Esta noticia todavía no tiene contenido detallado.</p>`;
 
+  // El título y el resumen ya se ven siempre (arriba, en headerEl/meta) —
+  // solo la foto y el cuerpo completo se bloquean, con la foto de fondo
+  // desenfocada para dar una idea de que hay contenido real ahí.
+  const dentroNoticia = await SPFC_SOCIOS.haySesion();
+  const mediaHtml = noticia.imagen_url
+    ? (dentroNoticia
+        ? `<img src="${escapeHtml(noticia.imagen_url)}" alt="${escapeHtml(noticia.titulo)}">`
+        : `<div class="article-media-blur" style="background-image:url('${escapeHtml(noticia.imagen_url)}')"></div>`)
+    : "";
+  const bodyBlock = dentroNoticia
+    ? `<div class="article-body">${bodyHtml}</div>`
+    : SPFC_SOCIOS.candado("Inicia sesión para leer la noticia completa.");
+
   const shareUrl = window.location.href;
   contentEl.innerHTML = `
-    <div class="article-media">${noticia.imagen_url ? `<img src="${escapeHtml(noticia.imagen_url)}" alt="${escapeHtml(noticia.titulo)}">` : ""}</div>
-    <div class="article-body">${bodyHtml}</div>
-    ${noticia.boton_url ? `<p><a href="${escapeHtml(noticia.boton_url)}" class="btn btn-primary">${escapeHtml(noticia.boton_texto || "Más información")}</a></p>` : ""}
+    <div class="article-media">${mediaHtml}</div>
+    ${bodyBlock}
+    ${dentroNoticia && noticia.boton_url ? `<p><a href="${escapeHtml(noticia.boton_url)}" class="btn btn-primary">${escapeHtml(noticia.boton_texto || "Más información")}</a></p>` : ""}
     <div class="article-share">
       <span class="eyebrow">Compartir</span>
       <a href="mailto:?subject=${encodeURIComponent(noticia.titulo)}&body=${encodeURIComponent(shareUrl)}" class="btn btn-outline btn-sm">Compartir por email</a>

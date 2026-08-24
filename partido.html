@@ -201,7 +201,9 @@
 
     if (!dentroVideo) {
       videoWrap.style.display = "block";
-      videoWrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo del partido.");
+      const primerYtId = extractYouTubeId(videoUrls[0]);
+      const miniatura = primerYtId ? `https://img.youtube.com/vi/${primerYtId}/hqdefault.jpg` : null;
+      videoWrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo del partido.", miniatura);
       SPFC_SOCIOS.mostrarModal("Inicia sesión para ver el vídeo del partido.");
     } else {
       videoWrap.style.display = videoUrls.length > 1 ? "grid" : "block";

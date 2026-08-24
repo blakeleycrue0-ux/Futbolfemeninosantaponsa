@@ -10,6 +10,8 @@
   Uso:
     const dentro = await SPFC_SOCIOS.haySesion();
     if (!dentro) elemento.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo.");
+    // Con una imagen de fondo desenfocada (vídeo, noticia con foto...):
+    if (!dentro) elemento.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para leer la noticia completa.", noticia.imagen_url);
   ============================================================================
 */
 window.SPFC_SOCIOS = {
@@ -19,16 +21,23 @@ window.SPFC_SOCIOS = {
     return !!session;
   },
 
-  candado(mensaje) {
+  // imagenFondo (opcional): si se pasa, se ve desenfocada detrás de la
+  // tarjeta (para dar la sensación de que hay contenido real ahí debajo,
+  // en vez de una tarjeta plana). Sin imagen, fondo oscuro sólido.
+  candado(mensaje, imagenFondo) {
     const volver = encodeURIComponent(location.pathname + location.search);
+    const fondo = imagenFondo ? `<div class="socios-candado-bg" style="background-image:url('${imagenFondo}')"></div>` : "";
     return `
-      <div class="socios-candado">
-        <img class="socios-candado-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
-        <p class="socios-candado-titulo">Solo para socias y socios</p>
-        <p class="socios-candado-texto">${mensaje}</p>
-        <div class="socios-candado-acciones">
-          <a class="btn btn-primary btn-sm" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
-          <a class="btn btn-outline btn-sm" href="cuenta.html?crear=1&volver=${volver}">Crear cuenta</a>
+      <div class="socios-candado${imagenFondo ? " socios-candado--foto" : ""}">
+        ${fondo}
+        <div class="socios-candado-inner">
+          <img class="socios-candado-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+          <p class="socios-candado-titulo">Solo para socias y socios</p>
+          <p class="socios-candado-texto">${mensaje}</p>
+          <div class="socios-candado-acciones">
+            <a class="btn btn-primary btn-sm" href="cuenta.html?volver=${volver}">Iniciar sesión</a>
+            <a class="btn btn-ghost-light btn-sm" href="cuenta.html?crear=1&volver=${volver}">Crear cuenta</a>
+          </div>
         </div>
       </div>`;
   },
@@ -36,8 +45,14 @@ window.SPFC_SOCIOS = {
   // Aviso emergente que sale nada más cargar la página, además del
   // candado colocado en el propio contenido. Se cierra con la X o
   // tocando fuera, pero el contenido sigue bloqueado igualmente.
-  mostrarModal(mensaje) {
+  // Como mucho una vez por pestaña/sesión de navegación (sessionStorage),
+  // para no repetirlo en cada página que visite quien no tiene cuenta.
+  mostrarModal(mensaje, opts) {
+    opts = opts || {};
+    const clave = "spfc_socios_modal_visto";
+    if (!opts.siempre && sessionStorage.getItem(clave)) return;
     if (document.getElementById("socios-modal")) return;
+    try { sessionStorage.setItem(clave, "1"); } catch (err) { /* modo privado: no pasa nada, se repetirá */ }
     const volver = encodeURIComponent(location.pathname + location.search);
     const overlay = document.createElement("div");
     overlay.id = "socios-modal";

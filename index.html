@@ -46,9 +46,6 @@
   @media (max-width: 640px) { .h-hero-scroll { display: none; } }
   .h-hero .stats-sec { background: transparent; border-bottom: none; }
 
-  .slogan-mini { text-align: center; padding: 1.5rem 1rem; background: var(--cream); }
-  .slogan-mini-text { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(13px, 2.4vw, 17px); letter-spacing: 0.09em; color: var(--accent-dark); }
-
   .destacado-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .destacado-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.82); }
   .destacado-modal-card {
@@ -125,10 +122,6 @@
       <div class="stat-cell sr" style="transition-delay:.2s"><strong>1ª</strong><span>Temporada</span></div>
     </div>
   </section>
-
-  <div class="slogan-mini">
-    <span class="slogan-mini-text">Más allá de los límites</span>
-  </div>
 
   <section class="live-banner" id="liveBanner" style="display:none;">
     <div class="live-banner-inner">
@@ -296,6 +289,15 @@ function countUp(el, target, suffix) {
   }
   document.getElementById("destacadoModalClose").addEventListener("click", cerrarDestacadoModal);
   document.getElementById("destacadoModalBackdrop").addEventListener("click", cerrarDestacadoModal);
+
+  // Si no hay destacado ocupando el aviso emergente, invitamos a iniciar
+  // sesión a quien entra sin cuenta: hay contenido (vídeos de partidos,
+  // noticias completas) que solo ven las socias y socios.
+  if (!hayDestacado && !(await SPFC_SOCIOS.haySesion())) {
+    SPFC_SOCIOS.mostrarModal(
+      "Como socia o socio puedes ver los vídeos completos de los partidos y leer todas las noticias del club. Crear tu cuenta es gratis y solo lleva un minuto."
+    );
+  }
 
   const teams = await SPFC_DATA.teams();
 

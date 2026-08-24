@@ -573,16 +573,41 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .join-btn svg { transition: transform 0.3s; }
 .join-btn:hover svg { transform: translateX(4px); }
 
-/* ─── Contact v2 ─── */
-.contact-sec-v2 { background: var(--cream); border-top: 2px solid var(--ink); display: grid; grid-template-columns: 1fr; }
-@media (min-width: 700px) { .contact-sec-v2 { grid-template-columns: 1fr 1fr; } }
-.cc { display: flex; align-items: center; gap: 16px; padding: 26px 44px; border-right: 1px solid rgba(10,10,10,0.12); text-decoration: none; transition: background 0.25s; }
-.cc:last-child { border-right: none; }
-.cc:hover { background: var(--accent-soft); }
-.cc-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.cc-lbl { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-on-cream-muted); margin-bottom: 3px; }
-.cc-val { display: block; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); transition: color 0.3s; }
-.cc:hover .cc-val { color: var(--accent-dark); }
+/* ─── Tarjeta de contacto (icono + etiqueta + valor) ───
+   Componente compartido: usado como bloque completo en contacto.html
+   ("Datos de contacto") y como tira compacta en la portada. */
+.contact-cards { display: flex; flex-direction: column; gap: 14px; }
+.contact-card {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 1.4rem;
+  background: var(--cream-deep); border-left: 3px solid var(--accent); padding: 1.5rem 1.7rem;
+  text-decoration: none; transition: background 0.25s, border-left-color 0.25s;
+}
+.contact-card:hover { background: var(--ink); border-left-color: var(--accent-light); }
+.contact-card__icon {
+  width: 54px; height: 54px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1;
+  transition: background 0.25s, color 0.25s;
+}
+.contact-card:hover .contact-card__icon { background: var(--accent); color: #fff; }
+.contact-card__body { position: relative; z-index: 1; min-width: 0; }
+.contact-card__label { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-dark); margin-bottom: 0.3rem; transition: color 0.25s; }
+.contact-card:hover .contact-card__label { color: var(--accent-light); }
+.contact-card__value { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: var(--ink); text-decoration: none; display: block; letter-spacing: -0.01em; overflow-wrap: break-word; transition: color 0.25s; }
+a.contact-card__value:hover { color: var(--accent-dark); }
+.contact-card:hover .contact-card__value { color: #fff; }
+.contact-card:hover a.contact-card__value:hover { color: var(--accent-light); }
+.contact-card__desc { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-on-cream-muted); transition: color 0.25s; }
+.contact-card:hover .contact-card__desc { color: rgba(244,240,232,0.55); }
+.contact-card__mark { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 90px; height: 90px; color: var(--accent); opacity: 0.08; pointer-events: none; z-index: 0; }
+@media (max-width: 480px) { .contact-card { padding: 1.2rem 1.3rem; gap: 1rem; } .contact-card__icon { width: 44px; height: 44px; } .contact-card__value { font-size: 1.05rem; } }
+
+/* Tira compacta de la portada: las mismas tarjetas, en dos columnas */
+.contact-mini {
+  background: var(--cream); border-top: 2px solid var(--ink);
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+  padding: 48px var(--gutter); max-width: 1080px; margin: 0 auto;
+}
+@media (min-width: 700px) { .contact-mini { grid-template-columns: 1fr 1fr; } }
 
 /* ─── News v2 ─── */
 .news-sec-v2 { background: var(--cream); border-top: 2px solid var(--ink); padding: 100px var(--gutter); }

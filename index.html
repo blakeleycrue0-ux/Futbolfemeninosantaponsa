@@ -46,13 +46,6 @@
   @media (max-width: 640px) { .h-hero-scroll { display: none; } }
   .h-hero .stats-sec { background: transparent; border-bottom: none; }
 
-  .marquee-strip { background: var(--accent); border-top: 2px solid var(--dark); border-bottom: 2px solid var(--dark); overflow: hidden; position: relative; }
-  .marquee-inner { display: flex; white-space: nowrap; animation: marquee-scroll 22s linear infinite; width: max-content; }
-  .marquee-inner span { font-family: var(--font-display); font-size: 0.85rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; padding: 16px 26px; flex-shrink: 0; }
-  .marquee-inner span.dot { padding: 16px 0; color: rgba(255,255,255,0.5); font-size: 0.6rem; }
-  @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) { .marquee-inner { animation: none; } }
-
   .slogan-mini { text-align: center; padding: 1.5rem 1rem; background: var(--cream); }
   .slogan-mini-text { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(13px, 2.4vw, 17px); letter-spacing: 0.09em; color: var(--accent-dark); }
 
@@ -132,22 +125,6 @@
       <div class="stat-cell sr" style="transition-delay:.2s"><strong>1ª</strong><span>Temporada</span></div>
     </div>
   </section>
-
-  <!-- MARQUEE -->
-  <div class="marquee-strip" aria-hidden="true">
-    <div class="marquee-inner">
-      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
-      <span>Calvià, Mallorca</span><span class="dot">✦</span>
-      <span>Fútbol federado</span><span class="dot">✦</span>
-      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
-      <span>Formulario de interés abierto</span><span class="dot">✦</span>
-      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
-      <span>Calvià, Mallorca</span><span class="dot">✦</span>
-      <span>Fútbol federado</span><span class="dot">✦</span>
-      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
-      <span>Formulario de interés abierto</span><span class="dot">✦</span>
-    </div>
-  </div>
 
   <div class="slogan-mini">
     <span class="slogan-mini-text">Más allá de los límites</span>

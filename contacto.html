@@ -19,20 +19,39 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
   @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
-  .contact-list { list-style: none; padding: 0; margin: 0 0 1.6rem; }
-  .contact-list li { display: flex; align-items: center; gap: 0.9rem; padding: 0.9em 0; border-bottom: 1px solid rgba(22,18,28,0.08); font-size: 0.95rem; }
+  .contact-list { list-style: none; padding: 0; margin: 0 0 2rem; }
+  .contact-list li { display: flex; align-items: center; gap: 1.1rem; padding: 1.2em 0; border-bottom: 1px solid rgba(22,18,28,0.1); font-size: 1.05rem; font-weight: 700; }
+  .contact-list li:first-child { padding-top: 0; }
   .contact-list li:last-child { border-bottom: none; }
-  .contact-list .icon { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .contact-social { display: flex; gap: 0.7rem; margin-top: 0.4rem; }
-  .contact-social a { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; }
-  .map-wrap { position: relative; width: 100%; padding-bottom: 66%; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .contact-list li a { color: var(--ink); text-decoration: none; transition: color 0.25s; }
+  .contact-list li a:hover { color: var(--accent-dark); }
+  .contact-list .icon {
+    width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s, color 0.25s;
+  }
+  .contact-list li:hover .icon { background: var(--accent); color: #fff; }
+  .contact-social { display: flex; gap: 0.8rem; margin-top: 0.6rem; }
+  .contact-social a {
+    width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
+    display: flex; align-items: center; justify-content: center; transition: background 0.25s, color 0.25s, transform 0.25s;
+  }
+  .contact-social a:hover { background: var(--accent); color: #fff; transform: translateY(-3px); }
+  .map-wrap { position: relative; width: 100%; padding-bottom: 66%; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid rgba(10,10,10,0.1); box-shadow: var(--shadow-md); filter: grayscale(0.4); transition: filter 0.4s; }
+  .map-wrap:hover { filter: grayscale(0); }
   .map-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  .press-note { background: var(--accent-soft); border-radius: var(--radius-lg); padding: 1.6rem 1.8rem; margin-top: 1.6rem; }
+  .press-note { position: relative; background: var(--cream-deep); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 1.5rem 1.8rem; margin-top: 1.4rem; }
   .press-note p { margin: 0; font-size: 0.92rem; color: var(--text-on-cream); }
-  .contact-form-wrap { max-width: 640px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; }
-  @media (max-width: 620px) { .contact-form-wrap { padding: 1.5rem; } }
+  .contact-form-sec { position: relative; overflow: hidden; }
+  .contact-form-sec::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    mask-image: radial-gradient(ellipse 80% 90% at 50% 20%, #000 30%, transparent 90%);
+  }
+  .contact-form-wrap { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; background: var(--paper); border-top: 3px solid var(--accent); box-shadow: var(--shadow-lg); padding: 2.4rem; }
+  @media (max-width: 620px) { .contact-form-wrap { padding: 1.6rem; } }
 </style>
 </head>
 <body>
@@ -99,7 +118,7 @@
     </div>
   </section>
 
-  <section class="section section-dark" aria-labelledby="form-heading">
+  <section class="section section-dark contact-form-sec" aria-labelledby="form-heading">
     <div class="container">
       <div class="section-head">
         <div>

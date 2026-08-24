@@ -175,6 +175,22 @@ function spfcFormatDate(iso, opts) {
   return d.toLocaleDateString("es-ES", opts || { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Un partido se considera "en vivo" solo por la hora, sin que nadie
+// tenga que tocar nada a mano: si sigue "programado" y ya ha pasado
+// su fecha/hora de inicio, se muestra como en directo durante un
+// margen de un par de horas (duración típica de un partido más el
+// descanso). Pasado ese margen sin marcar resultado, vuelve a verse
+// como un partido programado normal — no se queda "en vivo" para
+// siempre por olvido.
+const SPFC_DURACION_PARTIDO_MS = 2 * 60 * 60 * 1000;
+function spfcEsEnVivo(m) {
+  if (!m || m.estado !== "programado" || !m.fecha || !m.hora) return false;
+  const inicio = new Date(m.fecha + "T" + m.hora);
+  if (isNaN(inicio.getTime())) return false;
+  const ahora = Date.now();
+  return ahora >= inicio.getTime() && ahora <= inicio.getTime() + SPFC_DURACION_PARTIDO_MS;
+}
+
 function spfcResultLabel(m) {
   if (m.estado !== "jugado" || m.goles_equipo == null || m.goles_rival == null) return null;
   if (m.goles_equipo > m.goles_rival) return "W";
@@ -201,6 +217,7 @@ function spfcMatchProtagonistHTML(match) {
   if (!match) return "";
   const esLocal = match.condicion === "local";
   const jugado = match.estado === "jugado";
+  const enVivo = !jugado && spfcEsEnVivo(match);
   const res = jugado ? spfcResultLabel(match) : null;
   const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : res === "D" ? "Empate" : "";
   const rivalName = match.rival || "Rival";
@@ -212,6 +229,8 @@ function spfcMatchProtagonistHTML(match) {
     metaLine1 = "Partido suspendido";
   } else if (jugado) {
     metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  } else if (enVivo) {
+    metaLine1 = "Jugándose ahora mismo";
   } else {
     metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
   }
@@ -226,6 +245,8 @@ function spfcMatchProtagonistHTML(match) {
         </div>
         ${jugado
           ? `<span class="match-card__score">${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}</span>`
+          : enVivo
+          ? `<span class="match-card__live">En vivo</span>`
           : `<span class="match-card__vs">VS</span>`}
         <div class="match-team">
           <span class="match-team__crest">${spfcMatchCrest(!esLocal, rivalName, match.rival_escudo_url)}</span>

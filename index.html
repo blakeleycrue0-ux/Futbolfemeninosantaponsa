@@ -329,19 +329,25 @@ function countUp(el, target, suffix) {
   ]);
   const matchScroll = document.getElementById("matchScroll");
   const protagonistWrap = document.getElementById("matchProtagonist");
-  if (proximo) {
-    protagonistWrap.innerHTML = spfcMatchProtagonistHTML(proximo);
-  } else {
-    protagonistWrap.style.display = "none";
-    document.getElementById("dragHint").textContent = "← Desliza →";
-  }
   const items = [];
   if (proximo) items.push(Object.assign({ _jugado: false }, proximo));
   resultados.forEach((m) => items.push(Object.assign({ _jugado: true }, m)));
 
-  if (!items.length) {
-    matchScroll.innerHTML = `<p style="color:rgba(244,240,232,.35);padding:20px;">Todavía no hay partidos programados.</p>`;
-  } else {
+  // Se repinta cada minuto (sin volver a pedir datos) para que el
+  // partido pase a "En vivo" solo en cuanto llega su hora, sin que
+  // nadie tenga que tocar nada ni recargar la página.
+  function renderPartidos() {
+    if (proximo) {
+      protagonistWrap.innerHTML = spfcMatchProtagonistHTML(proximo);
+    } else {
+      protagonistWrap.style.display = "none";
+      document.getElementById("dragHint").textContent = "← Desliza →";
+    }
+
+    if (!items.length) {
+      matchScroll.innerHTML = `<p style="color:rgba(244,240,232,.35);padding:20px;">Todavía no hay partidos programados.</p>`;
+      return;
+    }
     matchScroll.innerHTML = items.map((m) => {
       const esLocal = m.condicion === "local";
       const local = esLocal ? "Santa Ponça" : m.rival;
@@ -351,9 +357,10 @@ function countUp(el, target, suffix) {
       const marcador = m._jugado && m.goles_equipo != null
         ? `<div class="mc-score">${esLocal ? m.goles_equipo : m.goles_rival} - ${esLocal ? m.goles_rival : m.goles_equipo}</div>`
         : `<div class="mc-div"></div>`;
+      const enVivo = !m._jugado && spfcEsEnVivo(m);
       return `<a class="mc" href="partido.html?id=${m.id || ""}">
         <div class="mc-top">
-          <span class="mc-badge ${m._jugado ? "past" : "prox"}">${m._jugado ? "Jugado" : "Próximo"}</span>
+          <span class="mc-badge ${m._jugado ? "past" : enVivo ? "live" : "prox"}">${m._jugado ? "Jugado" : enVivo ? "En vivo" : "Próximo"}</span>
           <div class="mc-vs-row">
             <div class="mc-team">
               <div class="mc-crest">${localEscudo}</div>
@@ -373,6 +380,8 @@ function countUp(el, target, suffix) {
       </a>`;
     }).join("");
   }
+  renderPartidos();
+  setInterval(renderPartidos, 60000);
 
   /* News */
   const noticias = await SPFC_DATA.news(3);

@@ -198,6 +198,21 @@
 .match-team__name { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .match-card__score { font-family: var(--font-display); font-size: 2.3rem; font-weight: 900; color: var(--accent-dark); display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .match-card__vs { font-family: var(--font-display); font-size: 0.78rem; color: var(--text-on-cream-muted); font-weight: 700; flex-shrink: 0; }
+.match-card__live {
+  display: inline-flex; align-items: center; gap: 0.5em; flex-shrink: 0;
+  font-family: var(--font-display); font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.04em; text-transform: uppercase; color: #ef4444;
+}
+.match-card__live::before {
+  content: ""; width: 9px; height: 9px; border-radius: 50%; background: #ef4444; flex-shrink: 0;
+  animation: match-live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes match-live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  50% { opacity: 0.65; box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+@media (prefers-reduced-motion: reduce) { .match-card__live::before { animation: none; } }
+.match-hero .match-card__live { font-size: 1rem; }
 .match-card__meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-on-cream-muted); border-top: 1px solid rgba(10,10,10,0.1); padding-top: 1.1rem; }
 .match-card__result { text-align: center; font-size: 0.72rem; font-weight: 700; padding: 0.3em 0.8em; border-radius: var(--radius-pill); text-transform: uppercase; letter-spacing: 0.04em; }
 .result-W { background: rgba(34,197,94,0.14); color: #16803d; }
@@ -508,6 +523,9 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .mc-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; padding: 5px 10px; border-radius: var(--radius-sm); display: inline-block; margin-bottom: 18px; }
 .mc-badge.prox { background: var(--accent); color: #fff; }
 .mc-badge.past { background: rgba(244,240,232,0.06); color: rgba(244,240,232,0.4); }
+.mc-badge.live { background: #ef4444; color: #fff; display: inline-flex; align-items: center; gap: 0.5em; }
+.mc-badge.live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: match-live-pulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .mc-badge.live::before { animation: none; } }
 .mc-vs-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-top: 10px; }
 .mc-team { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .mc-crest { width: 58px; height: 58px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(244,240,232,0.06); border-radius: var(--radius-sm); overflow: hidden; }

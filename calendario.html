@@ -109,6 +109,7 @@
   const protagonistaSection = document.getElementById("protagonista-section");
   const protagonistaMatch = document.getElementById("protagonista-match");
   const crestHtml = spfcMatchCrest;
+  let liveRefreshTimer = null;
 
   function renderProximos(list) {
     if (!list.length) {
@@ -117,6 +118,7 @@
     }
     proximosGrid.innerHTML = list.map((m) => {
       const esLocal = m.condicion === "local";
+      const enVivo = spfcEsEnVivo(m);
       return `
       <div class="match-card">
         <span class="match-card__comp">${m.tipo && m.tipo !== "Liga" ? m.tipo + " · " : ""}${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
@@ -125,14 +127,14 @@
             <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? "Santa Ponça" : (m.rival || "")}</span>
           </div>
-          <span class="match-card__vs">VS</span>
+          ${enVivo ? `<span class="match-card__live">En vivo</span>` : `<span class="match-card__vs">VS</span>`}
           <div class="match-team">
             <span class="match-team__crest">${crestHtml(!esLocal, m.rival, m.rival_escudo_url)}</span>
             <span class="match-team__name">${esLocal ? (m.rival || "") : "Santa Ponça"}</span>
           </div>
         </div>
         <div class="match-card__meta">
-          <span>${spfcFormatDate(m.fecha, { weekday: "long", day: "2-digit", month: "long" })}${m.hora ? " · " + m.hora.slice(0, 5) + "h" : ""}</span>
+          <span>${enVivo ? "Jugándose ahora mismo" : spfcFormatDate(m.fecha, { weekday: "long", day: "2-digit", month: "long" }) + (m.hora ? " · " + m.hora.slice(0, 5) + "h" : "")}</span>
           <span>${m.campo || ""}</span>
         </div>
       </div>`;
@@ -191,6 +193,14 @@
       protagonistaMatch.innerHTML = spfcMatchProtagonistHTML(proximos[0]);
     }
     applyEstadoFilter();
+
+    // Repinta cada minuto para que un partido pase a "En vivo" solo,
+    // en cuanto llega su hora, sin recargar la página ni pedir datos otra vez.
+    if (liveRefreshTimer) clearInterval(liveRefreshTimer);
+    liveRefreshTimer = setInterval(() => {
+      renderProximos(proximos);
+      if (proximos.length) protagonistaMatch.innerHTML = spfcMatchProtagonistHTML(proximos[0]);
+    }, 60000);
   }
 
   try {

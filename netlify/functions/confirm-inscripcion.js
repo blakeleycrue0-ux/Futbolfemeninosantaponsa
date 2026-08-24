@@ -1,5 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 const nodemailer = require("nodemailer");
+const { enviarWhatsappPlazaAceptada } = require("./lib/whatsapp");
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -49,6 +50,16 @@ exports.handler = async function (event) {
   if (insError || !inscripcion) {
     return { statusCode: 404, body: "No se ha encontrado esa inscripción" };
   }
+  // Evita reenviar el email/WhatsApp si el admin pulsa "Aceptar" dos veces
+  // (doble clic, red lenta, pestaña duplicada...): esta solicitud ya se
+  // aceptó antes, así que no se repite ningún envío.
+  if (inscripcion.confirmada_en) {
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ok: true, ya_confirmada: true }),
+    };
+  }
 
   const baseUrl = PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info";
   const registroUrl = `${baseUrl}/registro.html?id=${inscripcion_id}`;
@@ -83,10 +94,37 @@ exports.handler = async function (event) {
     return { statusCode: 502, body: "No se ha podido enviar el email: " + err.message };
   }
 
+  // WhatsApp es un canal adicional al email, no un sustituto: si falla o
+  // no hay teléfono válido, la aceptación sigue adelante igual (el email
+  // ya se ha enviado). El mensaje usa el mismo enlace personal que el
+  // email (registroUrl), nunca uno distinto — ver la plantilla exacta en
+  // netlify/functions/lib/whatsapp.js.
+  let whatsappResultado;
+  try {
+    whatsappResultado = await enviarWhatsappPlazaAceptada({
+      telefono: inscripcion.tutor_telefono,
+      nombre: inscripcion.tutor_nombre,
+      enlace: registroUrl,
+    });
+  } catch (err) {
+    whatsappResultado = { ok: false, error: err.message };
+  }
+
+  let whatsappEstado;
+  if (whatsappResultado.skipped) whatsappEstado = "no_aplica";
+  else if (whatsappResultado.ok) whatsappEstado = whatsappResultado.mock ? "enviado_simulado" : "enviado";
+  else whatsappEstado = "fallido";
+
   const ahora = new Date().toISOString();
   const { error: updateError } = await supabase
     .from("inscripciones")
-    .update({ confirmada_en: ahora, pago_solicitado_en: ahora })
+    .update({
+      confirmada_en: ahora,
+      pago_solicitado_en: ahora,
+      whatsapp_estado: whatsappEstado,
+      whatsapp_enviado_en: whatsappEstado === "enviado" || whatsappEstado === "enviado_simulado" ? ahora : null,
+      whatsapp_error: whatsappResultado.ok ? null : (whatsappResultado.error || null),
+    })
     .eq("id", inscripcion_id);
   if (updateError) {
     return { statusCode: 200, body: JSON.stringify({ ok: true, warning: "Email enviado, pero no se pudo marcar como confirmada: " + updateError.message }) };
@@ -95,6 +133,6 @@ exports.handler = async function (event) {
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ok: true }),
+    body: JSON.stringify({ ok: true, whatsapp: whatsappResultado }),
   };
 };

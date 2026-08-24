@@ -44,9 +44,10 @@
     <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
       Aquí llegan los formularios de interés enviados desde <span class="tag-fuente">inscripcion.html</span>. Todavía
       no se cobra nada al enviarlos. Cuando decidáis que una familia puede entrar, pulsa
-      <strong>"Aceptar plaza y enviar email"</strong> — se manda un único email (solo a esa familia) con su enlace
+      <strong>"Aceptar plaza y enviar email"</strong> — se manda un email (solo a esa familia) con su enlace
       personal, donde completan el registro, eligen plan de pago y suben el justificante de la transferencia, todo
-      en un mismo sitio.
+      en un mismo sitio. Si tienen un móvil válido, se manda el mismo enlace también por WhatsApp — si ese segundo
+      aviso falla, no afecta al email ni a la aceptación.
     </p>
 
     <div class="admin-stat-grid" id="insc-stat-grid">
@@ -104,8 +105,8 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Aceptada</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="inscripciones-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Aceptada</th><th>WhatsApp</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="inscripciones-body"><tr><td colspan="9">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -125,6 +126,18 @@
   }
   const planLabels = { unico: "Pago único", "2_cuotas": "2 cuotas", "4_cuotas": "4 cuotas" };
   const estadoLabels = { pendiente: "Pendiente", pago_parcial: "Pago parcial", pagado: "Pagado", cancelado: "Cancelado" };
+  const whatsappLabels = {
+    pendiente: "WhatsApp no enviado", enviado: "WhatsApp enviado", enviado_simulado: "WhatsApp simulado (sin credenciales)",
+    fallido: "WhatsApp fallido", no_aplica: "Sin teléfono válido",
+  };
+  const whatsappPillClass = { enviado: "pill-ok", enviado_simulado: "pill-warn", fallido: "pill-bad", no_aplica: "", pendiente: "" };
+  function whatsappPill(item) {
+    const estado = item.whatsapp_estado || "pendiente";
+    const cls = whatsappPillClass[estado] || "";
+    let extra = "";
+    if (estado === "fallido" && item.whatsapp_error) extra = ` title="${escapeHtml(item.whatsapp_error)}"`;
+    return `<span class="pill ${cls}"${extra}>${whatsappLabels[estado] || estado}</span>`;
+  }
   const imagenCanales = [
     ["imagen_redes_sociales", "Redes sociales"],
     ["imagen_web", "Web"],
@@ -206,7 +219,8 @@
           <span id="aceptar-status" style="margin-left:0.8rem;font-size:0.82rem;"></span>
         </p>`;
     } else {
-      html += `<p style="font-size:0.86rem;"><span class="pill">Aceptada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — se envió el email con el enlace a ${escapeHtml(item.tutor_email)}.</p>`;
+      html += `<p style="font-size:0.86rem;"><span class="pill pill-ok">Email enviado</span> <span class="pill">Aceptada</span> el ${new Date(item.confirmada_en).toLocaleString("es-ES")} — enlace enviado a ${escapeHtml(item.tutor_email)}.</p>`;
+      html += `<p style="font-size:0.86rem;">${whatsappPill(item)}${item.whatsapp_enviado_en ? ` el ${new Date(item.whatsapp_enviado_en).toLocaleString("es-ES")}` : ""} — mismo enlace, al ${escapeHtml(item.tutor_telefono || "—")}.</p>`;
       if (!item.pago_solicitado_en) {
         html += `
           <p style="font-size:0.86rem;">
@@ -437,11 +451,11 @@
     filtradasActuales = filtradas;
 
     if (!inscripciones.length) {
-      body.innerHTML = '<tr><td colspan="8">Todavía no hay formularios de interés.</td></tr>';
+      body.innerHTML = '<tr><td colspan="9">Todavía no hay formularios de interés.</td></tr>';
       return;
     }
     if (!filtradas.length) {
-      body.innerHTML = `<tr><td colspan="8" class="admin-search-empty">Ninguna inscripción coincide con la búsqueda.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="admin-search-empty">Ninguna inscripción coincide con la búsqueda.</td></tr>`;
       return;
     }
 
@@ -453,6 +467,7 @@
         <td>${escapeHtml(i.tutor_nombre)}</td>
         <td>${planLabels[i.plan_pago] || escapeHtml(i.plan_pago)}</td>
         <td>${i.confirmada_en ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">No</span>'}</td>
+        <td>${i.confirmada_en ? whatsappPill(i) : "—"}</td>
         <td><span class="pill ${estadoPillClass[i.estado] || ""}">${estadoLabels[i.estado] || escapeHtml(i.estado)}</span></td>
         <td class="actions">
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
@@ -473,7 +488,7 @@
   async function loadInscripciones() {
     const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
     const body = document.getElementById("inscripciones-body");
-    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="9">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     inscripciones = data || [];
     updateStats();
     renderTable();
@@ -492,6 +507,7 @@
       ["direccion", "Dirección"], ["poblacion", "Población"], ["codigo_postal", "CP"],
       ["plan_pago", "Plan de pago"], ["cuota_total", "Cuota total"], ["estado", "Estado"],
       ["confirmada_en", "Aceptada el"], ["pago_solicitado_en", "Pago solicitado el"], ["registro_completado_en", "Registro completado el"],
+      ["whatsapp_estado", "Estado WhatsApp"], ["whatsapp_enviado_en", "WhatsApp enviado el"],
       ["imagen_redes_sociales", "Autoriza redes sociales"], ["imagen_web", "Autoriza web"],
       ["imagen_prensa", "Autoriza prensa"], ["imagen_material_promocional", "Autoriza material promocional"],
       ["acepta_condiciones_generales", "Condiciones generales aceptadas"], ["condiciones_generales_aceptadas_en", "Condiciones aceptadas el"],

@@ -98,6 +98,7 @@
 
     leadGrid.innerHTML = destacadas.map((n) => `
       <a class="nc" href="noticia.html?id=${encodeURIComponent(n.id)}">
+        <span class="nc-gate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="11" width="16" height="9" rx="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Exclusivo socias</span>
         ${n.imagen_url
           ? `<img class="nc-img" src="${escapeHtml(n.imagen_url)}" alt="${escapeHtml(n.titulo)}" loading="lazy">`
           : `<div class="nc-img nc-img-fallback"><img src="assets/img/escudo-santa-ponsa.png" alt=""></div>`}
@@ -111,7 +112,7 @@
     restList.innerHTML = resto.map((n) => `
       <a class="news-row" href="noticia.html?id=${encodeURIComponent(n.id)}">
         <span class="news-row__title">${escapeHtml(n.titulo)}</span>
-        <span class="news-row__date">${escapeHtml(spfcFormatDate(n.fecha))}</span>
+        <span class="news-row__date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><rect x="4" y="11" width="16" height="9" rx="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${escapeHtml(spfcFormatDate(n.fecha))}</span>
       </a>`).join("");
   }
 

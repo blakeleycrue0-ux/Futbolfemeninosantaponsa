@@ -19,51 +19,30 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  /* Hero de portada: composición grande y directa (título enorme, balón,
-     indicador de scroll) sin foto de stock externa — no hay fotografía
-     real del equipo todavía, así que el fondo es solo textura de marca
-     (rejilla + resplandor), igual que el resto de la web. */
+  /* Hero de portada: fondo enviado por la usuaria, tal cual. */
   .h-hero {
-    position: relative; min-height: 92svh; background: var(--dark);
+    position: relative; min-height: 92svh;
+    background: url('assets/img/hero-bg.jpg') center / cover no-repeat;
     display: flex; flex-direction: column; justify-content: flex-end;
     overflow: hidden; padding-bottom: 64px;
-  }
-  .h-hero::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: var(--grid-size) var(--grid-size);
-  }
-  .h-hero::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(65% 55% at 78% 10%, rgba(168,85,247,0.3), transparent 70%),
-      linear-gradient(180deg, transparent 0%, rgba(10,10,10,0.5) 65%, var(--dark) 100%);
-  }
-  .h-hero-ball {
-    position: absolute; top: 34%; right: -6%; width: min(46vw, 460px); z-index: 1;
-    opacity: 0.9; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.5));
   }
   .h-hero-content { position: relative; z-index: 2; padding: 0 var(--gutter); max-width: 1180px; }
   .h-hero-title {
     font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
     line-height: 0.9; letter-spacing: -0.03em; font-size: clamp(44px, 11vw, 128px);
-    color: var(--text-on-dark); margin: 0; white-space: nowrap;
+    color: var(--ink); margin: 0; white-space: nowrap;
   }
-  .h-hero-title .hollow { color: transparent; -webkit-text-stroke: 1.5px rgba(244,240,232,0.55); display: block; }
-  .h-hero-title .accent { color: var(--accent-light); display: block; }
-  .h-hero-desc { max-width: 460px; color: rgba(244,240,232,0.72); font-size: 1rem; line-height: 1.65; margin: 22px 0 0; }
+  .h-hero-title .hollow { color: transparent; -webkit-text-stroke: 1.5px rgba(10,10,10,0.4); display: block; }
+  .h-hero-title .accent { color: var(--accent-dark); display: block; }
+  .h-hero-desc { max-width: 460px; color: var(--ink-soft); font-size: 1rem; line-height: 1.65; margin: 22px 0 0; }
   .h-hero-cta { margin-top: 30px; }
   .h-hero-scroll {
     position: absolute; right: var(--gutter); bottom: 36px; z-index: 2;
     writing-mode: vertical-rl; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: rgba(244,240,232,0.4); display: flex; align-items: center; gap: 10px;
+    color: rgba(10,10,10,0.4); display: flex; align-items: center; gap: 10px;
   }
-  .h-hero-scroll::after { content: ""; width: 1px; height: 50px; background: rgba(244,240,232,0.3); }
-  @media (max-width: 640px) { .h-hero-ball { width: 62vw; top: 10%; right: -14%; opacity: 0.5; } .h-hero-scroll { display: none; } }
-  @media (prefers-reduced-motion: no-preference) {
-    .h-hero-ball { animation: hHeroBallFloat 7s ease-in-out infinite; }
-  }
-  @keyframes hHeroBallFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+  .h-hero-scroll::after { content: ""; width: 1px; height: 50px; background: rgba(10,10,10,0.3); }
+  @media (max-width: 640px) { .h-hero-scroll { display: none; } }
 
   .news-slider { position: relative; height: min(58vh, 520px); min-height: 380px; background: var(--dark); overflow: hidden; }
   .news-slider-track {
@@ -204,16 +183,6 @@
 <main id="main">
 
   <section class="h-hero">
-    <svg class="h-hero-ball" viewBox="0 0 100 100" aria-hidden="true">
-      <defs><radialGradient id="hHeroBallShade" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#c9c9d2"/></radialGradient></defs>
-      <circle cx="50" cy="50" r="48" fill="url(#hHeroBallShade)" stroke="#1c1c1c" stroke-width="1"/>
-      <g fill="#17151b">
-        <polygon points="50,28 60,35 56,47 44,47 40,35"/>
-        <polygon points="24,44 32,38 38,48 33,60 22,58"/>
-        <polygon points="76,44 68,38 62,48 67,60 78,58"/>
-        <polygon points="38,70 50,64 62,70 58,82 42,82"/>
-      </g>
-    </svg>
     <div class="h-hero-content">
       <h1 class="h-hero-title">
         <span>Femenino</span>
@@ -221,7 +190,7 @@
         <span class="accent">Ponça</span>
       </h1>
       <p class="h-hero-desc">Un proyecto serio de fútbol femenino en Mallorca. Formamos, competimos y abrimos puertas reales en el deporte.</p>
-      <a href="#noticias" class="btn btn-outline h-hero-cta" style="color:#fff;border-color:rgba(255,255,255,0.4);">Ver noticias</a>
+      <a href="#noticias" class="btn btn-outline h-hero-cta">Ver noticias</a>
     </div>
     <span class="h-hero-scroll">Scroll</span>
   </section>

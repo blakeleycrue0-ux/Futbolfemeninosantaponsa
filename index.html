@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .news-slider { position: relative; height: min(72vh, 620px); min-height: 420px; background: var(--dark); overflow: hidden; }
+  .news-slider { position: relative; height: min(88vh, 780px); min-height: 480px; background: var(--dark); overflow: hidden; }
   .news-slider-track {
     display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory;
     scrollbar-width: none; -ms-overflow-style: none;
@@ -34,16 +34,39 @@
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.5) 48%, rgba(10,10,10,0.12) 100%);
   }
-  .news-slide-content { position: relative; z-index: 2; padding: 40px var(--gutter) 56px; max-width: 680px; color: #fff; }
-  .news-slide-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 10px; display: block; }
-  .news-slide-title { font-family: var(--font-display); font-size: clamp(24px,4.2vw,44px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.08; margin: 0 0 12px; text-transform: uppercase; }
+  .news-slide-content { position: relative; z-index: 2; padding: 40px var(--gutter) 64px; max-width: 760px; color: #fff; }
+  .news-slide-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 16px; display: flex; align-items: center; gap: 0.7em; }
+  .news-slide-eyebrow::before { content: ""; width: 32px; height: 2px; background: var(--accent-light); display: inline-block; flex-shrink: 0; }
+  .news-slide-title { font-family: var(--font-display); font-size: clamp(40px,9vw,132px); font-weight: 900; letter-spacing: -0.04em; line-height: 0.88; margin: 0 0 18px; text-transform: uppercase; }
   /* Variantes sin foto: resultado automático de un partido y aviso de
      captación (se usan en vez de estirar el escudo como fondo). */
   .news-slide--centrado { align-items: center; }
   .news-slide--centrado::after { content: none; }
-  .news-slide--centrado .news-slide-content { max-width: 620px; width: 100%; text-align: center; margin: 0 auto; padding: 40px var(--gutter); }
+  .news-slide--centrado .news-slide-content { max-width: 780px; width: 100%; text-align: center; margin: 0 auto; padding: 40px var(--gutter); }
+  .news-slide--centrado .news-slide-eyebrow { justify-content: center; }
+  .news-slide--centrado .news-slide-eyebrow::before { display: none; }
   .news-slide--marcador { background: radial-gradient(120% 140% at 50% -10%, rgba(168,85,247,0.32), transparent 60%), var(--dark); }
-  .news-slide--recluta { background: radial-gradient(120% 140% at 50% 110%, rgba(168,85,247,0.28), transparent 60%), var(--dark); }
+  .news-slide--recluta {
+    background: var(--dark);
+    position: relative;
+  }
+  .news-slide--recluta::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url('assets/img/escudo-santa-ponsa.png');
+    background-repeat: no-repeat;
+    background-position: 50% 42%;
+    background-size: min(90vw, 900px);
+    opacity: 0.07;
+    filter: grayscale(1) brightness(2.4);
+  }
+  .news-slide--recluta::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.55) 60%, var(--dark) 100%);
+  }
+  .news-slide--recluta .news-slide-content { position: relative; z-index: 2; }
+  .news-slide--recluta .news-slide-title { font-size: clamp(48px,11vw,168px); }
   .marcador-badge { display: inline-block; margin-bottom: 10px; padding: 4px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
   .marcador-badge--win { background: rgba(34,197,94,0.16); color: #4ade80; }
   .marcador-badge--draw { background: rgba(234,179,8,0.16); color: #facc15; }

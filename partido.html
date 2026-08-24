@@ -77,10 +77,10 @@
         <div class="section-head">
           <div>
             <span class="eyebrow">Datos del partido</span>
-            <h2 id="stats-heading">Estadísticas</h2>
+            <h2 id="stats-heading">Ficha del partido</h2>
           </div>
         </div>
-        <div id="stats-strip" class="stat-strip"></div>
+        <dl id="stats-strip" class="match-facts"></dl>
       </div>
     </section>
 
@@ -114,6 +114,10 @@
   const headerEl = document.getElementById("match-header");
   const bodyEl = document.getElementById("match-body");
   const breadcrumbCurrent = document.getElementById("breadcrumb-current");
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
 
   function extractYouTubeId(url) {
     if (!url) return null;
@@ -218,19 +222,19 @@
   }
 
   const stats = [];
-  if (jugado) {
-    stats.push({ value: match.goles_equipo != null ? match.goles_equipo : "-", label: "Goles Santa Ponça" });
-    stats.push({ value: match.goles_rival != null ? match.goles_rival : "-", label: "Goles " + rivalName });
-  }
+  stats.push({ value: match.competicion || "—", label: "Competición" });
+  if (match.jornada) stats.push({ value: "Jornada " + match.jornada, label: "Jornada" });
   stats.push({ value: esLocal ? "Local" : "Visitante", label: "Condición" });
-  if (match.jornada) stats.push({ value: match.jornada, label: "Jornada" });
   if (match.campo) stats.push({ value: match.campo, label: "Campo" });
-  if (match.competicion) stats.push({ value: match.competicion, label: "Competición" });
+  if (jugado) {
+    stats.push({ value: `${match.goles_equipo != null ? match.goles_equipo : "-"} — ${match.goles_rival != null ? match.goles_rival : "-"}`, label: "Resultado (Santa Ponça — " + escapeHtml(rivalName) + ")" });
+  }
 
-  document.getElementById("stats-strip").innerHTML = stats.slice(0, 4).map((s) => {
-    const long = typeof s.value === "string" && s.value.length > 12;
-    return `<div class="stat-item"><strong${long ? ' style="font-size:1.15rem;"' : ""}>${s.value}</strong><span>${s.label}</span></div>`;
-  }).join("");
+  document.getElementById("stats-strip").innerHTML = stats.map((s) => `
+    <div class="match-facts__row">
+      <dt>${s.label}</dt>
+      <dd>${escapeHtml(String(s.value))}</dd>
+    </div>`).join("");
 
   try {
     const items = await SPFC_DATA.gallery(match.id);

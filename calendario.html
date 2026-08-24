@@ -199,31 +199,28 @@
     let currentTeamId = "";
 
     if (teams && teams.length) {
-      teamSelect.innerHTML = teams.map((t) => `<option value="${t.id}">${t.nombre}${t.categoria ? " · " + t.categoria : ""}</option>`).join("");
+      const opciones = [`<option value="">Todos los equipos</option>`]
+        .concat(teams.map((t) => `<option value="${t.id}">${t.nombre}${t.categoria ? " · " + t.categoria : ""}</option>`));
+      teamSelect.innerHTML = opciones.join("");
       const match = paramTeam && teams.find((t) => t.id === paramTeam);
-      currentTeamId = match ? match.id : teams[0].id;
+      currentTeamId = match ? match.id : "";
       teamSelect.value = currentTeamId;
     } else {
-      teamSelect.innerHTML = `<option value="">Sin equipos</option>`;
+      teamSelect.innerHTML = `<option value="">Todos los equipos</option>`;
     }
 
     teamSelect.addEventListener("change", () => {
       currentTeamId = teamSelect.value;
       const url = new URL(location.href);
-      url.searchParams.set("team", currentTeamId);
+      if (currentTeamId) url.searchParams.set("team", currentTeamId);
+      else url.searchParams.delete("team");
       history.replaceState(null, "", url);
       loadAndRender(currentTeamId);
     });
 
     estadoSelect.addEventListener("change", applyEstadoFilter);
     applyEstadoFilter();
-
-    if (currentTeamId) {
-      await loadAndRender(currentTeamId);
-    } else {
-      proximosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay equipos publicados.</p>`;
-      resultadosGrid.innerHTML = "";
-    }
+    await loadAndRender(currentTeamId);
   } catch (err) {
     console.warn("[calendario] error cargando datos:", err);
     proximosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">No se han podido cargar los partidos.</p>`;

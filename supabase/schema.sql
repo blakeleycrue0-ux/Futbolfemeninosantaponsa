@@ -406,6 +406,13 @@ create table if not exists inscripciones (
   -- (DNI, dirección, talla, segundo tutor…) — solo llega ese enlace una vez
   -- que confirmada_en no es null. null = todavía sin completar.
   registro_completado_en timestamptz,
+  -- Segundo canal de aviso al aceptar la plaza (mismo enlace que el email,
+  -- ver confirm-inscripcion.js). 'no_aplica' = no había teléfono móvil
+  -- válido. 'enviado_simulado' = faltaban credenciales de WhatsApp en el
+  -- entorno y se simuló el envío (no llegó nada de verdad).
+  whatsapp_estado text not null default 'pendiente' check (whatsapp_estado in ('pendiente','enviado','enviado_simulado','fallido','no_aplica')),
+  whatsapp_enviado_en timestamptz,
+  whatsapp_error text,
   creado_en timestamptz not null default now()
 );
 

@@ -116,10 +116,8 @@
 .hero--sub {
   min-height: auto;
   align-items: flex-start;
-  background:
-    linear-gradient(160deg, rgba(88,28,135,0.86), rgba(126,34,206,0.68)),
-    url('../img/hero-bg.jpg') center 15% / cover no-repeat;
-  color: var(--text-on-dark);
+  background: url('../img/hero-bg.jpg') center top / cover no-repeat;
+  color: var(--ink);
   border-bottom: 3px solid var(--accent-dark);
 }
 .hero--sub::after { pointer-events: none; }
@@ -128,16 +126,16 @@
   position: absolute;
   inset: 0;
   background: url('../img/escudo-santa-ponsa.png') center right -6% / 46% no-repeat;
-  opacity: 0.1;
-  filter: brightness(0) invert(1);
+  opacity: 0.07;
+  filter: brightness(0);
   pointer-events: none;
 }
 .hero--sub .hero__media { display: none; }
 .hero--sub .hero__content { position: relative; z-index: 1; padding: 7.4rem 0 3rem; text-align: center; }
-.hero--sub .hero__tag { color: rgba(255,255,255,0.85); }
-.hero--sub .hero__tag::before { background: rgba(255,255,255,0.85); }
-.hero--sub .hero__title { color: #fff; margin-left: auto; margin-right: auto; }
-.hero--sub .hero__lede { color: rgba(255,255,255,0.8); max-width: 460px; margin-left: auto; margin-right: auto; }
+.hero--sub .hero__tag { color: var(--accent-dark); }
+.hero--sub .hero__tag::before { background: var(--accent-dark); }
+.hero--sub .hero__title { color: var(--ink); margin-left: auto; margin-right: auto; }
+.hero--sub .hero__lede { color: var(--ink-soft); max-width: 460px; margin-left: auto; margin-right: auto; }
 @media (max-width: 640px) {
   .hero--sub .hero__content { padding: 6.2rem 0 2rem; }
   .hero--sub::before { background-size: 90%; opacity: 0.05; }

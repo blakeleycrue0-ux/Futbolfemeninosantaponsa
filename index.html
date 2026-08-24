@@ -19,13 +19,14 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  /* Hero de portada: fondo enviado por la usuaria, tal cual. */
+  /* Hero de portada: fondo enviado por la usuaria, tal cual — se extiende
+     hasta cubrir también las estadísticas (5/20+/1ª) para que no haya un
+     corte duro a blanco justo debajo del hero. */
   .h-hero {
-    position: relative; min-height: 92svh;
-    background: url('assets/img/hero-bg.jpg') center / cover no-repeat;
-    display: flex; flex-direction: column; justify-content: flex-end;
-    overflow: hidden; padding-bottom: 64px;
+    position: relative;
+    background: url('assets/img/hero-bg.jpg') center top / cover no-repeat;
   }
+  .h-hero-top { min-height: 92svh; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding-bottom: 64px; }
   .h-hero-content { position: relative; z-index: 2; padding: 0 var(--gutter); max-width: 1180px; }
   .h-hero-title {
     font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
@@ -43,6 +44,17 @@
   }
   .h-hero-scroll::after { content: ""; width: 1px; height: 50px; background: rgba(10,10,10,0.3); }
   @media (max-width: 640px) { .h-hero-scroll { display: none; } }
+  .h-hero .stats-sec { background: transparent; border-bottom: none; }
+
+  .marquee-strip { background: var(--accent); border-top: 2px solid var(--dark); border-bottom: 2px solid var(--dark); overflow: hidden; position: relative; }
+  .marquee-inner { display: flex; white-space: nowrap; animation: marquee-scroll 22s linear infinite; width: max-content; }
+  .marquee-inner span { font-family: var(--font-display); font-size: 0.85rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; padding: 16px 26px; flex-shrink: 0; }
+  .marquee-inner span.dot { padding: 16px 0; color: rgba(255,255,255,0.5); font-size: 0.6rem; }
+  @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .marquee-inner { animation: none; } }
+
+  .slogan-mini { text-align: center; padding: 1.5rem 1rem; background: var(--cream); }
+  .slogan-mini-text { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(13px, 2.4vw, 17px); letter-spacing: 0.09em; color: var(--accent-dark); }
 
   .destacado-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .destacado-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.82); }
@@ -100,17 +112,46 @@
 <main id="main">
 
   <section class="h-hero">
-    <div class="h-hero-content">
-      <h1 class="h-hero-title">
-        <span>Femenino</span>
-        <span class="hollow">Santa</span>
-        <span class="accent">Ponça</span>
-      </h1>
-      <p class="h-hero-desc">Un proyecto serio de fútbol femenino en Mallorca. Formamos, competimos y abrimos puertas reales en el deporte.</p>
-      <a href="#noticias" class="btn btn-outline h-hero-cta">Ver noticias</a>
+    <div class="h-hero-top">
+      <div class="h-hero-content">
+        <h1 class="h-hero-title">
+          <span>Femenino</span>
+          <span class="hollow">Santa</span>
+          <span class="accent">Ponça</span>
+        </h1>
+        <p class="h-hero-desc">Un proyecto serio de fútbol femenino en Mallorca. Formamos, competimos y abrimos puertas reales en el deporte.</p>
+        <a href="#noticias" class="btn btn-outline h-hero-cta">Ver noticias</a>
+      </div>
+      <span class="h-hero-scroll">Scroll</span>
     </div>
-    <span class="h-hero-scroll">Scroll</span>
+
+    <!-- STATS -->
+    <div class="stats-sec">
+      <div class="stat-cell sr"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
+      <div class="stat-cell sr" style="transition-delay:.1s"><strong id="stat-jugadoras">60+</strong><span>Jugadoras</span></div>
+      <div class="stat-cell sr" style="transition-delay:.2s"><strong>1ª</strong><span>Temporada</span></div>
+    </div>
   </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-strip" aria-hidden="true">
+    <div class="marquee-inner">
+      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
+      <span>Calvià, Mallorca</span><span class="dot">✦</span>
+      <span>Fútbol federado</span><span class="dot">✦</span>
+      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
+      <span>Formulario de interés abierto</span><span class="dot">✦</span>
+      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
+      <span>Calvià, Mallorca</span><span class="dot">✦</span>
+      <span>Fútbol federado</span><span class="dot">✦</span>
+      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
+      <span>Formulario de interés abierto</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  <div class="slogan-mini">
+    <span class="slogan-mini-text">Más allá de los límites</span>
+  </div>
 
   <section class="live-banner" id="liveBanner" style="display:none;">
     <div class="live-banner-inner">
@@ -123,14 +164,6 @@
       <a href="#" id="liveFallbackLink" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="margin-top:0.9rem;color:#fff;border-color:rgba(255,255,255,0.35);">Ver el directo aquí ↗</a>
     </div>
   </section>
-
-
-  <!-- STATS -->
-  <div class="stats-sec">
-    <div class="stat-cell sr"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
-    <div class="stat-cell sr" style="transition-delay:.1s"><strong id="stat-jugadoras">60+</strong><span>Jugadoras</span></div>
-    <div class="stat-cell sr" style="transition-delay:.2s"><strong>1ª</strong><span>Temporada</span></div>
-  </div>
 
   <section class="matches-sec" id="partidos">
     <div class="sr-l tag-line">Calendario y resultados</div>

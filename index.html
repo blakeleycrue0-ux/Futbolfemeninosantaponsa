@@ -67,6 +67,25 @@
   }
   .news-slide--recluta .news-slide-content { position: relative; z-index: 2; }
   .news-slide--recluta .news-slide-title { font-size: clamp(48px,11vw,168px); }
+  .news-slide--socios {
+    background: radial-gradient(120% 140% at 50% 105%, rgba(168,85,247,0.3), transparent 60%), var(--dark);
+    position: relative;
+  }
+  .news-slide--socios::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url('assets/img/escudo-santa-ponsa.png');
+    background-repeat: no-repeat;
+    background-position: 50% 42%;
+    background-size: min(70vw, 640px);
+    opacity: 0.06;
+    filter: grayscale(1) brightness(2.4);
+  }
+  .news-slide--socios .news-slide-content { position: relative; z-index: 2; }
+  .news-slide--socios .news-slide-title { font-size: clamp(40px,8vw,104px); }
+  .socios-slide-links { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .hero-pill--ghost { border-color: rgba(244,240,232,0.3); color: rgba(244,240,232,0.85); }
+  .hero-pill--ghost::before { background: rgba(244,240,232,0.14); }
   .marcador-badge { display: inline-block; margin-bottom: 10px; padding: 4px 14px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
   .marcador-badge--win { background: rgba(34,197,94,0.16); color: #4ade80; }
   .marcador-badge--draw { background: rgba(234,179,8,0.16); color: #facc15; }
@@ -521,14 +540,30 @@ function countUp(el, target, suffix) {
   }));
 
   if (!slidesPortada.length) {
-    slidesPortada.push({
-      href: "inscripcion.html",
-      claseExtra: "news-slide--centrado news-slide--recluta",
-      eyebrow: "Únete al club",
-      title: "Buscamos jugadoras",
-      desc: "Todas las edades y niveles son bienvenidos. Escríbenos y te contamos cómo empezar.",
-      cta: "Quiero apuntarme",
-    });
+    const esSocia = await SPFC_SOCIOS.haySesion();
+    if (esSocia) {
+      slidesPortada.push({
+        claseExtra: "news-slide--centrado news-slide--socios",
+        contenido: `
+          <span class="news-slide-eyebrow">Zona socios</span>
+          <h2 class="news-slide-title">Hola de nuevo</h2>
+          <p class="news-slide-desc">Gracias por formar parte del club. Aquí tienes acceso directo a lo tuyo.</p>
+          <div class="socios-slide-links">
+            <a href="cuenta.html" class="hero-pill"><span>Mi cuenta</span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            <a href="calendario.html" class="hero-pill hero-pill--ghost"><span>Calendario y resultados</span></a>
+            <a href="plantilla.html" class="hero-pill hero-pill--ghost"><span>Plantilla</span></a>
+          </div>`,
+      });
+    } else {
+      slidesPortada.push({
+        href: "inscripcion.html",
+        claseExtra: "news-slide--centrado news-slide--recluta",
+        eyebrow: "Únete al club",
+        title: "Buscamos jugadoras",
+        desc: "Todas las edades y niveles son bienvenidos. Escríbenos y te contamos cómo empezar.",
+        cta: "Quiero apuntarme",
+      });
+    }
   }
 
   SPFC_INIT_NEWS_SLIDER(slidesPortada);

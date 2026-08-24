@@ -79,7 +79,7 @@
   .news-slider-dot.active { background: var(--accent-light); transform: scale(1.3); }
 
   .destacado-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .destacado-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.72); backdrop-filter: blur(3px); }
+  .destacado-modal-backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.82); }
   .destacado-modal-card {
     position: relative; z-index: 1; max-width: 440px; width: 100%; max-height: 90vh; overflow-y: auto;
     background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
@@ -95,18 +95,6 @@
   .destacado-modal-body { padding: 1.6rem; }
   .destacado-modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin: 0 0 0.6rem; }
   .destacado-modal-text { font-size: 0.88rem; color: var(--text-on-cream-muted); line-height: 1.6; margin: 0 0 1.2rem; }
-
-  .slogan-mini { text-align: center; padding: 1.5rem 1rem 0.3rem; }
-  .slogan-mini-text {
-    font-family: var(--font-display); font-weight: 800; text-transform: uppercase;
-    font-size: clamp(13px, 2.4vw, 17px); letter-spacing: 0.09em; display: inline-block;
-    background: linear-gradient(100deg, var(--accent-dark) 0%, var(--accent) 22%, var(--accent-light) 44%, var(--accent) 66%, var(--accent-dark) 88%, var(--accent) 100%);
-    background-size: 260% auto;
-    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
-    animation: spfc-mini-shine 5s linear infinite;
-  }
-  @keyframes spfc-mini-shine { to { background-position: -260% center; } }
-  @media (prefers-reduced-motion: reduce) { .slogan-mini-text { animation: none; } }
 
   .live-banner { background: #0a0a0a; padding: 1.4rem var(--gutter) 1.8rem; }
   .live-banner-inner { max-width: 900px; margin: 0 auto; }
@@ -129,45 +117,7 @@
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
-<header class="hdr" id="hdr">
-  <a href="index.html" class="logo-wrap">
-    <img src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça" class="logo-crest">
-    <span class="logo-text">Fútbol Femenino<small class="logo-sub">Santa Ponça</small></span>
-  </a>
-  <nav class="hdr-nav">
-    <a href="#partidos">Partidos</a>
-    <a href="#proyecto">Club</a>
-    <a href="#noticias">Noticias</a>
-    <a href="#contacto">Contacto</a>
-  </nav>
-  <div style="display:flex;align-items:center;gap:14px;">
-    <a href="inscripcion.html" class="btn-cta"><span>Formulario de interés</span></a>
-    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleNav()">Menú</button>
-  </div>
-</header>
-
-<nav class="fullnav" id="fullnav">
-  <div class="fullnav-links">
-    <a href="index.html" class="fullnav-link">Inicio</a>
-    <a href="equipos.html" class="fullnav-link">Equipos</a>
-    <a href="plantilla.html" class="fullnav-link">Plantilla</a>
-    <a href="calendario.html" class="fullnav-link">Calendario</a>
-    <a href="clasificacion.html" class="fullnav-link">Clasificación</a>
-    <a href="noticias.html" class="fullnav-link">Noticias</a>
-    <a href="galeria.html" class="fullnav-link">Galería</a>
-    <a href="club.html" class="fullnav-link">Club</a>
-    <a href="patrocinadores.html" class="fullnav-link">Patrocinadores</a>
-    <a href="contacto.html" class="fullnav-link">Contacto</a>
-  </div>
-  <a href="inscripcion.html" class="fullnav-cta">Formulario de interés</a>
-  <div class="fullnav-foot">
-    <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
-    <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
-    <a href="admin/index.html" class="fullnav-admin">Acceso club</a>
-    <a href="cuenta.html" class="fullnav-admin">Mi cuenta</a>
-  </div>
-</nav>
-
+<!--#include header-home-->
 <div class="destacado-modal" id="destacadoModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="destacadoModalTitle">
   <div class="destacado-modal-backdrop" id="destacadoModalBackdrop"></div>
   <div class="destacado-modal-card">
@@ -206,26 +156,6 @@
     <div class="news-slider-dots" id="newsDots"></div>
   </section>
 
-  <!-- MARQUEE -->
-  <div class="marquee-strip" aria-hidden="true">
-    <div class="marquee-inner">
-      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
-      <span>Calvià, Mallorca</span><span class="dot">✦</span>
-      <span>Fútbol federado</span><span class="dot">✦</span>
-      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
-      <span>Formulario de interés abierto</span><span class="dot">✦</span>
-      <span>Fútbol Femenino Santa Ponça</span><span class="dot">✦</span>
-      <span>Calvià, Mallorca</span><span class="dot">✦</span>
-      <span>Fútbol federado</span><span class="dot">✦</span>
-      <span>Pasión por el fútbol femenino</span><span class="dot">✦</span>
-      <span>Formulario de interés abierto</span><span class="dot">✦</span>
-    </div>
-  </div>
-
-  <div class="slogan-mini">
-    <span class="slogan-mini-text">Más allá de los límites</span>
-  </div>
-
   <!-- STATS -->
   <div class="stats-sec">
     <div class="stat-cell sr"><strong id="stat-equipos">4</strong><span>Equipos</span></div>
@@ -236,7 +166,8 @@
   <section class="matches-sec" id="partidos">
     <div class="sr-l tag-line">Calendario y resultados</div>
     <h2 class="big-title-v2 sr">Partidos</h2>
-    <div class="drag-hint sr">← Desliza →</div>
+    <div id="matchProtagonist" class="sr" style="max-width:520px;margin:36px 0 0;"></div>
+    <div class="drag-hint sr" id="dragHint" style="margin-top:40px;">Más partidos ← Desliza →</div>
     <div class="match-scroll" id="matchScroll">
       <div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div><div class="mc-skel"></div>
     </div>
@@ -311,48 +242,7 @@
 
 </main>
 
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="brand">
-          <img class="brand__crest" src="assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
-          <span class="brand__name">Fútbol Femenino<small>Santa Ponça</small></span>
-        </a>
-        <p>Club de fútbol femenino de Santa Ponça, Calvià (Mallorca). Formación, competición y pasión por el fútbol femenino desde la base hasta el primer equipo.</p>
-        <div class="footer-social">
-          <a href="https://www.instagram.com/futbolfemeninosantaponsa" target="_blank" rel="noopener" aria-label="Instagram del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a>
-          <a href="https://www.facebook.com/share/1Dvj7rrSd6/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 8.5h2.5V5H15c-2.2 0-4 1.8-4 4v2H9v3.5h2V22h3.5v-7.5H17l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg></a>
-          <a href="https://youtube.com/" target="_blank" rel="noopener" aria-label="YouTube del club"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5V9.5z" fill="currentColor"/></svg></a>
-        </div>
-      </div>
-      <div>
-        <h4>Club</h4>
-        <a href="club.html">Historia y palmarés</a>
-        <a href="equipos.html">Equipos</a>
-        <a href="patrocinadores.html">Patrocinadores</a>
-      </div>
-      <div>
-        <h4>Competición</h4>
-        <a href="calendario.html">Calendario</a>
-        <a href="clasificacion.html">Clasificación</a>
-        <a href="plantilla.html">Plantilla</a>
-        <a href="galeria.html">Galería</a>
-      </div>
-      <div>
-        <h4>Contacto</h4>
-        <a href="contacto.html">Ubicación y contacto</a>
-        <a href="noticias.html">Prensa y noticias</a>
-        <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span class="footer-bottom__brand"><img src="assets/img/escudo-santa-ponsa.png" alt="" aria-hidden="true">© <span data-year></span> Fútbol Femenino Santa Ponça</span>
-      <a href="admin/index.html">Acceso club</a>
-    </div>
-  </div>
-</footer>
-
+<!--#include footer-->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
@@ -418,34 +308,6 @@
   track.addEventListener('mouseenter', () => { if (timer) clearInterval(timer); });
   track.addEventListener('mouseleave', restartAutoplay);
 })();
-
-/* ── HEADER SCROLL ── */
-window.addEventListener('scroll', () => {
-  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 80);
-}, { passive: true });
-
-/* ── MOBILE FULL NAV ── */
-function toggleNav() {
-  const burger = document.getElementById('burger');
-  const nav = document.getElementById('fullnav');
-  const open = nav.classList.toggle('open');
-  burger.textContent = open ? 'Cerrar' : 'Menú';
-  burger.setAttribute('aria-expanded', String(open));
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-document.querySelectorAll('.fullnav-link').forEach((a) => a.addEventListener('click', toggleNav));
-(function highlightCurrentNav() {
-  const path = location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.fullnav-link[href]').forEach((a) => {
-    if (a.getAttribute('href') === path) a.setAttribute('aria-current', 'page');
-  });
-})();
-
-/* ── SCROLL REVEAL ── */
-const ro = new IntersectionObserver((entries) => {
-  entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
-}, { threshold: 0.09 });
-document.querySelectorAll('.sr,.sr-l').forEach((el) => ro.observe(el));
 
 /* ── STAT COUNTERS ── */
 function countUp(el, target, suffix) {
@@ -541,6 +403,13 @@ function countUp(el, target, suffix) {
     SPFC_DATA.recentResults(undefined, 6),
   ]);
   const matchScroll = document.getElementById("matchScroll");
+  const protagonistWrap = document.getElementById("matchProtagonist");
+  if (proximo) {
+    protagonistWrap.innerHTML = spfcMatchProtagonistHTML(proximo);
+  } else {
+    protagonistWrap.style.display = "none";
+    document.getElementById("dragHint").textContent = "← Desliza →";
+  }
   const items = [];
   if (proximo) items.push(Object.assign({ _jugado: false }, proximo));
   resultados.forEach((m) => items.push(Object.assign({ _jugado: true }, m)));

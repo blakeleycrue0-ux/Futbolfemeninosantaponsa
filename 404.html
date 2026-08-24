@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Página no encontrada — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, follow">
+<meta name="description" content="Esta página no existe. Vuelve al inicio del Fútbol Femenino Santa Ponça.">
+<meta name="theme-color" content="#050608">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  html, body { height: 100%; }
+  body.err404-body { overflow: hidden; background: #050608; }
+
+  .err404 {
+    position: relative;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    background: #050608;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+  }
+
+  /* ── Capas de fondo: campo, focos, bruma, viñeta, grano ── */
+  .err404__layer { position: absolute; inset: 0; pointer-events: none; }
+
+  .err404__pitch {
+    background:
+      linear-gradient(180deg, #050608 0%, #0a0b0f 55%, #0d0f14 100%);
+  }
+  .err404__pitch::before {
+    /* rayado de césped, casi invisible */
+    content: '';
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      100deg,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 90px,
+      transparent 90px,
+      transparent 180px
+    );
+    opacity: 0.6;
+  }
+
+  .err404__lines {
+    border: 1px solid rgba(244,240,232,0.06);
+    inset: 12vh 8vw -30vh 8vw;
+    border-radius: 2px;
+  }
+  .err404__lines::before {
+    content: '';
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
+    background: rgba(244,240,232,0.05);
+  }
+
+  .err404__lights {
+    background:
+      radial-gradient(ellipse 42vw 60vh at 12% -10%, rgba(168,85,247,0.20) 0%, transparent 60%),
+      radial-gradient(ellipse 42vw 60vh at 88% -10%, rgba(168,85,247,0.16) 0%, transparent 60%);
+    animation: err404-lights-drift 22s ease-in-out infinite alternate;
+  }
+  @keyframes err404-lights-drift {
+    from { opacity: 0.75; }
+    to { opacity: 1; }
+  }
+
+  .err404__haze {
+    background: radial-gradient(ellipse 70vw 40vh at 50% 105%, rgba(126,34,206,0.16) 0%, transparent 65%);
+  }
+
+  .err404__vignette {
+    background: radial-gradient(ellipse 80vw 90vh at 50% 45%, transparent 45%, rgba(0,0,0,0.55) 100%);
+  }
+
+  .err404__grain {
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* ── Contenido ── */
+  .err404__content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 88px 1.4rem 2rem;
+    min-height: 0;
+  }
+
+  .err404__status {
+    display: inline-flex; align-items: center; gap: 0.55em;
+    font-family: var(--font-display); font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase;
+    color: rgba(244,240,232,0.5);
+    margin-bottom: clamp(0.8rem, 3vh, 1.8rem);
+    opacity: 0; animation: err404-in 0.7s var(--ease) forwards; animation-delay: 0.1s;
+  }
+  .err404__dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent-light); flex-shrink: 0;
+    animation: err404-pulse 2.2s ease-in-out infinite;
+  }
+
+  .err404__num {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.045em;
+    font-size: clamp(96px, 26vw, 420px);
+    color: #fff;
+    margin: 0;
+    opacity: 0; animation: err404-in 0.9s var(--ease) forwards; animation-delay: 0.28s;
+  }
+  .err404__num::before {
+    content: '404';
+    position: absolute; inset: 0;
+    color: var(--accent);
+    opacity: 0.22;
+    filter: blur(18px);
+    transform: translate(6px, 10px) scale(1.04);
+    z-index: -1;
+  }
+  .err404__ball {
+    display: inline-flex;
+    width: 0.52em; height: 0.52em;
+    vertical-align: -0.02em;
+    opacity: 0; transform: translateX(-2.4em) rotate(-160deg) scale(0.85);
+    animation: err404-ball-roll 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.85s;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.55));
+  }
+  .err404__ball svg { width: 100%; height: 100%; display: block; }
+
+  .err404__headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.15rem, 3.4vw, 2.1rem);
+    color: #fff;
+    margin: clamp(0.6rem, 2.4vh, 1.3rem) 0 0.5em;
+    max-width: 22ch;
+    opacity: 0; animation: err404-in 0.8s var(--ease) forwards; animation-delay: 0.5s;
+  }
+
+  .err404__desc {
+    font-size: clamp(0.86rem, 1.6vw, 1rem);
+    color: rgba(244,240,232,0.6);
+    max-width: 40ch;
+    line-height: 1.6;
+    margin: 0 0 0.3em;
+    opacity: 0; animation: err404-in 0.8s var(--ease) forwards; animation-delay: 0.62s;
+  }
+  .err404__desc--sub {
+    font-size: clamp(0.76rem, 1.3vw, 0.85rem);
+    color: rgba(244,240,232,0.35);
+    margin-bottom: clamp(1.2rem, 4vh, 2.2rem);
+    opacity: 0; animation: err404-in 0.8s var(--ease) forwards; animation-delay: 0.72s;
+  }
+
+  .err404__actions {
+    display: flex; align-items: center; gap: clamp(1rem, 3vw, 1.8rem); flex-wrap: wrap; justify-content: center;
+    opacity: 0; animation: err404-in 0.8s var(--ease) forwards; animation-delay: 0.85s;
+  }
+  .err404__cta { box-shadow: none; }
+  .err404__cta:hover { box-shadow: var(--shadow-accent); }
+  .err404__secondary {
+    font-family: var(--font-display); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(244,240,232,0.55);
+    display: inline-flex; align-items: center; gap: 0.4em;
+    position: relative; padding-bottom: 3px;
+  }
+  .err404__secondary::after {
+    content: ''; position: absolute; left: 0; right: 100%; bottom: 0; height: 1px;
+    background: var(--accent-light); transition: right 0.35s var(--ease-out);
+  }
+  .err404__secondary:hover { color: #fff; }
+  .err404__secondary:hover::after { right: 0; }
+
+  /* ── Detalles de esquina, estilo grafismo de retransmisión ── */
+  .err404__corner {
+    position: absolute; z-index: 2;
+    font-family: var(--font-display); font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(244,240,232,0.28);
+    line-height: 1.6;
+    opacity: 0; animation: err404-in 0.8s var(--ease) forwards; animation-delay: 1s;
+  }
+  .err404__corner--bl { left: clamp(1.2rem, 4vw, 2.4rem); bottom: clamp(1rem, 3vh, 1.8rem); }
+  .err404__corner--br { right: clamp(1.2rem, 4vw, 2.4rem); bottom: clamp(1rem, 3vh, 1.8rem); text-align: right; }
+  .err404__corner strong { color: rgba(244,240,232,0.5); }
+
+  @keyframes err404-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes err404-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @keyframes err404-ball-roll {
+    0% { opacity: 0; transform: translateX(-2.4em) rotate(-160deg) scale(0.85); }
+    65% { opacity: 1; transform: translateX(0.06em) rotate(8deg) scale(1); }
+    82% { transform: translateX(-0.03em) rotate(-2deg) scale(1); }
+    100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .err404__status, .err404__num, .err404__headline, .err404__desc, .err404__desc--sub, .err404__actions, .err404__corner, .err404__ball {
+      animation: none !important; opacity: 1 !important; transform: none !important;
+    }
+    .err404__lights { animation: none; }
+  }
+
+  @media (max-height: 620px) {
+    .err404__content { padding-top: 76px; }
+    .err404__status { margin-bottom: 0.5rem; }
+    .err404__headline { margin-top: 0.4rem; }
+    .err404__desc--sub { margin-bottom: 1rem; }
+  }
+  @media (max-width: 480px) {
+    .err404__corner { font-size: 0.56rem; letter-spacing: 0.14em; }
+  }
+</style>
+</head>
+<body class="err404-body">
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<div class="err404" id="main">
+  <div class="err404__layer err404__pitch"></div>
+  <div class="err404__layer err404__lines"></div>
+  <div class="err404__layer err404__lights" id="err404Lights"></div>
+  <div class="err404__layer err404__haze"></div>
+  <div class="err404__layer err404__vignette"></div>
+  <div class="err404__layer err404__grain"></div>
+
+  <div class="err404__content" id="err404Content">
+    <span class="err404__status"><span class="err404__dot" aria-hidden="true"></span>Santa Ponça Femenino</span>
+
+    <h1 class="err404__num" aria-label="Error 404">4<span class="err404__ball" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><radialGradient id="ballShade" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#c9c9d2"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#ballShade)" stroke="#1c1c1c" stroke-width="1.5"/><g fill="#17151b"><polygon points="50,28 60,35 56,47 44,47 40,35"/><polygon points="24,44 32,38 38,48 33,60 22,58"/><polygon points="76,44 68,38 62,48 67,60 78,58"/><polygon points="38,70 50,64 62,70 58,82 42,82"/></g></svg></span>4</h1>
+
+    <p class="err404__headline">Esta jugada no existe.</p>
+    <p class="err404__desc">La página que buscas se ha ido fuera del campo.</p>
+    <p class="err404__desc--sub">Pero el partido continúa.</p>
+
+    <div class="err404__actions">
+      <a href="index.html" class="btn btn-primary err404__cta">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver al inicio
+      </a>
+      <a href="noticias.html" class="err404__secondary">Ver noticias <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+
+  <span class="err404__corner err404__corner--bl">SP Femenino<br><strong>Mallorca</strong></span>
+  <span class="err404__corner err404__corner--br"><strong>Error 404</strong><br>Página no encontrada</span>
+</div>
+
+<script src="assets/js/nav.js"></script>
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
+
+  var lights = document.getElementById('err404Lights');
+  var content = document.getElementById('err404Content');
+  var raf = null;
+
+  window.addEventListener('mousemove', function (e) {
+    if (raf) return;
+    raf = requestAnimationFrame(function () {
+      var nx = (e.clientX / window.innerWidth - 0.5);
+      var ny = (e.clientY / window.innerHeight - 0.5);
+      lights.style.transform = 'translate(' + (nx * 6) + 'px,' + (ny * 6) + 'px)';
+      content.style.transform = 'translate(' + (nx * -2) + 'px,' + (ny * -2) + 'px)';
+      raf = null;
+    });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

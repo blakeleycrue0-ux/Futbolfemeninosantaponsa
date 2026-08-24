@@ -107,19 +107,6 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .skip-link:focus { left: 0; }
 
-.reveal-init {
-  opacity: 0;
-  transform: translateY(36px);
-  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-}
-.reveal-init.reveal-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-init { opacity: 1; transform: none; transition: none; }
-}
-
 @media (max-width: 720px) {
   .section-head { flex-direction: column; align-items: flex-start; }
 }

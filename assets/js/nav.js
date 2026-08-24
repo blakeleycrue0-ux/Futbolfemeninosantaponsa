@@ -1,62 +1,64 @@
 (function () {
-  const toggle = document.querySelector("[data-nav-toggle]");
-  const nav = document.querySelector("[data-nav]");
-  if (toggle && nav) {
-    toggle.addEventListener("click", () => {
-      const isOpen = nav.classList.toggle("is-open");
-      toggle.setAttribute("aria-expanded", String(isOpen));
-    });
-    nav.querySelectorAll("a").forEach((a) =>
-      a.addEventListener("click", () => {
-        nav.classList.remove("is-open");
-        toggle.setAttribute("aria-expanded", "false");
-      })
-    );
-  }
-
   document.querySelectorAll("[data-year]").forEach((el) => {
     el.textContent = new Date().getFullYear();
   });
 
-  const path = location.pathname.split("/").pop() || "index.html";
-  document.querySelectorAll("[data-nav] a[href]").forEach((a) => {
-    const href = a.getAttribute("href");
-    if (href === path || (path === "" && href === "index.html")) {
-      a.setAttribute("aria-current", "page");
-    }
-  });
+  // Cabecera + menú a pantalla completa (.hdr / #burger / #fullnav) — antes
+  // este bloque estaba copiado a mano, casi idéntico, en cada página.
+  const header = document.getElementById("hdr");
+  const burger = document.getElementById("burger");
+  const fullnav = document.getElementById("fullnav");
 
-  // Header solidifies on scroll.
-  const header = document.querySelector(".site-header");
   if (header) {
-    const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 40);
+    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 80);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
-  // Scroll-reveal for cards/sections — progressive enhancement, no markup needed.
-  const revealSelectors = [
-    ".card", ".match-card", ".player-card",
-    ".stats-sec .stat-cell", ".stat-item",
-    ".section-head", "table.standings", ".sponsor-strip img",
-  ];
-  const revealables = document.querySelectorAll(revealSelectors.join(","));
-  if (revealables.length && "IntersectionObserver" in window) {
-    revealables.forEach((el, i) => {
-      el.classList.add("reveal-init");
-      el.style.transitionDelay = Math.min(i % 4, 3) * 0.09 + "s";
+  if (burger && fullnav) {
+    const toggleNav = () => {
+      const open = fullnav.classList.toggle("open");
+      burger.textContent = open ? "Cerrar" : "Menú";
+      burger.setAttribute("aria-expanded", String(open));
+      document.body.style.overflow = open ? "hidden" : "";
+    };
+    burger.addEventListener("click", toggleNav);
+    fullnav.querySelectorAll(".fullnav-link").forEach((a) => a.addEventListener("click", toggleNav));
+  }
+
+  const path = location.pathname.split("/").pop() || "index.html";
+  document.querySelectorAll(".fullnav-link[href], .hdr-nav a[href]").forEach((a) => {
+    if (a.getAttribute("href") === path) a.setAttribute("aria-current", "page");
+  });
+
+  // Scroll-reveal — un solo sistema (.sr / .sr-l + clase "in" al entrar en
+  // vista) para todo: elementos marcados a mano en el HTML (p.ej. index.html)
+  // y componentes genéricos (tarjetas, tablas...) que lo reciben aquí.
+  // Antes había dos sistemas por separado con nombres de clase distintos
+  // (.sr/.sr-l aquí, .reveal-init/.reveal-in solo para estos componentes) que
+  // hacían lo mismo — ver assets/css/components.css.
+  if ("IntersectionObserver" in window) {
+    const genericSelectors = [
+      ".card", ".match-card", ".player-card",
+      ".stat-item", ".section-head", "table.standings", ".sponsor-strip img",
+    ];
+    const generics = document.querySelectorAll(genericSelectors.join(","));
+    generics.forEach((el, i) => {
+      el.classList.add("sr");
+      if (!el.style.transitionDelay) el.style.transitionDelay = Math.min(i % 4, 3) * 0.09 + "s";
     });
-    const io = new IntersectionObserver(
+
+    const revealer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("reveal-in");
-            io.unobserve(entry.target);
+            entry.target.classList.add("in");
+            revealer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
-    revealables.forEach((el) => io.observe(el));
+    document.querySelectorAll(".sr,.sr-l").forEach((el) => revealer.observe(el));
   }
 })();

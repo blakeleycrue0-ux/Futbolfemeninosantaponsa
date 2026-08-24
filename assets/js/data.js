@@ -181,3 +181,61 @@ function spfcResultLabel(m) {
   if (m.goles_equipo < m.goles_rival) return "L";
   return "D";
 }
+
+/*
+  "Escudo vs escudo, fecha/hora/competición, último resultado" — un solo
+  componente para las tres páginas que lo necesitan (home, calendario,
+  detalle de partido) en vez de tres implementaciones distintas. Devuelve
+  el HTML del `.match-card.match-hero`; quien lo llame decide dónde
+  colocarlo. Requiere `spfcFormatDate`/`spfcResultLabel` (arriba) y las
+  clases ya existentes en components.css (.match-card, .match-hero,
+  .match-team...).
+*/
+function spfcMatchCrest(esClub, rival, rivalEscudoUrl) {
+  if (esClub) return `<img src="assets/img/escudo-santa-ponsa.png" alt="">`;
+  if (rivalEscudoUrl) return `<img src="${rivalEscudoUrl}" alt="">`;
+  return (rival || "").trim().slice(0, 2).toUpperCase() || "--";
+}
+
+function spfcMatchProtagonistHTML(match) {
+  if (!match) return "";
+  const esLocal = match.condicion === "local";
+  const jugado = match.estado === "jugado";
+  const res = jugado ? spfcResultLabel(match) : null;
+  const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : res === "D" ? "Empate" : "";
+  const rivalName = match.rival || "Rival";
+
+  let metaLine1;
+  if (match.estado === "aplazado") {
+    metaLine1 = "Partido aplazado";
+  } else if (match.estado === "suspendido") {
+    metaLine1 = "Partido suspendido";
+  } else if (jugado) {
+    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  } else {
+    metaLine1 = spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
+  }
+
+  return `
+    <div class="match-card match-hero">
+      <span class="match-card__comp">${match.tipo && match.tipo !== "Liga" ? match.tipo + " · " : ""}${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
+      <div class="match-card__teams">
+        <div class="match-team">
+          <span class="match-team__crest">${spfcMatchCrest(esLocal, rivalName, match.rival_escudo_url)}</span>
+          <span class="match-team__name">${esLocal ? "Santa Ponça" : rivalName}</span>
+        </div>
+        ${jugado
+          ? `<span class="match-card__score">${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}</span>`
+          : `<span class="match-card__vs">VS</span>`}
+        <div class="match-team">
+          <span class="match-team__crest">${spfcMatchCrest(!esLocal, rivalName, match.rival_escudo_url)}</span>
+          <span class="match-team__name">${esLocal ? rivalName : "Santa Ponça"}</span>
+        </div>
+      </div>
+      <div class="match-card__meta">
+        <span>${metaLine1}</span>
+        <span>${match.campo || ""}</span>
+      </div>
+      ${jugado && res ? `<div style="text-align:center;margin-top:1.2rem;"><span class="match-card__result result-${res}">${resLabel}</span></div>` : ""}
+    </div>`;
+}

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Web del club Fútbol Femenino Santa Ponça",
   "scripts": {
-    "build": "node scripts/inject-config.js"
+    "build": "node scripts/inject-config.js && node scripts/inject-partials.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

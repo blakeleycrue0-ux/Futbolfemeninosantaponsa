@@ -21,17 +21,30 @@
 <style>
   .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
   @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
-  .contact-list { list-style: none; padding: 0; margin: 0 0 2rem; }
-  .contact-list li { display: flex; align-items: center; gap: 1.1rem; padding: 1.2em 0; border-bottom: 1px solid rgba(22,18,28,0.1); font-size: 1.05rem; font-weight: 700; }
-  .contact-list li:first-child { padding-top: 0; }
-  .contact-list li:last-child { border-bottom: none; }
-  .contact-list li a { color: var(--ink); text-decoration: none; transition: color 0.25s; }
-  .contact-list li a:hover { color: var(--accent-dark); }
-  .contact-list .icon {
-    width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s, color 0.25s;
+  .contact-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 2rem; }
+  .contact-card {
+    position: relative; overflow: hidden; display: flex; align-items: center; gap: 1.4rem;
+    background: var(--cream-deep); border-left: 3px solid var(--accent); padding: 1.5rem 1.7rem;
+    transition: background 0.25s, border-left-color 0.25s;
   }
-  .contact-list li:hover .icon { background: var(--accent); color: #fff; }
+  .contact-card:hover { background: var(--ink); border-left-color: var(--accent-light); }
+  .contact-card__icon {
+    width: 54px; height: 54px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1;
+    transition: background 0.25s, color 0.25s;
+  }
+  .contact-card:hover .contact-card__icon { background: var(--accent); color: #fff; }
+  .contact-card__body { position: relative; z-index: 1; min-width: 0; }
+  .contact-card__label { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-dark); margin-bottom: 0.3rem; transition: color 0.25s; }
+  .contact-card:hover .contact-card__label { color: var(--accent-light); }
+  .contact-card__value { font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: var(--ink); text-decoration: none; display: block; letter-spacing: -0.01em; overflow-wrap: break-word; transition: color 0.25s; }
+  a.contact-card__value:hover { color: var(--accent-dark); }
+  .contact-card:hover .contact-card__value { color: #fff; }
+  .contact-card:hover a.contact-card__value:hover { color: var(--accent-light); }
+  .contact-card__desc { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-on-cream-muted); transition: color 0.25s; }
+  .contact-card:hover .contact-card__desc { color: rgba(244,240,232,0.55); }
+  .contact-card__mark { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 90px; height: 90px; color: var(--accent); opacity: 0.08; pointer-events: none; z-index: 0; }
+  @media (max-width: 480px) { .contact-card { padding: 1.2rem 1.3rem; gap: 1rem; } .contact-card__icon { width: 44px; height: 44px; } .contact-card__value { font-size: 1.05rem; } }
   .contact-social { display: flex; gap: 0.8rem; margin-top: 0.6rem; }
   .contact-social a {
     width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--ink); color: var(--accent-light);
@@ -79,21 +92,36 @@
 
       <div class="contact-grid">
         <div>
-          <ul class="contact-list">
-            <li>
-              <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.6"/></svg></span>
-              <a href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
-            </li>
-            <li>
-              <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.5 6.5 15 15 15l3-4-6-3-2 2c-2.5-1.3-4.7-3.5-6-6l2-2-3-6L4 5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-              <a href="tel:+34676040111">676 04 01 11</a>
-            </li>
+          <div class="contact-cards">
+            <div class="contact-card">
+              <span class="contact-card__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1.6"/></svg></span>
+              <div class="contact-card__body">
+                <span class="contact-card__label">Escríbenos</span>
+                <a class="contact-card__value" href="mailto:ffsp2026@gmail.com">ffsp2026@gmail.com</a>
+                <p class="contact-card__desc">Te responderemos lo antes posible</p>
+              </div>
+              <svg class="contact-card__mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1"/><path d="M3 6l9 7 9-7" stroke="currentColor" stroke-width="1"/></svg>
+            </div>
+            <div class="contact-card">
+              <span class="contact-card__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.5 6.5 15 15 15l3-4-6-3-2 2c-2.5-1.3-4.7-3.5-6-6l2-2-3-6L4 5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+              <div class="contact-card__body">
+                <span class="contact-card__label">Llámanos</span>
+                <a class="contact-card__value" href="tel:+34676040111">676 04 01 11</a>
+                <p class="contact-card__desc">También puedes escribirnos si lo prefieres</p>
+              </div>
+              <svg class="contact-card__mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.5 6.5 15 15 15l3-4-6-3-2 2c-2.5-1.3-4.7-3.5-6-6l2-2-3-6L4 5z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+            </div>
             <!-- Dirección de ejemplo: el club debe confirmar la dirección exacta del campo -->
-            <li>
-              <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg></span>
-              <span>Camp Municipal de Santa Ponça, Calvià, Mallorca <em>(dirección exacta pendiente de confirmar por el club)</em></span>
-            </li>
-          </ul>
+            <div class="contact-card">
+              <span class="contact-card__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg></span>
+              <div class="contact-card__body">
+                <span class="contact-card__label">Visítanos</span>
+                <span class="contact-card__value" style="font-size:1.05rem;">Camp Municipal de Santa Ponça</span>
+                <p class="contact-card__desc">Calvià, Mallorca <em>(dirección exacta pendiente de confirmar por el club)</em></p>
+              </div>
+              <svg class="contact-card__mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1"/></svg>
+            </div>
+          </div>
 
           <span class="eyebrow" style="margin-top:0.5rem; display:inline-block;">Síguenos</span>
           <div class="contact-social">

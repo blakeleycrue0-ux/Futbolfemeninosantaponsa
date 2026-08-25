@@ -138,12 +138,12 @@
     return null;
   }
 
-  function enlaceRecordatorioPago(item) {
+  function datosRecordatorioPago(item) {
     const numero = normalizarTelefonoEs(item.tutor_telefono);
     if (!numero) return null;
     const registroUrl = location.origin + "/registro.html?id=" + item.id;
     const mensaje = `Hola, ${item.tutor_nombre}. Te escribimos desde el Fútbol Femenino Santa Ponça: la inscripción de ${item.jugadora_nombre} tiene el pago pendiente. Puedes completarlo desde tu enlace personal: ${registroUrl}`;
-    return "https://wa.me/" + numero + "?text=" + encodeURIComponent(mensaje);
+    return { numero, mensaje, enlace: "https://wa.me/" + numero + "?text=" + encodeURIComponent(mensaje) };
   }
 
   const planLabels = { unico: "Pago único", "2_cuotas": "2 cuotas", "4_cuotas": "4 cuotas" };
@@ -487,7 +487,20 @@
       return;
     }
 
-    body.innerHTML = filtradas.map((i) => `
+    body.innerHTML = filtradas.map((i) => {
+      const pagoPendiente = i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado";
+      const datosWa = pagoPendiente ? datosRecordatorioPago(i) : null;
+      // El enlace wa.me abre la app que iOS/Android tenga asociada a
+      // wa.me en ese móvil — puede ser el WhatsApp personal en vez del
+      // de empresa, y eso no se puede forzar desde la web. Los dos
+      // botones de copiar son el respaldo: se pega el número en el
+      // buscador de la app correcta y el mensaje ya dentro del chat.
+      const accionesWa = datosWa
+        ? `<a class="btn btn-outline btn-sm" href="${datosWa.enlace}" target="_blank" rel="noopener">Recordar pago (WhatsApp)</a>
+           <button class="btn-icon" data-copy-num="${escapeHtml(datosWa.numero)}" type="button" title="Copiar número — para pegarlo en el buscador de WhatsApp Business si el enlace abre tu WhatsApp personal">№</button>
+           <button class="btn-icon" data-copy-msg="${escapeHtml(datosWa.mensaje)}" type="button" title="Copiar mensaje">✉</button>`
+        : "";
+      return `
       <tr>
         <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>
         <td><strong>${escapeHtml(i.jugadora_nombre)}</strong></td>
@@ -498,14 +511,35 @@
         <td>${i.confirmada_en ? whatsappPill(i) : "—"}</td>
         <td><span class="pill ${estadoPillClass[i.estado] || ""}">${estadoLabels[i.estado] || escapeHtml(i.estado)}</span></td>
         <td class="actions">
-          ${i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado" && enlaceRecordatorioPago(i)
-            ? `<a class="btn btn-outline btn-sm" href="${enlaceRecordatorioPago(i)}" target="_blank" rel="noopener">Recordar pago (WhatsApp)</a>`
-            : ""}
+          ${accionesWa}
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
           <button class="btn-icon danger" data-del="${i.id}" type="button">✕</button>
         </td>
-      </tr>`).join("");
+      </tr>`;
+    }).join("");
 
+    body.querySelectorAll("[data-copy-num]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copyNum);
+          const original = btn.textContent;
+          btn.textContent = "✓";
+          setTimeout(() => { btn.textContent = original; }, 1200);
+        } catch (err) {
+          alert("No se ha podido copiar. Número: " + btn.dataset.copyNum);
+        }
+      }));
+    body.querySelectorAll("[data-copy-msg]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copyMsg);
+          const original = btn.textContent;
+          btn.textContent = "✓";
+          setTimeout(() => { btn.textContent = original; }, 1200);
+        } catch (err) {
+          alert("No se ha podido copiar el mensaje.");
+        }
+      }));
     body.querySelectorAll("[data-view]").forEach((btn) =>
       btn.addEventListener("click", () => openDetail(inscripciones.find((i) => i.id === btn.dataset.view))));
     body.querySelectorAll("[data-del]").forEach((btn) =>

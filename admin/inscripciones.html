@@ -125,6 +125,27 @@
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+
+  // Igual que normalizarTelefonoEs en netlify/functions/lib/whatsapp.js,
+  // pero para el enlace manual de wa.me — no hay envío automático aquí,
+  // solo se abre WhatsApp con el número y el mensaje ya escritos.
+  function normalizarTelefonoEs(raw) {
+    if (!raw) return null;
+    let d = String(raw).replace(/[^\d]/g, "");
+    if (d.startsWith("0034")) d = d.slice(4);
+    if (d.startsWith("34") && d.length === 11) return /^34[67]/.test(d) ? d : null;
+    if (d.length === 9 && /^[67]/.test(d)) return "34" + d;
+    return null;
+  }
+
+  function enlaceRecordatorioPago(item) {
+    const numero = normalizarTelefonoEs(item.tutor_telefono);
+    if (!numero) return null;
+    const registroUrl = location.origin + "/registro.html?id=" + item.id;
+    const mensaje = `Hola, ${item.tutor_nombre}. Te escribimos desde el Fútbol Femenino Santa Ponça: la inscripción de ${item.jugadora_nombre} tiene el pago pendiente. Puedes completarlo desde tu enlace personal: ${registroUrl}`;
+    return "https://wa.me/" + numero + "?text=" + encodeURIComponent(mensaje);
+  }
+
   const planLabels = { unico: "Pago único", "2_cuotas": "2 cuotas", "4_cuotas": "4 cuotas" };
   const estadoLabels = { pendiente: "Pendiente", pago_parcial: "Pago parcial", pagado: "Pagado", cancelado: "Cancelado" };
   const whatsappLabels = {
@@ -477,6 +498,9 @@
         <td>${i.confirmada_en ? whatsappPill(i) : "—"}</td>
         <td><span class="pill ${estadoPillClass[i.estado] || ""}">${estadoLabels[i.estado] || escapeHtml(i.estado)}</span></td>
         <td class="actions">
+          ${i.confirmada_en && i.estado !== "pagado" && i.estado !== "cancelado" && enlaceRecordatorioPago(i)
+            ? `<a class="btn btn-outline btn-sm" href="${enlaceRecordatorioPago(i)}" target="_blank" rel="noopener">Recordar pago (WhatsApp)</a>`
+            : ""}
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
           <button class="btn-icon danger" data-del="${i.id}" type="button">✕</button>
         </td>

@@ -793,5 +793,43 @@ alter table site_settings enable row level security;
 create policy "site_settings_public_read" on site_settings for select using (true);
 create policy "site_settings_admin_write" on site_settings for all using (is_app_admin()) with check (is_app_admin());
 
+-- ----------------------------------------------------------------------------
+-- patrocinios
+-- Registro económico de acuerdos con patrocinadores (importe y pack de
+-- patrocinio), para la sección "Finanzas" del admin. Independiente de la
+-- tabla `sponsors` de más arriba (esa es solo para los logos que se ven
+-- en patrocinadores.html) — un patrocinador puede tener logo público,
+-- registro económico, o ambos, sin que estén enlazados entre sí.
+-- ----------------------------------------------------------------------------
+create table if not exists patrocinios (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  pack text,
+  importe numeric not null,
+  fecha date not null default current_date,
+  notas text,
+  creado_en timestamptz not null default now()
+);
+
+alter table patrocinios enable row level security;
+create policy "patrocinios_admin_all" on patrocinios for all using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- gastos
+-- Registro de gastos del club (equipación, árbitros, desplazamientos...),
+-- para la misma sección "Finanzas" del admin.
+-- ----------------------------------------------------------------------------
+create table if not exists gastos (
+  id uuid primary key default gen_random_uuid(),
+  concepto text not null,
+  importe numeric not null,
+  fecha date not null default current_date,
+  notas text,
+  creado_en timestamptz not null default now()
+);
+
+alter table gastos enable row level security;
+create policy "gastos_admin_all" on gastos for all using (is_app_admin()) with check (is_app_admin());
+
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');

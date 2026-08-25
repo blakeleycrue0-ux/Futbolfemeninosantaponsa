@@ -51,10 +51,23 @@ table.admin-table td.actions button { margin-left: 0.4rem; }
 .admin-stat--warn strong { color: #92660a; }
 .admin-stat--accent { border-top-color: var(--accent); }
 .admin-stat--accent strong { color: var(--accent); }
+.admin-stat--bad { border-top-color: #ef4444; }
+.admin-stat--bad strong { color: #b91c1c; }
 
 .pill-ok { background: rgba(34,197,94,0.14); color: #15803d; }
 .pill-warn { background: rgba(234,179,8,0.16); color: #92660a; }
 .pill-bad { background: rgba(239,68,68,0.14); color: #b91c1c; }
+
+.admin-tabs { display: flex; gap: 0.4rem; margin-bottom: 1.6rem; border-bottom: 1px solid rgba(22,18,28,0.1); flex-wrap: wrap; }
+.admin-tab {
+  padding: 0.75em 1.1em; margin-bottom: -1px; background: none; border: none; border-bottom: 2px solid transparent;
+  font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.01em;
+  color: var(--text-on-cream-muted); cursor: pointer; transition: color 0.2s, border-color 0.2s;
+}
+.admin-tab:hover { color: var(--ink); }
+.admin-tab.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.admin-tab-panel { display: none; }
+.admin-tab-panel.active { display: block; }
 
 .admin-search-bar { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; flex-wrap: wrap; align-items: center; }
 .admin-search-bar input[type="search"] {

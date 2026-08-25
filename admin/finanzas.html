@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finanzas — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="citas.html">Citas</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
+      <a href="pagos-extra.html">Pagos extra</a>
+      <a href="finanzas.html">Finanzas</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Finanzas</h1>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+      Visión de conjunto del dinero del club: lo recaudado en inscripciones, los acuerdos con patrocinadores
+      y los gastos. Las inscripciones se gestionan desde "Formularios de interés" — aquí solo se ve el total.
+    </p>
+
+    <div class="admin-stat-grid" id="resumen-stats">
+      <div class="admin-stat admin-stat--ok"><strong id="stat-ins">—</strong><span>Inscripciones</span></div>
+      <div class="admin-stat admin-stat--ok"><strong id="stat-patro">—</strong><span>Patrocinadores</span></div>
+      <div class="admin-stat"><strong id="stat-ingresos">—</strong><span>Total ingresos</span></div>
+      <div class="admin-stat admin-stat--warn"><strong id="stat-gastos">—</strong><span>Gastos</span></div>
+      <div class="admin-stat admin-stat--accent" id="stat-balance-card"><strong id="stat-balance">—</strong><span>Balance</span></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab active" data-tab="patrocinadores">Patrocinadores</button>
+      <button type="button" class="admin-tab" data-tab="gastos">Gastos</button>
+    </div>
+
+    <div class="admin-tab-panel active" data-panel="patrocinadores">
+      <div class="admin-topbar" style="margin-bottom:1.2rem;">
+        <h2 style="margin:0;font-size:1.1rem;">Patrocinadores</h2>
+        <button class="btn btn-primary btn-sm" id="new-patro-btn" type="button">Nuevo patrocinio</button>
+      </div>
+
+      <div class="admin-card admin-form-toggle" id="patro-form-card" style="display:none;">
+        <h2>Nuevo patrocinio</h2>
+        <form id="patro-form">
+          <div class="form-row">
+            <div class="form-field"><label for="pt-nombre">Patrocinador</label><input type="text" id="pt-nombre" placeholder="Universal Nàutic" required></div>
+            <div class="form-field"><label for="pt-pack">Pack</label><input type="text" id="pt-pack" placeholder="Oro, Plata, Bronce…"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label for="pt-importe">Importe (€)</label><input type="number" id="pt-importe" min="0" step="0.01" required></div>
+            <div class="form-field"><label for="pt-fecha">Fecha</label><input type="date" id="pt-fecha" required></div>
+          </div>
+          <div class="form-field"><label for="pt-notas">Notas (opcional)</label><textarea id="pt-notas" rows="2"></textarea></div>
+          <div style="display:flex;gap:0.8rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="patro-cancel-btn">Cancelar</button>
+          </div>
+          <p id="patro-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Patrocinador</th><th>Pack</th><th>Importe</th><th>Fecha</th><th>Notas</th><th></th></tr></thead>
+            <tbody id="patro-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-tab-panel" data-panel="gastos">
+      <div class="admin-topbar" style="margin-bottom:1.2rem;">
+        <h2 style="margin:0;font-size:1.1rem;">Gastos</h2>
+        <button class="btn btn-primary btn-sm" id="new-gasto-btn" type="button">Nuevo gasto</button>
+      </div>
+
+      <div class="admin-card admin-form-toggle" id="gasto-form-card" style="display:none;">
+        <h2>Nuevo gasto</h2>
+        <form id="gasto-form">
+          <div class="form-row">
+            <div class="form-field"><label for="g-concepto">Concepto</label><input type="text" id="g-concepto" placeholder="Equipación temporada" required></div>
+            <div class="form-field"><label for="g-importe">Importe (€)</label><input type="number" id="g-importe" min="0" step="0.01" required></div>
+          </div>
+          <div class="form-field"><label for="g-fecha">Fecha</label><input type="date" id="g-fecha" required></div>
+          <div class="form-field"><label for="g-notas">Notas (opcional)</label><textarea id="g-notas" rows="2"></textarea></div>
+          <div style="display:flex;gap:0.8rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="gasto-cancel-btn">Cancelar</button>
+          </div>
+          <p id="gasto-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Concepto</th><th>Importe</th><th>Fecha</th><th>Notas</th><th></th></tr></thead>
+            <tbody id="gasto-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function eur(n) {
+    return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  }
+  function hoy() {
+    return new Date().toISOString().slice(0, 10);
+  }
+  function fmtFecha(iso) {
+    if (!iso) return "—";
+    return new Date(iso + "T00:00:00").toLocaleDateString("es-ES");
+  }
+
+  /* ── Pestañas ── */
+  document.querySelectorAll(".admin-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".admin-tab").forEach((b) => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".admin-tab-panel").forEach((p) => p.classList.toggle("active", p.dataset.panel === btn.dataset.tab));
+    });
+  });
+
+  /* ── Resumen ── */
+  async function loadResumen() {
+    const [{ data: inscripciones }, { data: pagosPagados }, { data: patrocinios }, { data: gastos }] = await Promise.all([
+      window.spfc.from("inscripciones").select("id, estado"),
+      window.spfc.from("inscripcion_pagos").select("importe, inscripcion_id").eq("estado", "pagado"),
+      window.spfc.from("patrocinios").select("importe"),
+      window.spfc.from("gastos").select("importe"),
+    ]);
+
+    const idsCancelados = new Set((inscripciones || []).filter((i) => i.estado === "cancelado").map((i) => i.id));
+    const totalIns = (pagosPagados || [])
+      .filter((p) => !idsCancelados.has(p.inscripcion_id))
+      .reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+    const totalPatro = (patrocinios || []).reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+    const totalGastos = (gastos || []).reduce((sum, g) => sum + (Number(g.importe) || 0), 0);
+    const ingresos = totalIns + totalPatro;
+    const balance = ingresos - totalGastos;
+
+    document.getElementById("stat-ins").textContent = eur(totalIns);
+    document.getElementById("stat-patro").textContent = eur(totalPatro);
+    document.getElementById("stat-ingresos").textContent = eur(ingresos);
+    document.getElementById("stat-gastos").textContent = eur(totalGastos);
+    document.getElementById("stat-balance").textContent = eur(balance);
+    document.getElementById("stat-balance-card").classList.toggle("admin-stat--accent", balance >= 0);
+    document.getElementById("stat-balance-card").classList.toggle("admin-stat--bad", balance < 0);
+  }
+
+  /* ── Patrocinadores ── */
+  const patroFormCard = document.getElementById("patro-form-card");
+  const patroForm = document.getElementById("patro-form");
+  document.getElementById("new-patro-btn").addEventListener("click", () => {
+    patroForm.reset();
+    document.getElementById("pt-fecha").value = hoy();
+    document.getElementById("patro-form-status").textContent = "";
+    patroFormCard.style.display = "block";
+    patroFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("patro-cancel-btn").addEventListener("click", () => (patroFormCard.style.display = "none"));
+
+  async function loadPatrocinios() {
+    const body = document.getElementById("patro-body");
+    const { data, error } = await window.spfc.from("patrocinios").select("*").order("fecha", { ascending: false });
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay patrocinios registrados.</td></tr>'; return; }
+    body.innerHTML = data.map((p) => `
+      <tr>
+        <td>${escapeHtml(p.nombre)}</td>
+        <td>${p.pack ? escapeHtml(p.pack) : "—"}</td>
+        <td>${eur(p.importe)}</td>
+        <td>${fmtFecha(p.fecha)}</td>
+        <td>${p.notas ? escapeHtml(p.notas) : "—"}</td>
+        <td class="actions"><button class="btn-icon danger" data-del="${p.id}" type="button">✕</button></td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este patrocinio?")) return;
+        await window.spfc.from("patrocinios").delete().eq("id", btn.dataset.del);
+        loadPatrocinios();
+        loadResumen();
+      }));
+  }
+
+  patroForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("patro-form-status");
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("patrocinios").insert({
+      nombre: document.getElementById("pt-nombre").value.trim(),
+      pack: document.getElementById("pt-pack").value.trim() || null,
+      importe: Number(document.getElementById("pt-importe").value),
+      fecha: document.getElementById("pt-fecha").value,
+      notas: document.getElementById("pt-notas").value.trim() || null,
+    });
+    if (error) { status.textContent = "Error: " + error.message; return; }
+    patroFormCard.style.display = "none";
+    loadPatrocinios();
+    loadResumen();
+  });
+
+  /* ── Gastos ── */
+  const gastoFormCard = document.getElementById("gasto-form-card");
+  const gastoForm = document.getElementById("gasto-form");
+  document.getElementById("new-gasto-btn").addEventListener("click", () => {
+    gastoForm.reset();
+    document.getElementById("g-fecha").value = hoy();
+    document.getElementById("gasto-form-status").textContent = "";
+    gastoFormCard.style.display = "block";
+    gastoFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("gasto-cancel-btn").addEventListener("click", () => (gastoFormCard.style.display = "none"));
+
+  async function loadGastos() {
+    const body = document.getElementById("gasto-body");
+    const { data, error } = await window.spfc.from("gastos").select("*").order("fecha", { ascending: false });
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4">Todavía no hay gastos registrados.</td></tr>'; return; }
+    body.innerHTML = data.map((g) => `
+      <tr>
+        <td>${escapeHtml(g.concepto)}</td>
+        <td>${eur(g.importe)}</td>
+        <td>${fmtFecha(g.fecha)}</td>
+        <td>${g.notas ? escapeHtml(g.notas) : "—"}</td>
+        <td class="actions"><button class="btn-icon danger" data-del="${g.id}" type="button">✕</button></td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-del]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar este gasto?")) return;
+        await window.spfc.from("gastos").delete().eq("id", btn.dataset.del);
+        loadGastos();
+        loadResumen();
+      }));
+  }
+
+  gastoForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("gasto-form-status");
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("gastos").insert({
+      concepto: document.getElementById("g-concepto").value.trim(),
+      importe: Number(document.getElementById("g-importe").value),
+      fecha: document.getElementById("g-fecha").value,
+      notas: document.getElementById("g-notas").value.trim() || null,
+    });
+    if (error) { status.textContent = "Error: " + error.message; return; }
+    gastoFormCard.style.display = "none";
+    loadGastos();
+    loadResumen();
+  });
+
+  await Promise.all([loadResumen(), loadPatrocinios(), loadGastos()]);
+})();
+</script>
+</body>
+</html>

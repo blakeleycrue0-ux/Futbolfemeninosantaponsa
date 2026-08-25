@@ -427,8 +427,14 @@
     document.getElementById("stat-pagadas").textContent = inscripciones.filter((i) => i.estado === "pagado").length;
     document.getElementById("stat-registro-pendiente").textContent = inscripciones.filter((i) => i.confirmada_en && !i.registro_completado_en).length;
 
-    const { data: pagosPagados } = await window.spfc.from("inscripcion_pagos").select("importe").eq("estado", "pagado");
-    const recaudado = (pagosPagados || []).reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
+    // No cuenta el dinero de inscripciones dadas de baja: "Recaudado" debe
+    // reflejar las inscripciones activas ahora mismo, no arrastrar cuotas
+    // ya pagadas de familias que después cancelaron.
+    const idsCancelados = new Set(inscripciones.filter((i) => i.estado === "cancelado").map((i) => i.id));
+    const { data: pagosPagados } = await window.spfc.from("inscripcion_pagos").select("importe, inscripcion_id").eq("estado", "pagado");
+    const recaudado = (pagosPagados || [])
+      .filter((p) => !idsCancelados.has(p.inscripcion_id))
+      .reduce((sum, p) => sum + (Number(p.importe) || 0), 0);
     document.getElementById("stat-recaudado").textContent = recaudado.toLocaleString("es-ES") + " €";
   }
 

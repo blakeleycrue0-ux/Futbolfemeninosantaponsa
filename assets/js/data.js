@@ -65,7 +65,7 @@ const SPFC_DATA = (function () {
     async upcomingMatch(teamId) {
       const list = await safe(
         (c) => {
-          let q = c.from("matches").select("*").eq("estado", "programado").order("fecha").limit(1);
+          let q = c.from("matches").select("*, teams(nombre, categoria)").eq("estado", "programado").order("fecha").limit(1);
           if (teamId) q = q.eq("team_id", teamId);
           return q;
         },
@@ -77,7 +77,7 @@ const SPFC_DATA = (function () {
       limit = limit || 5;
       return safe(
         (c) => {
-          let q = c.from("matches").select("*").eq("estado", "jugado").order("fecha", { ascending: false }).limit(limit);
+          let q = c.from("matches").select("*, teams(nombre, categoria)").eq("estado", "jugado").order("fecha", { ascending: false }).limit(limit);
           if (teamId) q = q.eq("team_id", teamId);
           return q;
         },
@@ -86,12 +86,12 @@ const SPFC_DATA = (function () {
     },
     async allMatches(teamId) {
       return safe(
-        (c) => (teamId ? c.from("matches").select("*").eq("team_id", teamId).order("fecha", { ascending: false }) : c.from("matches").select("*").order("fecha", { ascending: false })),
+        (c) => (teamId ? c.from("matches").select("*, teams(nombre, categoria)").eq("team_id", teamId).order("fecha", { ascending: false }) : c.from("matches").select("*, teams(nombre, categoria)").order("fecha", { ascending: false })),
         teamId ? window.SPFC_FALLBACK.matches.filter((m) => m.team_id === teamId) : window.SPFC_FALLBACK.matches
       );
     },
     async matchById(id) {
-      const list = await safe((c) => c.from("matches").select("*").eq("id", id).limit(1), null);
+      const list = await safe((c) => c.from("matches").select("*, teams(nombre, categoria)").eq("id", id).limit(1), null);
       if (Array.isArray(list) && list[0]) return list[0];
       return window.SPFC_FALLBACK.matches.find((m) => m.id === id);
     },
@@ -237,7 +237,7 @@ function spfcMatchProtagonistHTML(match) {
 
   return `
     <div class="match-card match-hero">
-      <span class="match-card__comp">${match.tipo && match.tipo !== "Liga" ? match.tipo + " · " : ""}${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
+      <span class="match-card__comp">${match.teams && match.teams.categoria ? match.teams.categoria + " · " : ""}${match.tipo && match.tipo !== "Liga" ? match.tipo + " · " : ""}${match.competicion || ""}${match.jornada ? " · Jornada " + match.jornada : ""}</span>
       <div class="match-card__teams">
         <div class="match-team">
           <span class="match-team__crest">${spfcMatchCrest(esLocal, rivalName, match.rival_escudo_url)}</span>

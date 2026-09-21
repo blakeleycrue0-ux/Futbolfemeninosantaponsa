@@ -183,11 +183,13 @@ async function ejecutarSincronizacion() {
   // sesión válida y usarla en las dos peticiones siguientes — sin ella,
   // esta web antigua puede responder 200 con el cuerpo vacío.
   let cookie;
+  let diagnosticoInicio = "no se ha intentado";
   try {
     const inicio = await fetchHtml("https://www.ffib.es/");
     cookie = inicio.setCookie || undefined;
+    diagnosticoInicio = `${inicio.html.length} caracteres, cookie ${cookie ? "recibida" : "NO recibida"}`;
   } catch (err) {
-    // Si falla, seguimos sin cookie — puede que no haga falta.
+    diagnosticoInicio = `error: ${err.message}`;
   }
 
   // --- Clasificación ---
@@ -195,7 +197,7 @@ async function ejecutarSincronizacion() {
     const { html, setCookie } = await fetchHtml(clasifUrl, cookie);
     if (setCookie) cookie = setCookie;
     const standings = parseClasificacion(html);
-    if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido — " + diagnosticoHtml(html, cheerio.load(html)));
+    if (!standings.length) throw new Error("Tabla de clasificación vacía o formato no reconocido — " + diagnosticoHtml(html, cheerio.load(html)) + ` · portada: ${diagnosticoInicio}`);
 
     const rows = standings.map((s) => ({
       team_id: teamId,
@@ -240,7 +242,7 @@ async function ejecutarSincronizacion() {
         ownMatches = ownMatches.concat(delClub);
       }
     }
-    if (!ownMatches.length) throw new Error("Ninguna jornada con partidos del club — " + ultimoDiagnostico);
+    if (!ownMatches.length) throw new Error("Ninguna jornada con partidos del club — " + ultimoDiagnostico + ` · portada: ${diagnosticoInicio}`);
 
     let upserted = 0;
     for (const m of ownMatches) {

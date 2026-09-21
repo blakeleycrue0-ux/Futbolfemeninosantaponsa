@@ -280,7 +280,14 @@
     status.textContent = "Sincronizando…";
     try {
       const res = await fetch("/.netlify/functions/ffib-sync-manual");
-      status.textContent = res.ok ? "Sincronización completada." : `Terminado con avisos (código ${res.status}).`;
+      const json = await res.json().catch(() => null);
+      if (res.status === 200) {
+        status.textContent = "Sincronización completada sin errores.";
+      } else if (json && Array.isArray(json.errors) && json.errors.length) {
+        status.textContent = "Terminado con errores — mira el mensaje en la tabla de abajo: " + json.errors.join(" · ");
+      } else {
+        status.textContent = `Terminado con avisos (código ${res.status}) — mira la tabla de abajo.`;
+      }
     } catch (err) {
       status.textContent = "Error al llamar a la función: " + err.message;
     }

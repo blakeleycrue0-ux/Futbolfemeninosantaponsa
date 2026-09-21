@@ -185,8 +185,9 @@
     protagonistaMatch.innerHTML = "";
     const all = await SPFC_DATA.allMatches(teamId);
     const list = Array.isArray(all) ? all : [];
-    const proximos = list.filter((m) => m.estado === "programado").sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+    const proximosTodos = list.filter((m) => m.estado === "programado").sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
     const jugados = list.filter((m) => m.estado === "jugado").sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+    const proximos = spfcProximoPorEquipo(proximosTodos);
     renderProximos(proximos);
     renderResultados(jugados);
     if (proximos.length) {
@@ -196,10 +197,14 @@
 
     // Repinta cada minuto para que un partido pase a "En vivo" solo,
     // en cuanto llega su hora, sin recargar la página ni pedir datos otra vez.
+    // También hace que, pasadas un par de horas de un partido sin marcar
+    // como jugado, deje de mostrarse y aparezca en su lugar el siguiente
+    // de ese mismo equipo — para no enseñar de golpe toda la temporada.
     if (liveRefreshTimer) clearInterval(liveRefreshTimer);
     liveRefreshTimer = setInterval(() => {
-      renderProximos(proximos);
-      if (proximos.length) protagonistaMatch.innerHTML = spfcMatchProtagonistHTML(proximos[0]);
+      const proximosAhora = spfcProximoPorEquipo(proximosTodos);
+      renderProximos(proximosAhora);
+      if (proximosAhora.length) protagonistaMatch.innerHTML = spfcMatchProtagonistHTML(proximosAhora[0]);
     }, 60000);
   }
 

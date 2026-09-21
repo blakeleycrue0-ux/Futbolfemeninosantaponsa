@@ -65,13 +65,18 @@ const SPFC_DATA = (function () {
     async upcomingMatch(teamId) {
       const list = await safe(
         (c) => {
-          let q = c.from("matches").select("*, teams(nombre, categoria)").eq("estado", "programado").order("fecha").limit(1);
+          let q = c.from("matches").select("*, teams(nombre, categoria)").eq("estado", "programado").order("fecha").limit(8);
           if (teamId) q = q.eq("team_id", teamId);
           return q;
         },
         window.SPFC_FALLBACK.matches.filter((m) => m.estado === "programado" && (!teamId || m.team_id === teamId))
       );
-      return Array.isArray(list) ? list[0] : list;
+      if (!Array.isArray(list)) return list;
+      // Se salta los que ya deberían estar jugados (y su margen pasado)
+      // pero nadie ha marcado el resultado todavía — así no se enseña
+      // como "próximo" un partido que ya es pasado, sin tener que
+      // esperar a que se actualice a mano.
+      return list.find((m) => spfcPartidoVigente(m)) || list[0];
     },
     async recentResults(teamId, limit) {
       limit = limit || 5;
@@ -196,6 +201,37 @@ function spfcResultLabel(m) {
   if (m.goles_equipo > m.goles_rival) return "W";
   if (m.goles_equipo < m.goles_rival) return "L";
   return "D";
+}
+
+// Un partido "programado" se sigue enseñando como el próximo de su
+// equipo mientras no haya pasado su margen: 2 horas desde el inicio si
+// se conoce la hora, o hasta el final del mismo día si todavía no se ha
+// publicado la hora ("—"). Pasado ese margen sin que nadie lo haya
+// marcado como jugado, deja de contar como "vigente" — así, al cargar
+// de golpe toda una temporada, no se enseñan de golpe todos los
+// partidos: van apareciendo de uno en uno según toca.
+function spfcPartidoVigente(m) {
+  if (!m || !m.fecha) return true;
+  const inicio = new Date(m.fecha + "T" + (m.hora || "23:59:59"));
+  if (isNaN(inicio.getTime())) return true;
+  const margenMs = m.hora ? SPFC_DURACION_PARTIDO_MS : 0;
+  return Date.now() <= inicio.getTime() + margenMs;
+}
+
+// De una lista de partidos "programado" ya ordenada por fecha ascendente,
+// se queda con el primero vigente de cada equipo (team_id) — el resto de
+// esa temporada se queda cargado en la base de datos pero oculto hasta
+// que le toque.
+function spfcProximoPorEquipo(programados) {
+  const vistos = new Set();
+  const resultado = [];
+  for (const m of programados) {
+    if (vistos.has(m.team_id)) continue;
+    if (!spfcPartidoVigente(m)) continue;
+    vistos.add(m.team_id);
+    resultado.push(m);
+  }
+  return resultado;
 }
 
 /*

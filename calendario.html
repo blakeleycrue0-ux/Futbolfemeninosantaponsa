@@ -121,7 +121,7 @@
       const enVivo = spfcEsEnVivo(m);
       return `
       <div class="match-card">
-        <span class="match-card__comp">${m.tipo && m.tipo !== "Liga" ? m.tipo + " · " : ""}${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
+        <span class="match-card__comp">${m.teams && m.teams.categoria ? m.teams.categoria + " · " : ""}${m.tipo && m.tipo !== "Liga" ? m.tipo + " · " : ""}${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
         <div class="match-card__teams">
           <div class="match-team">
             <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>
@@ -152,7 +152,7 @@
       const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : "Empate";
       return `
       <a href="partido.html?id=${encodeURIComponent(m.id)}" class="match-card">
-        <span class="match-card__comp">${m.tipo && m.tipo !== "Liga" ? m.tipo + " · " : ""}${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
+        <span class="match-card__comp">${m.teams && m.teams.categoria ? m.teams.categoria + " · " : ""}${m.tipo && m.tipo !== "Liga" ? m.tipo + " · " : ""}${m.competicion || ""}${m.jornada ? " · Jornada " + m.jornada : ""}</span>
         <div class="match-card__teams">
           <div class="match-team">
             <span class="match-team__crest">${crestHtml(esLocal, m.rival, m.rival_escudo_url)}</span>

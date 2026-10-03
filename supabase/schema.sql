@@ -833,3 +833,230 @@ create policy "gastos_admin_all" on gastos for all using (is_app_admin()) with c
 
 -- Recuerda añadir tu email de administrador, p.ej.:
 -- insert into app_admins (email) values ('secretariaspfc@gmail.com');
+
+-- ============================================================================
+-- SOCIOS, ABONOS Y ENTRADAS (control de acceso al campo)
+-- Sistema nuevo e independiente de `members` (formulario de interés) y de
+-- socios-gate.js (ese solo exige "haber iniciado sesión" para ver vídeos).
+-- Aquí "socio"/"abono"/"entrada" son productos de pago de verdad, cobrados
+-- por Stripe, que generan una credencial QR validable en la puerta del
+-- campo. Ver netlify/functions/create-checkout-session.js,
+-- stripe-webhook.js y scan-access.js.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- app_admins: añade rol. "admin" = acceso total al panel (como hasta ahora).
+-- "staff" = solo puede usar el scanner de acceso (staff/acceso.html), no
+-- puede entrar en el resto del admin. is_app_admin() ya existente sigue
+-- exigiendo 'admin'; is_app_staff() es nueva y vale para cualquiera de las
+-- dos filas, admin o staff.
+-- ----------------------------------------------------------------------------
+alter table app_admins add column if not exists role text not null default 'admin';
+alter table app_admins drop constraint if exists app_admins_role_check;
+alter table app_admins add constraint app_admins_role_check check (role in ('admin','staff'));
+
+create or replace function is_app_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from app_admins a
+    where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+      and a.role = 'admin'
+  );
+$$;
+
+create or replace function is_app_staff()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from app_admins a
+    where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+
+-- ----------------------------------------------------------------------------
+-- ticket_products
+-- Catálogo de socios/abonos/entradas, gestionado desde admin/ticketing.html.
+-- scope = 'club' (socio/abono de todo el club, cualquier partido en casa de
+-- cualquier equipo da acceso) o 'team' (ligado a un equipo concreto).
+-- capacity/capacity_sold solo tienen sentido real para 'entrada' (aforo de
+-- un partido concreto) — se dejan disponibles también para 'abono' por si
+-- algún año hay que limitar abonos, pero 'socio' normalmente se deja sin
+-- aforo (capacity = null).
+-- ----------------------------------------------------------------------------
+create table if not exists ticket_products (
+  id uuid primary key default gen_random_uuid(),
+  tipo text not null check (tipo in ('socio','abono','entrada')),
+  nombre text not null,
+  descripcion text,
+  precio numeric not null check (precio >= 0),
+  temporada text not null default '2026/27',
+  activo boolean not null default true,
+  sales_start timestamptz,
+  sales_end timestamptz,
+  capacity int,
+  capacity_sold int not null default 0,
+  scope text not null default 'club' check (scope in ('club','team')),
+  team_id uuid references teams(id),
+  match_id uuid references matches(id),
+  creado_en timestamptz not null default now(),
+  constraint ticket_products_capacity_chk check (capacity is null or (capacity_sold >= 0 and capacity_sold <= capacity)),
+  constraint ticket_products_entrada_match_chk check ((tipo = 'entrada') = (match_id is not null)),
+  constraint ticket_products_team_scope_chk check (scope = 'club' or team_id is not null)
+);
+
+create index if not exists ticket_products_tipo_idx on ticket_products(tipo) where activo;
+create index if not exists ticket_products_match_idx on ticket_products(match_id) where match_id is not null;
+
+alter table ticket_products enable row level security;
+create policy "ticket_products_public_read" on ticket_products for select using (activo = true or is_app_admin());
+create policy "ticket_products_admin_write" on ticket_products for all using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- orders
+-- Un pedido = un producto, pagado por Stripe. Se crea en 'pendiente' desde
+-- create-checkout-session.js (service_role) antes de abrir el Checkout de
+-- Stripe; solo stripe-webhook.js (service_role) lo pasa a 'pagado' tras
+-- verificar la firma del webhook — nunca desde el navegador, por eso no
+-- hay política de insert/update pública, solo lectura de lo propio.
+-- ----------------------------------------------------------------------------
+create table if not exists orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id uuid not null references ticket_products(id),
+  estado text not null default 'pendiente' check (estado in ('pendiente','pagado','fallido','cancelado','reembolsado')),
+  stripe_checkout_session_id text unique,
+  stripe_payment_intent_id text,
+  importe numeric not null,
+  creado_en timestamptz not null default now(),
+  actualizado_en timestamptz not null default now()
+);
+
+create index if not exists orders_user_idx on orders(user_id);
+create index if not exists orders_estado_idx on orders(estado);
+
+alter table orders enable row level security;
+create policy "orders_owner_read" on orders for select using (auth.uid() = user_id or is_app_admin());
+create policy "orders_admin_update" on orders for update using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- memberships (socio/abono ya pagado)
+-- member_number es solo un número bonito para mostrar en el carnet — nunca
+-- es la credencial de acceso (eso vive en access_credentials.token).
+-- ----------------------------------------------------------------------------
+create sequence if not exists membership_number_seq start 1;
+
+create table if not exists memberships (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id uuid not null references ticket_products(id),
+  member_number int not null default nextval('membership_number_seq'),
+  estado text not null default 'activa' check (estado in ('activa','cancelada','caducada')),
+  temporada text not null,
+  team_id uuid references teams(id),
+  creado_en timestamptz not null default now()
+);
+
+create unique index if not exists memberships_member_number_idx on memberships(member_number);
+create index if not exists memberships_user_idx on memberships(user_id);
+
+alter table memberships enable row level security;
+create policy "memberships_owner_read" on memberships for select using (auth.uid() = user_id or is_app_admin());
+create policy "memberships_admin_update" on memberships for update using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- tickets (entrada de partido ya pagada)
+-- ----------------------------------------------------------------------------
+create table if not exists tickets (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  match_id uuid not null references matches(id),
+  estado text not null default 'valido' check (estado in ('valido','cancelado','reembolsado')),
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists tickets_user_idx on tickets(user_id);
+create index if not exists tickets_match_idx on tickets(match_id);
+
+alter table tickets enable row level security;
+create policy "tickets_owner_read" on tickets for select using (auth.uid() = user_id or is_app_admin());
+create policy "tickets_admin_update" on tickets for update using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- access_credentials
+-- La credencial real de acceso: un token opaco de alta entropía (ver
+-- crypto.randomBytes en stripe-webhook.js), nunca el DNI/email/id de nadie.
+-- El QR solo codifica este token. Ligada a una membership O a un ticket,
+-- nunca a los dos (mismo patrón que convocatorias más arriba en este
+-- fichero). Solo la crea stripe-webhook.js (service_role).
+-- ----------------------------------------------------------------------------
+create table if not exists access_credentials (
+  id uuid primary key default gen_random_uuid(),
+  token text not null unique,
+  membership_id uuid references memberships(id) on delete cascade,
+  ticket_id uuid references tickets(id) on delete cascade,
+  creado_en timestamptz not null default now(),
+  constraint access_credentials_un_solo_origen check (
+    (membership_id is not null and ticket_id is null) or (membership_id is null and ticket_id is not null)
+  )
+);
+
+create unique index if not exists access_credentials_membership_idx on access_credentials(membership_id) where membership_id is not null;
+create unique index if not exists access_credentials_ticket_idx on access_credentials(ticket_id) where ticket_id is not null;
+
+alter table access_credentials enable row level security;
+create policy "access_credentials_owner_read" on access_credentials for select using (
+  is_app_admin()
+  or exists (select 1 from memberships m where m.id = membership_id and m.user_id = auth.uid())
+  or exists (select 1 from tickets t where t.id = ticket_id and t.user_id = auth.uid())
+);
+
+-- ----------------------------------------------------------------------------
+-- match_access_log
+-- Una fila = un acceso concedido de verdad (credencial + partido). El
+-- unique(credential_id, match_id) es lo que impide que la misma entrada se
+-- use dos veces para el mismo partido — scan-access.js inserta con
+-- "on conflict do nothing returning *": si no devuelve fila, es que ya
+-- estaba usada. Solo escribe scan-access.js (service_role); el admin y el
+-- staff solo pueden leer, para ver el registro de accesos.
+-- ----------------------------------------------------------------------------
+create table if not exists match_access_log (
+  id uuid primary key default gen_random_uuid(),
+  credential_id uuid not null references access_credentials(id),
+  match_id uuid not null references matches(id),
+  staff_email text,
+  scanned_at timestamptz not null default now(),
+  unique (credential_id, match_id)
+);
+
+create index if not exists match_access_log_match_idx on match_access_log(match_id);
+
+alter table match_access_log enable row level security;
+create policy "match_access_log_staff_read" on match_access_log for select using (is_app_staff());
+
+-- ----------------------------------------------------------------------------
+-- stripe_webhook_events
+-- Idempotencia del webhook: antes de procesar un evento se intenta insertar
+-- su id aquí; si ya existía (conflicto de clave primaria), el evento no se
+-- vuelve a procesar aunque Stripe lo reenvíe. Sin ninguna política pública
+-- — solo lo toca stripe-webhook.js con service_role.
+-- ----------------------------------------------------------------------------
+create table if not exists stripe_webhook_events (
+  event_id text primary key,
+  procesado_en timestamptz not null default now()
+);
+
+alter table stripe_webhook_events enable row level security;
+
+-- Recuerda añadir al personal de control de acceso en la puerta, p.ej.:
+-- insert into app_admins (email, role) values ('alguien@gmail.com', 'staff');

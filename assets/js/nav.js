@@ -3,18 +3,16 @@
     el.textContent = new Date().getFullYear();
   });
 
-  // Enlace de "Mi cuenta" en el menú: se convierte en "Mi FFSP" (al carné/
-  // entradas/socio) en cuanto hay sesión iniciada — para que nunca vuelva a
-  // costar encontrar el área de la socia. Degrada bien sin JS/Supabase:
-  // el marcado ya trae "Iniciar sesión" por defecto.
+  // Bloque de cuenta en el menú: "Iniciar sesión" si no hay sesión, o
+  // "Mi FFSP" / "Mi carné" / "Mis entradas" si la hay — para que el área
+  // de la socia nunca vuelva a costar encontrarla. El marcado ya trae
+  // "Iniciar sesión" visible y el resto oculto (atributo hidden) por
+  // defecto, así que degrada bien sin JS/Supabase.
   if (window.spfc) {
     window.spfc.auth.getSession().then(({ data: { session } }) => {
-      document.querySelectorAll("[data-session-link]").forEach((a) => {
-        if (session) {
-          a.textContent = "Mi FFSP";
-          a.href = "mi-ffsp.html";
-        }
-      });
+      const dentro = !!session;
+      document.querySelectorAll('[data-auth-link="in"]').forEach((a) => { a.hidden = !dentro; });
+      document.querySelectorAll('[data-auth-link="out"]').forEach((a) => { a.hidden = dentro; });
     });
   }
 

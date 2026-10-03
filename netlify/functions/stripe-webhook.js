@@ -79,16 +79,16 @@ exports.handler = async function (event) {
       })
       .eq("id", order.id);
 
-    // Aforo: incremento atómico (una sola query con WHERE sobre la propia
-    // condición) — si dos pagos se confirman a la vez, como mucho uno de
-    // los dos incrementos puede colarse por fila bloqueada; no hace falta
-    // un lock explícito porque es una única instrucción UPDATE.
+    // Aforo: el incremento real (capacity_sold = capacity_sold + 1) lo hace
+    // la función reservar_aforo() dentro de la misma instrucción SQL — así
+    // sí es atómico de verdad incluso con dos webhooks casi simultáneos
+    // (ver el comentario de la función en schema.sql). Si ya no quedaba
+    // aforo, el pago ya se ha cobrado de todas formas (Stripe ya lo ha
+    // confirmado), así que se emite la entrada igualmente en vez de dejar
+    // a alguien que ya ha pagado sin nada — es una decisión de negocio
+    // deliberada para ese caso límite, no un fallo.
     if (product.capacity != null) {
-      await supabase
-        .from("ticket_products")
-        .update({ capacity_sold: product.capacity_sold + 1 })
-        .eq("id", product.id)
-        .lt("capacity_sold", product.capacity);
+      await supabase.rpc("reservar_aforo", { p_product_id: product.id });
     }
 
     let credencialMembershipId = null;

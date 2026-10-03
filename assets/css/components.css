@@ -413,6 +413,26 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .hdr.scrolled .burger { color: var(--ink); }
 .hdr.scrolled .logo-wrap .logo-sub { color: var(--text-on-cream-muted); }
 
+/*
+  .hdr--light: para toda página que NO arranca sobre una foto/hero oscuro
+  real (es decir, todas menos index.html) — el header nunca debe empezar
+  transparente con texto blanco ahí, porque debajo no hay nada oscuro de
+  verdad (antes quedaba texto blanco sobre fondo blanco/claro, invisible).
+  Aplica directamente el aspecto de "scrolled" desde el primer pintado,
+  sin esperar a ningún evento de scroll — header.html y header-cuenta.html
+  (usados por todas las páginas salvo index.html) llevan esta clase.
+*/
+.hdr.hdr--light {
+  background: var(--paper);
+  border-bottom: 1px solid rgba(10,10,10,0.1);
+}
+.hdr.hdr--light .logo-wrap .logo-text,
+.hdr.hdr--light .hdr-nav a,
+.hdr.hdr--light .burger {
+  color: var(--ink);
+}
+.hdr.hdr--light .logo-wrap .logo-sub { color: var(--text-on-cream-muted); }
+
 .logo-wrap { display: flex; align-items: center; gap: 11px; text-decoration: none; }
 .logo-wrap .logo-crest { height: 44px; width: auto; flex-shrink: 0; }
 .logo-wrap .logo-text { font-family: var(--font-display); font-size: 12px; font-weight: 900; letter-spacing: -0.02em; color: #fff; line-height: 1; transition: color 0.4s; }

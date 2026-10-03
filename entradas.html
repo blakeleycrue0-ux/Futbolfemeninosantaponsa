@@ -5,56 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Entradas — Fútbol Femenino Santa Ponça</title>
 <meta name="description" content="Compra tu abono de temporada o la entrada de un partido concreto del Fútbol Femenino Santa Ponça.">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <script src="assets/js/ga4.js"></script>
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
-<style>
-  .tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.4rem; }
-  .tk-card { background: var(--paper); border: 1px solid rgba(10,10,10,0.12); border-radius: var(--radius-lg); padding: 1.6rem; display: flex; flex-direction: column; }
-  .tk-card h3 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 0.4rem; }
-  .tk-card p { font-size: 0.9rem; color: var(--text-on-cream-muted); flex-grow: 1; }
-  .tk-card .tk-meta { font-size: 0.8rem; color: var(--text-on-cream-muted); margin-bottom: 0.4rem; }
-  .tk-price { font-family: var(--font-display); font-weight: 900; font-size: 1.8rem; color: var(--accent-dark); margin: 0.6rem 0; }
-  .tk-empty { color: var(--text-on-cream-muted); }
-  .tk-section-title { margin-top: 2.4rem; }
-</style>
+<link rel="stylesheet" href="assets/css/ticketing.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
 <!--#include header-->
-<main id="main">
-  <section class="hero hero--sub">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="container hero__content">
-      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
-      <h1 class="hero__title">Entradas</h1>
+<main id="main" class="tk-page">
+  <div class="container tk-two-col">
+    <div class="tk-pagehead">
+      <span class="tk-eyebrow">Entradas</span>
+      <h1>Próximos partidos en casa.</h1>
+      <div id="tk-abonos" style="margin-top:1.2rem;"></div>
     </div>
-  </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Abonos</span>
-          <h2 class="tk-section-title">Abono de temporada</h2>
-        </div>
+    <div>
+      <div class="hub-section__head">
+        <h2>Entradas</h2>
       </div>
-      <div id="tk-grid-abonos" class="tk-grid"><p class="tk-empty">Cargando…</p></div>
-
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Partido a partido</span>
-          <h2 class="tk-section-title">Entradas sueltas</h2>
-        </div>
+      <div class="fixture-list" id="tk-fixtures">
+        <p class="tk-empty">Cargando…</p>
       </div>
-      <div id="tk-grid-entradas" class="tk-grid"><p class="tk-empty">Cargando…</p></div>
     </div>
-  </section>
+  </div>
 </main>
 
 <!--#include footer-->
@@ -66,32 +46,44 @@
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
-  const gridAbonos = document.getElementById("tk-grid-abonos");
-  const gridEntradas = document.getElementById("tk-grid-entradas");
+  const abonosEl = document.getElementById("tk-abonos");
+  const fixturesEl = document.getElementById("tk-fixtures");
   if (!window.spfc) {
-    gridAbonos.innerHTML = gridEntradas.innerHTML = '<p class="tk-empty">La venta de entradas no está disponible ahora mismo.</p>';
+    fixturesEl.innerHTML = '<p class="tk-empty">La venta de entradas no está disponible ahora mismo.</p>';
     return;
   }
-
-  function cardHtml(p) {
-    const partido = p.matches ? `<div class="tk-meta">vs ${p.matches.rival} — ${SPFC_TICKETING.fmtFecha(p.matches.fecha)}</div>` : "";
-    const equipo = p.teams ? `<div class="tk-meta">${p.teams.nombre}</div>` : "";
-    return `
-    <div class="tk-card">
-      ${partido}${equipo}
-      <h3>${p.nombre}</h3>
-      <p>${p.descripcion || ""}</p>
-      <div class="tk-price">${SPFC_TICKETING.fmtEuros(p.precio)}</div>
-      ${p.capacity != null ? `<p class="tk-meta">${Math.max(p.capacity - (p.capacity_sold || 0), 0)} entradas disponibles</p>` : ""}
-      <a class="btn btn-primary btn-block" href="checkout.html?producto=${p.id}">Comprar</a>
-    </div>`;
-  }
+  const esc = SPFC_TICKETING.escapeHtml;
 
   const abonos = await SPFC_TICKETING.productosActivos(["abono"]);
-  gridAbonos.innerHTML = abonos.length ? abonos.map(cardHtml).join("") : '<p class="tk-empty">Todavía no hay ningún abono a la venta.</p>';
+  abonosEl.innerHTML = abonos.length ? abonos.map((p) => `
+    <div class="membership-product">
+      <div class="membership-product__kicker">ABONO <span>${esc((p.temporada || "").replace("20", ""))}</span></div>
+      <p class="membership-product__temporada">${esc(p.teams ? p.teams.nombre : "Todo el club")} · Temporada completa</p>
+      <div class="membership-product__price-row">
+        <div class="membership-product__price">${SPFC_TICKETING.fmtEuros(p.precio)}<small>${esc(p.nombre)}</small></div>
+        <a class="tk-btn tk-btn--dark" href="checkout.html?producto=${p.id}">Comprar abono</a>
+      </div>
+    </div>`).join("") : "";
 
   const entradas = (await SPFC_TICKETING.productosActivos(["entrada"])).filter((p) => p.capacity == null || p.capacity_sold < p.capacity);
-  gridEntradas.innerHTML = entradas.length ? entradas.map(cardHtml).join("") : '<p class="tk-empty">Todavía no hay entradas de partido a la venta.</p>';
+  if (!entradas.length) {
+    fixturesEl.innerHTML = '<p class="tk-empty">Todavía no hay entradas de partido a la venta.</p>';
+    return;
+  }
+  fixturesEl.innerHTML = entradas.map((p) => {
+    const m = p.matches || {};
+    const teams = `FFSP <span style="color:var(--text-on-cream-muted);font-weight:400;">vs</span> ${esc(m.rival || "")}`;
+    const meta = [p.teams ? p.teams.nombre : null, m.hora ? m.hora.slice(0, 5) + "h" : null].filter(Boolean).join(" · ");
+    return SPFC_TICKETING.fixtureRowHTML({
+      href: `checkout.html?producto=${p.id}`,
+      dow: SPFC_TICKETING.fmtDow(m.fecha),
+      dom: SPFC_TICKETING.fmtFechaCorta(m.fecha),
+      teams,
+      meta,
+      priceLabel: "Desde " + SPFC_TICKETING.fmtEuros(p.precio),
+      ctaLabel: "Comprar →",
+    });
+  }).join("");
 })();
 </script>
 <script src="assets/js/search.js" defer></script>

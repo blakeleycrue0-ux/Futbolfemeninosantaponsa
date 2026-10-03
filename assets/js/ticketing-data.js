@@ -95,4 +95,103 @@ window.SPFC_TICKETING = {
   fmtFecha(f) {
     return f ? new Date(f).toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long" }) : "";
   },
+
+  fmtFechaCorta(f) {
+    return f ? new Date(f).toLocaleDateString("es-ES", { day: "2-digit", month: "short" }).replace(".", "") : "";
+  },
+
+  fmtDow(f) {
+    return f ? new Date(f).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "") : "";
+  },
+
+  nombreTitular(user) {
+    if (!user) return "";
+    return (user.user_metadata && user.user_metadata.nombre) || user.email || "";
+  },
+
+  escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  },
+
+  /*
+    ------------------------------------------------------------------------
+    A partir de aquí, helpers de PRESENTACIÓN (fase 2) — solo construyen
+    HTML a partir de datos ya cargados, sin tocar Supabase. Reutilizados por
+    mi-carnet.html, mi-ffsp.html, entradas.html, entrada.html e index.html.
+    ------------------------------------------------------------------------
+  */
+
+  // membership: fila de `memberships` con join a ticket_products(nombre,tipo) y teams(nombre).
+  membershipCardHTML(membership, nombreTitular) {
+    const esc = this.escapeHtml;
+    const temporadaCorta = (membership.temporada || "").replace("20", "");
+    return `
+      <div class="membership-card">
+        <div class="membership-card__top">
+          <img class="membership-card__crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+          <span class="membership-card__temporada">${esc(temporadaCorta)}</span>
+        </div>
+        <div>
+          <div class="membership-card__tipo">${membership.ticket_products.tipo === "socio" ? "Socio" : "Abono"}</div>
+          <div class="membership-card__nombre">${esc(nombreTitular)}</div>
+        </div>
+        <div class="membership-card__foot">
+          <div>
+            <div class="membership-card__label">Nº socio</div>
+            <div class="membership-card__numero">${String(membership.member_number).padStart(4, "0")}</div>
+          </div>
+          <div class="membership-card__scope">${membership.teams ? esc(membership.teams.nombre) : "Todo el club"}</div>
+        </div>
+      </div>`;
+  },
+
+  // Fila compacta para listas de partidos/entradas. opts: {href, fecha, teams, meta, priceLabel, ctaLabel}
+  fixtureRowHTML(opts) {
+    const esc = this.escapeHtml;
+    return `
+      <a class="fixture-row" href="${esc(opts.href)}">
+        <div class="fixture-row__date">
+          <span class="dow">${esc(opts.dow || "")}</span>
+          <span class="dom">${esc(opts.dom || "")}</span>
+        </div>
+        <div class="fixture-row__main">
+          <div class="fixture-row__teams">${opts.teams}</div>
+          <div class="fixture-row__meta">${esc(opts.meta || "")}</div>
+        </div>
+        <div class="fixture-row__action">
+          <div class="fixture-row__price">${esc(opts.priceLabel || "")}</div>
+          <div class="fixture-row__cta">${esc(opts.ctaLabel || "Ver →")}</div>
+        </div>
+      </a>`;
+  },
+
+  // Próximo partido en casa al que da acceso una membresía activa (misma
+  // regla de alcance que netlify/functions/scan-access.js: team_id null =
+  // vale para cualquier equipo, team_id fijo = solo ese equipo). Solo
+  // lectura/presentación — no decide ningún acceso real.
+  async proximoPartidoElegible(membership) {
+    if (!window.spfc || !membership) return null;
+    let query = window.spfc.from("matches").select("id, rival, fecha, hora, team_id")
+      .eq("condicion", "local").eq("estado", "programado")
+      .gte("fecha", new Date().toISOString().slice(0, 10))
+      .order("fecha", { ascending: true }).limit(1);
+    if (membership.team_id) query = query.eq("team_id", membership.team_id);
+    const { data } = await query;
+    return (data && data[0]) || null;
+  },
+
+  // Módulo compacto de carné (homepage / hub). opts: {nombre, numero, scope}
+  carnetModuleHTML(opts) {
+    const esc = this.escapeHtml;
+    return `
+      <a class="carnet-module" href="mi-carnet.html">
+        <img class="carnet-module__crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+        <div class="carnet-module__body">
+          <div class="carnet-module__eyebrow">Tu carné · Socio ${esc(opts.temporada || "")}</div>
+          <div class="carnet-module__nombre">${esc(opts.nombre)}</div>
+          <div class="carnet-module__numero">Nº ${String(opts.numero).padStart(4, "0")}</div>
+        </div>
+        <span class="carnet-module__cta">Ver carné →</span>
+      </a>`;
+  },
 };

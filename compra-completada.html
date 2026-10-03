@@ -3,55 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Compra completada — Fútbol Femenino Santa Ponça</title>
+<title>Compra confirmada — Fútbol Femenino Santa Ponça</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <script src="assets/js/ga4.js"></script>
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
-<style>
-  .cc-wrap { max-width: 520px; margin: 0 auto; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 2.2rem; text-align: center; }
-  @media (max-width: 620px) { .cc-wrap { padding: 1.6rem; } }
-  .cc-ok { color: var(--win); font-size: 2rem; }
-</style>
+<link rel="stylesheet" href="assets/css/ticketing.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
 <!--#include header-->
-<main id="main">
-  <section class="hero hero--sub">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="container hero__content">
-      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
-      <h1 class="hero__title">Gracias</h1>
+<main id="main" class="tk-page">
+  <div class="container confirm-box">
+    <div id="cc-esperando">
+      <p class="tk-empty">Confirmando tu pago con Stripe…</p>
+      <p id="cc-esperando-largo" style="display:none;font-size:0.82rem;color:var(--text-on-cream-muted);margin-top:0.6rem;">
+        Está tardando más de lo normal. Si ya has pagado, no te preocupes.
+      </p>
+      <button type="button" class="tk-btn tk-btn--outline" id="cc-reintentar-btn" style="display:none;margin-top:1rem;">Comprobar de nuevo</button>
     </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="cc-wrap">
-        <div id="cc-esperando">
-          <p>Estamos confirmando tu pago con Stripe… normalmente tarda solo unos segundos.</p>
-          <p id="cc-esperando-largo" style="display:none;font-size:0.86rem;color:var(--text-on-cream-muted);">
-            Está tardando más de lo normal. Si ya has pagado, no te preocupes — en cuanto Stripe nos confirme el
-            pago verás tu socio/entrada en "Mi FFSP". Puedes comprobarlo de nuevo:
-          </p>
-          <button type="button" class="btn btn-outline btn-sm" id="cc-reintentar-btn" style="display:none;margin-top:0.8rem;">Comprobar de nuevo</button>
-        </div>
-        <div id="cc-ok" style="display:none;">
-          <div class="cc-ok">✓</div>
-          <h2>Pago confirmado</h2>
-          <p id="cc-ok-detalle"></p>
-          <a class="btn btn-primary btn-block" id="cc-ver-btn" href="mi-ffsp.html" style="margin-top:1rem;">Ver mi socio/entrada</a>
-        </div>
-        <div id="cc-error" class="form-error" style="display:none;"></div>
-      </div>
+    <div id="cc-ok" style="display:none;">
+      <span class="confirm-box__eyebrow">Compra confirmada</span>
+      <h1 class="confirm-box__title">Bienvenido/a a FFSP.</h1>
+      <p id="cc-ok-detalle" class="tk-empty" style="margin-bottom:1.4rem;"></p>
+      <a class="tk-btn tk-btn--dark tk-btn--block" id="cc-ver-btn" href="mi-ffsp.html">Ver mi carné</a>
     </div>
-  </section>
+    <div id="cc-error" class="form-error" style="display:none;"></div>
+  </div>
 </main>
 
 <!--#include footer-->
@@ -86,11 +69,18 @@
       document.getElementById("cc-esperando").style.display = "none";
       document.getElementById("cc-ok").style.display = "block";
       const tipo = pedido.ticket_products.tipo;
-      document.getElementById("cc-ok-detalle").textContent = pedido.ticket_products.nombre;
       if (tipo === "entrada") {
+        document.getElementById("cc-ok-detalle").textContent = pedido.ticket_products.nombre;
         const { data: ticket } = await window.spfc.from("tickets").select("id").eq("order_id", orderId).single();
-        if (ticket) document.getElementById("cc-ver-btn").href = `entrada.html?id=${ticket.id}`;
+        if (ticket) {
+          document.getElementById("cc-ver-btn").href = `entrada.html?id=${ticket.id}`;
+          document.getElementById("cc-ver-btn").textContent = "Ver mi entrada";
+        }
       } else {
+        const { data: membership } = await window.spfc.from("memberships").select("member_number").eq("order_id", orderId).single();
+        document.getElementById("cc-ok-detalle").textContent = membership
+          ? "Socio Nº " + String(membership.member_number).padStart(4, "0")
+          : pedido.ticket_products.nombre;
         document.getElementById("cc-ver-btn").href = "mi-carnet.html";
       }
       return;

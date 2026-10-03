@@ -1159,3 +1159,32 @@ as $$
   where is_app_staff() and l.match_id = p_match_id
   order by l.scanned_at desc;
 $$;
+
+-- ----------------------------------------------------------------------------
+-- reservar_aforo: incremento ATÓMICO de verdad del aforo. La primera
+-- versión de stripe-webhook.js hacía
+-- `update ... set capacity_sold = <valor leído en JS> + 1 where ...`, y ese
+-- "+1" se calcula en Node, no en Postgres — bajo concurrencia real (dos
+-- webhooks casi a la vez) el segundo puede sobrescribir con un valor ya
+-- desactualizado y colarse por encima del aforo. Aquí el incremento
+-- (`capacity_sold + 1`) lo hace la propia instrucción SQL, dentro de la
+-- misma fila y el mismo UPDATE, así que sí es atómico de verdad.
+-- Devuelve true si ha podido reservar la plaza, false si no había aforo.
+-- ----------------------------------------------------------------------------
+create or replace function reservar_aforo(p_product_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_reservado boolean;
+begin
+  update ticket_products
+  set capacity_sold = capacity_sold + 1
+  where id = p_product_id
+    and (capacity is null or capacity_sold < capacity)
+  returning true into v_reservado;
+  return coalesce(v_reservado, false);
+end;
+$$;

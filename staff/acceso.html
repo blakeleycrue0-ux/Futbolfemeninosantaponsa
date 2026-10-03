@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control de acceso — Escáner</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+  html, body { height: 100%; }
+  body.admin { background: var(--ink); overflow: hidden; }
+  .sc-shell { display: flex; flex-direction: column; height: 100vh; color: var(--text-on-dark); }
+  .sc-top { padding: 0.9rem 1rem; display: flex; justify-content: space-between; align-items: center; background: var(--dark-2); }
+  .sc-top-match { font-size: 0.85rem; }
+  .sc-top-match strong { display: block; font-family: var(--font-display); }
+  .sc-video-wrap { flex: 1; position: relative; background: #000; overflow: hidden; }
+  video { width: 100%; height: 100%; object-fit: cover; }
+  .sc-frame { position: absolute; inset: 12% 12%; border: 3px solid rgba(255,255,255,0.6); border-radius: 12px; pointer-events: none; }
+  .sc-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+  .sc-result.valido { background: rgba(22,163,74,0.95); }
+  .sc-result.ya-usado { background: rgba(217,119,6,0.95); }
+  .sc-result.invalido { background: rgba(220,38,38,0.95); }
+  .sc-result-icono { font-size: 3.4rem; }
+  .sc-result-texto { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; margin: 0.6rem 0 0.2rem; }
+  .sc-result-sub { font-size: 0.95rem; opacity: 0.9; }
+  .sc-bottom { padding: 1rem; background: var(--dark-2); text-align: center; }
+  .sc-estado { font-size: 0.85rem; color: var(--text-on-dark-muted); min-height: 1.2em; }
+</style>
+</head>
+<body class="admin">
+<div class="sc-shell">
+  <div class="sc-top">
+    <div class="sc-top-match">
+      <strong id="sc-rival">Cargando partido…</strong>
+      <span id="sc-fecha"></span>
+    </div>
+    <a href="partido.html" class="btn btn-ghost-light btn-sm">Cambiar</a>
+  </div>
+
+  <div class="sc-video-wrap">
+    <video id="sc-video" playsinline autoplay muted></video>
+    <div class="sc-frame" id="sc-frame"></div>
+    <div class="sc-result" id="sc-result" style="display:none;">
+      <div class="sc-result-icono" id="sc-result-icono"></div>
+      <div class="sc-result-texto" id="sc-result-texto"></div>
+      <div class="sc-result-sub" id="sc-result-sub"></div>
+    </div>
+  </div>
+
+  <div class="sc-bottom">
+    <p class="sc-estado" id="sc-estado">Apunta la cámara al código QR.</p>
+    <button type="button" class="btn btn-primary btn-sm" id="sc-siguiente-btn" style="display:none;">Escanear siguiente</button>
+  </div>
+</div>
+
+<canvas id="sc-canvas" style="display:none;"></canvas>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/staff-auth.js"></script>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  const matchId = new URLSearchParams(location.search).get("match");
+  const estadoEl = document.getElementById("sc-estado");
+  if (!matchId) {
+    estadoEl.textContent = "Falta elegir un partido.";
+    return;
+  }
+
+  const { data: match } = await window.spfc.from("matches").select("rival, fecha, hora").eq("id", matchId).single();
+  if (match) {
+    document.getElementById("sc-rival").textContent = "vs " + match.rival;
+    document.getElementById("sc-fecha").textContent = new Date(match.fecha).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
+  }
+
+  const video = document.getElementById("sc-video");
+  const canvas = document.getElementById("sc-canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const resultEl = document.getElementById("sc-result");
+  const siguienteBtn = document.getElementById("sc-siguiente-btn");
+
+  let escaneando = true;
+  let ultimoCodigo = null;
+  let ultimoCodigoEn = 0;
+  let rafId = null;
+
+  let autoReanudarTimer = null;
+
+  function reanudar() {
+    clearTimeout(autoReanudarTimer);
+    resultEl.style.display = "none";
+    siguienteBtn.style.display = "none";
+    ultimoCodigo = null;
+    escaneando = true;
+  }
+  siguienteBtn.addEventListener("click", reanudar);
+
+  function mostrarResultado(tipo, icono, texto, sub) {
+    escaneando = false;
+    resultEl.className = "sc-result " + tipo;
+    document.getElementById("sc-result-icono").textContent = icono;
+    document.getElementById("sc-result-texto").textContent = texto;
+    document.getElementById("sc-result-sub").textContent = sub || "";
+    resultEl.style.display = "flex";
+    siguienteBtn.style.display = "inline-block";
+    // Reanuda sola a los 4s aunque nadie toque el botón, para no frenar la cola.
+    clearTimeout(autoReanudarTimer);
+    autoReanudarTimer = setTimeout(reanudar, 4000);
+  }
+
+  async function validar(token) {
+    estadoEl.textContent = "Comprobando…";
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch("/.netlify/functions/scan-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+        body: JSON.stringify({ token, match_id: matchId }),
+      });
+      if (!res.ok) {
+        mostrarResultado("invalido", "⚠️", "Error de red", await res.text());
+        return;
+      }
+      const json = await res.json();
+      estadoEl.textContent = "Apunta la cámara al código QR.";
+      if (json.resultado === "VALIDO") {
+        mostrarResultado("valido", "✓", "ACCESO VÁLIDO", json.etiqueta || "");
+      } else if (json.resultado === "YA_USADO") {
+        const hora = json.hora_original ? new Date(json.hora_original).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "";
+        mostrarResultado("ya-usado", "⟳", "YA USADO", (json.etiqueta || "") + (hora ? " · entró a las " + hora : ""));
+      } else {
+        mostrarResultado("invalido", "✕", "NO VÁLIDO", json.motivo || "");
+      }
+    } catch (err) {
+      mostrarResultado("invalido", "⚠️", "Error de red", "Comprueba la conexión e inténtalo de nuevo.");
+    }
+  }
+
+  function tick() {
+    if (escaneando && video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imagen = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const codigo = window.jsQR ? window.jsQR(imagen.data, imagen.width, imagen.height) : null;
+      if (codigo && codigo.data) {
+        const ahora = Date.now();
+        if (codigo.data !== ultimoCodigo || ahora - ultimoCodigoEn > 4000) {
+          ultimoCodigo = codigo.data;
+          ultimoCodigoEn = ahora;
+          validar(codigo.data);
+        }
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    await video.play();
+    tick();
+  } catch (err) {
+    if (err.name === "NotAllowedError") {
+      estadoEl.textContent = "Permiso de cámara denegado — autorízalo en los ajustes del navegador y recarga la página.";
+    } else if (err.name === "NotFoundError") {
+      estadoEl.textContent = "No se ha encontrado ninguna cámara en este dispositivo.";
+    } else {
+      estadoEl.textContent = "No se ha podido abrir la cámara: " + err.message;
+    }
+  }
+})();
+</script>
+</body>
+</html>

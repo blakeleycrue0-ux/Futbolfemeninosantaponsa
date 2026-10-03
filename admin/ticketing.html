@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Socios y entradas — Panel club</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+<style>
+  .tk-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.2rem; }
+  .tk-tab { border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; background: var(--paper); cursor: pointer; }
+  .tk-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tk-panel { display: none; }
+  .tk-panel.active { display: block; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
+  @media (max-width: 900px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
+  .pill-estado { font-size: 0.74rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); display: inline-block; }
+  .pill-ok { background: rgba(34,197,94,0.15); color: #15803d; }
+  .pill-warn { background: rgba(234,179,8,0.15); color: #a16207; }
+  .pill-bad { background: rgba(239,68,68,0.15); color: #b91c1c; }
+</style>
+</head>
+<body class="admin">
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <img class="brand__crest" src="../assets/img/escudo-santa-ponsa.png" alt="Escudo Fútbol Femenino Santa Ponça">
+      <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
+    </div>
+    <nav class="admin-nav" data-nav>
+      <a href="dashboard.html">Resumen</a>
+      <a href="destacado.html">Destacado</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="emails.html">Emails</a>
+      <a href="avisos.html">Avisos</a>
+      <a href="citas.html">Citas</a>
+      <a href="plantilla.html">Plantilla</a>
+      <a href="partidos.html">Partidos</a>
+      <a href="entrenos.html">Entrenos</a>
+      <a href="pagos-extra.html">Pagos extra</a>
+      <a href="finanzas.html">Finanzas</a>
+      <a href="galeria.html">Galería</a>
+      <a href="inscripciones.html">Formularios de interés</a>
+      <a href="ticketing.html">Socios y entradas</a>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <span data-admin-email>—</span>
+      <button class="btn btn-ghost-light btn-sm btn-block" data-logout type="button">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Socios y entradas</h1>
+    </div>
+    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:760px;">
+      Gestión de los productos de socio/abono/entrada que se venden en la web (cobro real por Stripe), de los
+      pedidos y credenciales que generan, y del personal con acceso al escáner de la puerta. Esto es distinto
+      del formulario de "Formularios de interés" y de las cuotas de inscripción de jugadoras.
+    </p>
+
+    <div class="tk-tabs">
+      <button class="tk-tab active" data-tab="productos" type="button">Productos</button>
+      <button class="tk-tab" data-tab="pedidos" type="button">Pedidos</button>
+      <button class="tk-tab" data-tab="membresias" type="button">Socios y abonos</button>
+      <button class="tk-tab" data-tab="entradas" type="button">Entradas</button>
+      <button class="tk-tab" data-tab="accesos" type="button">Registro de accesos</button>
+      <button class="tk-tab" data-tab="personal" type="button">Personal del escáner</button>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div class="tk-panel active" id="panel-productos">
+      <div class="admin-card admin-form-toggle" id="producto-form-card" style="display:none;">
+        <h2 id="producto-form-title">Nuevo producto</h2>
+        <form id="producto-form">
+          <input type="hidden" id="pr-id">
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="pr-tipo">Tipo</label>
+              <select id="pr-tipo" required>
+                <option value="socio">Socio FFSP</option>
+                <option value="abono">Abono de temporada</option>
+                <option value="entrada">Entrada de partido</option>
+              </select>
+            </div>
+            <div class="form-field"><label for="pr-nombre">Nombre</label><input type="text" id="pr-nombre" required placeholder="Socio FFSP 2026/27"></div>
+            <div class="form-field"><label for="pr-precio">Precio (€)</label><input type="number" id="pr-precio" min="0" step="0.01" required></div>
+            <div class="form-field"><label for="pr-temporada">Temporada</label><input type="text" id="pr-temporada" value="2026/27" required></div>
+            <div class="form-field" id="pr-scope-field">
+              <label for="pr-scope">Alcance</label>
+              <select id="pr-scope">
+                <option value="club">Todo el club (cualquier partido en casa)</option>
+                <option value="team">Un equipo concreto</option>
+              </select>
+            </div>
+            <div class="form-field" id="pr-team-field" style="display:none;">
+              <label for="pr-team">Equipo</label>
+              <select id="pr-team"></select>
+            </div>
+            <div class="form-field" id="pr-match-field" style="display:none;">
+              <label for="pr-match">Partido</label>
+              <select id="pr-match"></select>
+            </div>
+            <div class="form-field"><label for="pr-capacity">Aforo (vacío = sin límite)</label><input type="number" id="pr-capacity" min="0" step="1"></div>
+            <div class="form-field"><label for="pr-sales-start">Venta desde</label><input type="datetime-local" id="pr-sales-start"></div>
+            <div class="form-field"><label for="pr-sales-end">Venta hasta</label><input type="datetime-local" id="pr-sales-end"></div>
+          </div>
+          <div class="form-field"><label for="pr-descripcion">Descripción (se ve en la web)</label><textarea id="pr-descripcion" rows="2"></textarea></div>
+          <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="pr-activo" checked> Activo (visible y comprable en la web)</label></div>
+          <div style="display:flex;gap:0.8rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="producto-cancel-btn">Cancelar</button>
+          </div>
+          <p id="producto-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-topbar" style="margin:0 0 1rem;">
+          <h2 style="margin:0;font-size:1rem;">Catálogo</h2>
+          <button class="btn btn-primary btn-sm" id="producto-new-btn" type="button">Nuevo producto</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Tipo</th><th>Nombre</th><th>Precio</th><th>Temporada</th><th>Aforo</th><th>Activo</th><th></th></tr></thead>
+            <tbody id="productos-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div class="tk-panel" id="panel-pedidos">
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Fecha</th><th>Socia/o</th><th>Producto</th><th>Importe</th><th>Estado</th></tr></thead>
+            <tbody id="pedidos-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBRESIAS -->
+    <div class="tk-panel" id="panel-membresias">
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Nº socio</th><th>Socia/o</th><th>Producto</th><th>Equipo</th><th>Temporada</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="membresias-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRADAS -->
+    <div class="tk-panel" id="panel-entradas">
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Fecha compra</th><th>Socia/o</th><th>Partido</th><th>Fecha partido</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="entradas-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCESOS -->
+    <div class="tk-panel" id="panel-accesos">
+      <div class="admin-card">
+        <div class="form-field" style="max-width:420px;">
+          <label for="acc-match">Partido</label>
+          <select id="acc-match"></select>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Hora</th><th>Socia/o</th><th>Tipo</th><th>Validado por</th></tr></thead>
+            <tbody id="accesos-body"><tr><td colspan="4">Elige un partido.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONAL -->
+    <div class="tk-panel" id="panel-personal">
+      <div class="admin-card">
+        <h2 style="margin-top:0;">Personal con acceso al panel/escáner</h2>
+        <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">
+          "Admin" entra en todo el panel del club. "Staff" solo puede usar el escáner de control de acceso en
+          <code>staff/acceso.html</code> — no ve el resto del admin. La persona debe crearse antes una cuenta
+          normal (email + contraseña) desde "Mi cuenta" en la web; aquí solo le das el rol.
+        </p>
+        <form id="staff-form" style="display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-field" style="margin:0;"><label for="staff-email">Email</label><input type="email" id="staff-email" required placeholder="persona@gmail.com"></div>
+          <div class="form-field" style="margin:0;">
+            <label for="staff-role">Rol</label>
+            <select id="staff-role"><option value="staff">Staff (solo escáner)</option><option value="admin">Admin (todo el panel)</option></select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Dar acceso</button>
+        </form>
+        <p id="staff-form-status" style="margin-top:0.6rem;font-size:0.86rem;"></p>
+        <div class="admin-table-wrap" style="margin-top:1.2rem;">
+          <table class="admin-table">
+            <thead><tr><th>Email</th><th>Rol</th><th></th></tr></thead>
+            <tbody id="personal-body"><tr><td colspan="3">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/admin-auth.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function fmtEuros(n) { return (Number(n) || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+  function fmtFecha(f) { return f ? new Date(f).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"; }
+  function fmtFechaHora(f) { return f ? new Date(f).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"; }
+
+  // ---- pestañas ----
+  document.querySelectorAll(".tk-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tk-tab").forEach((t) => t.classList.remove("active"));
+      document.querySelectorAll(".tk-panel").forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+    });
+  });
+
+  let teams = [];
+  let matches = [];
+
+  const [{ data: teamsData }, { data: matchesData }] = await Promise.all([
+    window.spfc.from("teams").select("*").order("orden"),
+    window.spfc.from("matches").select("id, rival, fecha, hora, team_id, teams(nombre)").order("fecha", { ascending: false }).limit(120),
+  ]);
+  teams = teamsData || [];
+  matches = matchesData || [];
+  const teamsById = Object.fromEntries(teams.map((t) => [t.id, t]));
+
+  document.getElementById("pr-team").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+  const matchOptionsHtml = matches.map((m) =>
+    `<option value="${m.id}">${fmtFecha(m.fecha)} — vs ${escapeHtml(m.rival)}${m.teams ? " (" + escapeHtml(m.teams.nombre) + ")" : ""}</option>`).join("");
+  document.getElementById("pr-match").innerHTML = matchOptionsHtml;
+  document.getElementById("acc-match").innerHTML = `<option value="">— elige —</option>` + matchOptionsHtml;
+
+  // ================= PRODUCTOS =================
+  const prFormCard = document.getElementById("producto-form-card");
+  const prForm = document.getElementById("producto-form");
+
+  function prSyncFieldsByTipo() {
+    const tipo = document.getElementById("pr-tipo").value;
+    document.getElementById("pr-match-field").style.display = tipo === "entrada" ? "block" : "none";
+    document.getElementById("pr-scope-field").style.display = tipo === "entrada" ? "none" : "block";
+    const scope = document.getElementById("pr-scope").value;
+    document.getElementById("pr-team-field").style.display = tipo !== "entrada" && scope === "team" ? "block" : "none";
+  }
+  document.getElementById("pr-tipo").addEventListener("change", prSyncFieldsByTipo);
+  document.getElementById("pr-scope").addEventListener("change", prSyncFieldsByTipo);
+
+  document.getElementById("producto-new-btn").addEventListener("click", () => {
+    prForm.reset();
+    document.getElementById("pr-id").value = "";
+    document.getElementById("pr-temporada").value = "2026/27";
+    document.getElementById("pr-activo").checked = true;
+    document.getElementById("producto-form-title").textContent = "Nuevo producto";
+    document.getElementById("producto-form-status").textContent = "";
+    prSyncFieldsByTipo();
+    prFormCard.style.display = "block";
+    prFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("producto-cancel-btn").addEventListener("click", () => (prFormCard.style.display = "none"));
+
+  async function loadProductos() {
+    const { data, error } = await window.spfc.from("ticket_products").select("*").order("creado_en", { ascending: false });
+    const body = document.getElementById("productos-body");
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay productos. Crea el primero.</td></tr>'; return; }
+    body.innerHTML = data.map((p) => `
+      <tr>
+        <td>${{ socio: "Socio", abono: "Abono", entrada: "Entrada" }[p.tipo] || p.tipo}</td>
+        <td>${escapeHtml(p.nombre)}</td>
+        <td>${fmtEuros(p.precio)}</td>
+        <td>${escapeHtml(p.temporada)}</td>
+        <td>${p.capacity != null ? (p.capacity_sold || 0) + " / " + p.capacity : "Sin límite"}</td>
+        <td>${p.activo ? '<span class="pill-estado pill-ok">Activo</span>' : '<span class="pill-estado pill-bad">Inactivo</span>'}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-edit="${p.id}" type="button">Editar</button>
+          <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+
+    body.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => {
+      const p = data.find((x) => x.id === btn.dataset.edit);
+      if (!p) return;
+      document.getElementById("pr-id").value = p.id;
+      document.getElementById("pr-tipo").value = p.tipo;
+      document.getElementById("pr-nombre").value = p.nombre;
+      document.getElementById("pr-descripcion").value = p.descripcion || "";
+      document.getElementById("pr-precio").value = p.precio;
+      document.getElementById("pr-temporada").value = p.temporada;
+      document.getElementById("pr-activo").checked = p.activo;
+      document.getElementById("pr-capacity").value = p.capacity != null ? p.capacity : "";
+      document.getElementById("pr-sales-start").value = p.sales_start ? p.sales_start.slice(0, 16) : "";
+      document.getElementById("pr-sales-end").value = p.sales_end ? p.sales_end.slice(0, 16) : "";
+      document.getElementById("pr-scope").value = p.scope;
+      if (p.team_id) document.getElementById("pr-team").value = p.team_id;
+      if (p.match_id) document.getElementById("pr-match").value = p.match_id;
+      document.getElementById("producto-form-title").textContent = "Editar producto";
+      document.getElementById("producto-form-status").textContent = "";
+      prSyncFieldsByTipo();
+      prFormCard.style.display = "block";
+      prFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+    body.querySelectorAll("[data-del]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar este producto? Si ya tiene pedidos pagados, mejor desactívalo en vez de borrarlo.")) return;
+      const { error } = await window.spfc.from("ticket_products").delete().eq("id", btn.dataset.del);
+      if (error) { alert("Error: " + error.message); return; }
+      loadProductos();
+    }));
+  }
+
+  prForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("producto-form-status");
+    const tipo = document.getElementById("pr-tipo").value;
+    const scope = tipo === "entrada" ? "club" : document.getElementById("pr-scope").value;
+    const fila = {
+      tipo,
+      nombre: document.getElementById("pr-nombre").value.trim(),
+      descripcion: document.getElementById("pr-descripcion").value.trim() || null,
+      precio: Number(document.getElementById("pr-precio").value),
+      temporada: document.getElementById("pr-temporada").value.trim(),
+      activo: document.getElementById("pr-activo").checked,
+      capacity: document.getElementById("pr-capacity").value === "" ? null : Number(document.getElementById("pr-capacity").value),
+      sales_start: document.getElementById("pr-sales-start").value || null,
+      sales_end: document.getElementById("pr-sales-end").value || null,
+      scope,
+      team_id: scope === "team" ? document.getElementById("pr-team").value : null,
+      match_id: tipo === "entrada" ? document.getElementById("pr-match").value : null,
+    };
+    const id = document.getElementById("pr-id").value;
+    status.textContent = "Guardando…";
+    const { error } = id
+      ? await window.spfc.from("ticket_products").update(fila).eq("id", id)
+      : await window.spfc.from("ticket_products").insert(fila);
+    if (error) { status.textContent = "Error: " + error.message; return; }
+    status.textContent = "Guardado ✓";
+    prFormCard.style.display = "none";
+    loadProductos();
+  });
+
+  // ================= PEDIDOS =================
+  async function loadPedidos() {
+    const { data, error } = await window.spfc.rpc("admin_listar_pedidos");
+    const body = document.getElementById("pedidos-body");
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay pedidos.</td></tr>'; return; }
+    const pillByEstado = { pagado: "pill-ok", pendiente: "pill-warn", fallido: "pill-bad", cancelado: "pill-bad", reembolsado: "pill-bad" };
+    body.innerHTML = data.map((o) => `
+      <tr>
+        <td>${fmtFechaHora(o.creado_en)}</td>
+        <td>${escapeHtml(o.user_email)}</td>
+        <td>${escapeHtml(o.producto_nombre)}</td>
+        <td>${fmtEuros(o.importe)}</td>
+        <td><span class="pill-estado ${pillByEstado[o.estado] || ""}">${escapeHtml(o.estado)}</span></td>
+      </tr>`).join("");
+  }
+
+  // ================= MEMBRESIAS =================
+  async function loadMembresias() {
+    const { data, error } = await window.spfc.rpc("admin_listar_membresias");
+    const body = document.getElementById("membresias-body");
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay socias/os ni abonos.</td></tr>'; return; }
+    body.innerHTML = data.map((m) => `
+      <tr>
+        <td>${String(m.member_number).padStart(4, "0")}</td>
+        <td>${escapeHtml(m.user_email)}</td>
+        <td>${escapeHtml(m.producto_nombre)}</td>
+        <td>${m.team_nombre ? escapeHtml(m.team_nombre) : "Todo el club"}</td>
+        <td>${escapeHtml(m.temporada)}</td>
+        <td><span class="pill-estado ${m.estado === "activa" ? "pill-ok" : "pill-bad"}">${escapeHtml(m.estado)}</span></td>
+        <td class="actions">${m.estado === "activa" ? `<button class="btn btn-outline btn-sm" data-cancelar="${m.id}" type="button">Cancelar</button>` : ""}</td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-cancelar]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Cancelar esta membresía? Dejará de dar acceso al campo. Esto NO hace el reembolso en Stripe — si corresponde, hazlo tú desde el dashboard de Stripe.")) return;
+      const { error } = await window.spfc.from("memberships").update({ estado: "cancelada" }).eq("id", btn.dataset.cancelar);
+      if (error) { alert("Error: " + error.message); return; }
+      loadMembresias();
+    }));
+  }
+
+  // ================= ENTRADAS =================
+  async function loadEntradas() {
+    const { data, error } = await window.spfc.rpc("admin_listar_entradas");
+    const body = document.getElementById("entradas-body");
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no se ha vendido ninguna entrada.</td></tr>'; return; }
+    body.innerHTML = data.map((t) => `
+      <tr>
+        <td>${fmtFechaHora(t.creado_en)}</td>
+        <td>${escapeHtml(t.user_email)}</td>
+        <td>vs ${escapeHtml(t.rival)}</td>
+        <td>${fmtFecha(t.fecha)}</td>
+        <td><span class="pill-estado ${t.estado === "valido" ? "pill-ok" : "pill-bad"}">${escapeHtml(t.estado)}</span></td>
+        <td class="actions">${t.estado === "valido" ? `<button class="btn btn-outline btn-sm" data-cancelar="${t.id}" type="button">Cancelar</button>` : ""}</td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-cancelar]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Cancelar esta entrada? Dejará de dar acceso al partido. Esto NO hace el reembolso en Stripe.")) return;
+      const { error } = await window.spfc.from("tickets").update({ estado: "cancelado" }).eq("id", btn.dataset.cancelar);
+      if (error) { alert("Error: " + error.message); return; }
+      loadEntradas();
+    }));
+  }
+
+  // ================= ACCESOS =================
+  document.getElementById("acc-match").addEventListener("change", async (e) => {
+    const body = document.getElementById("accesos-body");
+    const matchId = e.target.value;
+    if (!matchId) { body.innerHTML = '<tr><td colspan="4">Elige un partido.</td></tr>'; return; }
+    body.innerHTML = '<tr><td colspan="4">Cargando…</td></tr>';
+    const { data, error } = await window.spfc.rpc("admin_listar_accesos", { p_match_id: matchId });
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4">Todavía no se ha validado ningún acceso para este partido.</td></tr>'; return; }
+    body.innerHTML = data.map((a) => `
+      <tr>
+        <td>${fmtFechaHora(a.scanned_at)}</td>
+        <td>${escapeHtml(a.user_email)}</td>
+        <td>${escapeHtml(a.origen)}</td>
+        <td>${escapeHtml(a.staff_email || "—")}</td>
+      </tr>`).join("");
+  });
+
+  // ================= PERSONAL =================
+  async function loadPersonal() {
+    const { data, error } = await window.spfc.from("app_admins").select("*").order("email");
+    const body = document.getElementById("personal-body");
+    if (error) { body.innerHTML = `<tr><td colspan="3">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="3">Nadie todavía.</td></tr>'; return; }
+    body.innerHTML = data.map((a) => `
+      <tr>
+        <td>${escapeHtml(a.email)}</td>
+        <td>${a.role === "admin" ? "Admin" : "Staff"}</td>
+        <td class="actions"><button class="btn-icon danger" data-del-staff="${escapeHtml(a.email)}" type="button">✕</button></td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-del-staff]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm(`¿Quitar el acceso de ${btn.dataset.delStaff}?`)) return;
+      const { error } = await window.spfc.from("app_admins").delete().eq("email", btn.dataset.delStaff);
+      if (error) { alert("Error: " + error.message); return; }
+      loadPersonal();
+    }));
+  }
+
+  document.getElementById("staff-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("staff-form-status");
+    const email = document.getElementById("staff-email").value.trim().toLowerCase();
+    const role = document.getElementById("staff-role").value;
+    status.textContent = "Guardando…";
+    const { error } = await window.spfc.from("app_admins").upsert({ email, role });
+    if (error) { status.textContent = "Error: " + error.message; return; }
+    status.textContent = "Hecho ✓ — esa persona ya puede entrar con su email y contraseña habituales en admin/index.html.";
+    document.getElementById("staff-form").reset();
+    loadPersonal();
+  });
+
+  await Promise.all([loadProductos(), loadPedidos(), loadMembresias(), loadEntradas(), loadPersonal()]);
+})();
+</script>
+</body>
+</html>

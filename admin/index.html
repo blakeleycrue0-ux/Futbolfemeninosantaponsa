@@ -70,8 +70,37 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     return;
   }
 
-  location.href = "dashboard.html";
+  // El rol decide a dónde va: admin -> panel completo, staff (solo control
+  // de acceso en la puerta) -> su propia zona en staff/, cualquier otra
+  // cuenta (p.ej. una socia) no tiene acceso a ninguno de los dos. Si venía
+  // de un enlace directo (?volver=../staff/acceso.html?match=...), vuelve
+  // ahí en vez de a la pantalla por defecto de su rol.
+  const volver = new URLSearchParams(location.search).get("volver");
+  const { data: esAdmin } = await window.spfc.rpc("is_app_admin");
+  if (esAdmin) {
+    location.href = volver || "dashboard.html";
+    return;
+  }
+  const { data: esStaff } = await window.spfc.rpc("is_app_staff");
+  if (esStaff) {
+    location.href = volver || "../staff/partido.html";
+    return;
+  }
+
+  await window.spfc.auth.signOut();
+  errorEl.textContent = "Esta cuenta no tiene acceso al panel del club.";
+  errorEl.style.display = "block";
+  btn.disabled = false;
+  btn.textContent = "Entrar";
 });
+
+(function () {
+  if (new URLSearchParams(location.search).get("error") === "sin_acceso") {
+    const errorEl = document.getElementById("login-error");
+    errorEl.textContent = "Esa cuenta no tiene acceso al panel del club.";
+    errorEl.style.display = "block";
+  }
+})();
 
 document.getElementById("forgot-link").addEventListener("click", async (e) => {
   e.preventDefault();

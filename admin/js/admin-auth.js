@@ -1,7 +1,14 @@
 /*
   Guarda de autenticación compartida por todas las páginas de admin/.
   Incluir después de supabase-client.js. index.html (login) también la
-  incluye: si ya hay sesión, se redirige directamente al dashboard.
+  incluye: si ya hay sesión, se redirige al sitio que le corresponda según
+  su rol (is_app_admin()/is_app_staff(), llamadas por rpc() — mismas
+  funciones que usa RLS, expuestas por Supabase sin configuración extra).
+
+  Todas las páginas de admin/ (salvo index.html) exigen rol "admin" — el
+  personal de control de acceso ("staff") tiene su panel aparte en
+  staff/ (ver staff/js/staff-auth.js), no entra aquí aunque inicie sesión
+  con la misma cuenta/contraseña.
 */
 (async function () {
   const isLoginPage = /\/admin\/(index\.html)?$/.test(location.pathname) || location.pathname.endsWith("/admin/index.html");
@@ -24,9 +31,17 @@
     location.href = "index.html";
     return;
   }
-  if (session && isLoginPage) {
-    location.href = "dashboard.html";
-    return;
+
+  if (session && !isLoginPage) {
+    const { data: esAdmin } = await window.spfc.rpc("is_app_admin");
+    if (!esAdmin) {
+      // Sesión válida pero sin rol de admin (p.ej. una cuenta de staff, o
+      // una socia cualquiera que ha llegado aquí por error) — no debe ver
+      // ninguna página del panel de administración.
+      await window.spfc.auth.signOut();
+      location.href = "index.html?error=sin_acceso";
+      return;
+    }
   }
 
   window.spfc.auth.onAuthStateChange((event) => {

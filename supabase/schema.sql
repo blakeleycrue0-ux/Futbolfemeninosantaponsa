@@ -1372,3 +1372,40 @@ grant execute on function anular_acceso(uuid, text, text) to service_role;
 
 revoke execute on function buscar_persona(text) from public, anon, authenticated;
 grant execute on function buscar_persona(text) to service_role;
+
+-- ----------------------------------------------------------------------------
+-- admin_listar_accesos: amplía la versión de la fase 1 con lo que hace
+-- falta para "ÚLTIMOS ACCESOS" en el escáner (nombre/nº de socio en vez
+-- de solo el email, y el estado de anulación). CREATE OR REPLACE no deja
+-- cambiar las columnas de salida de una función returns table — hay que
+-- borrarla primero. Sigue pensada para llamarse directamente desde el
+-- cliente (admin/ticketing.html, staff/acceso.html) con la sesión propia
+-- de quien la usa, por eso conserva el "where is_app_staff()" interno.
+-- ----------------------------------------------------------------------------
+drop function if exists admin_listar_accesos(uuid);
+create or replace function admin_listar_accesos(p_match_id uuid)
+returns table (
+  id uuid, scanned_at timestamptz, staff_email text,
+  user_email text, user_nombre text, member_number int, origen text,
+  metodo text, reversed boolean, reversed_at timestamptz, reversed_by text, reversal_reason text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select l.id, l.scanned_at, l.staff_email,
+         coalesce(mu.email, tu.email),
+         coalesce(mu.raw_user_meta_data->>'nombre', tu.raw_user_meta_data->>'nombre', mu.email, tu.email),
+         ms.member_number,
+         case when c.membership_id is not null then 'socio/abono' else 'entrada' end,
+         l.metodo, l.reversed, l.reversed_at, l.reversed_by, l.reversal_reason
+  from match_access_log l
+  join access_credentials c on c.id = l.credential_id
+  left join memberships ms on ms.id = c.membership_id
+  left join auth.users mu on mu.id = ms.user_id
+  left join tickets tk on tk.id = c.ticket_id
+  left join auth.users tu on tu.id = tk.user_id
+  where is_app_staff() and l.match_id = p_match_id
+  order by l.scanned_at desc;
+$$;

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Últimos accesos — Control de acceso</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/ticketing.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+</head>
+<body style="background:var(--ink);">
+<div class="staff-shell">
+  <div class="staff-topbar">
+    <a href="#" id="ac-back" style="color:rgba(244,240,232,0.6);">← Volver</a>
+    <strong style="color:#fff;font-size:0.85rem;" id="ac-match"></strong>
+  </div>
+
+  <div class="staff-filters">
+    <button type="button" class="staff-filter active" data-filtro="todos">Todos</button>
+    <button type="button" class="staff-filter" data-filtro="correctos">Correctos</button>
+    <button type="button" class="staff-filter" data-filtro="anulados">Anulados</button>
+    <button type="button" class="staff-filter" data-filtro="manuales">Manuales</button>
+  </div>
+
+  <div id="ac-lista"><p class="staff-empty">Cargando…</p></div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/staff-auth.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  const matchId = new URLSearchParams(location.search).get("match");
+  document.getElementById("ac-back").href = matchId ? "partido.html?id=" + matchId : "partido.html";
+  if (!matchId) { document.getElementById("ac-lista").innerHTML = '<p class="staff-empty">Falta elegir un partido.</p>'; return; }
+
+  const { data: m } = await window.spfc.from("matches").select("rival").eq("id", matchId).single();
+  if (m) document.getElementById("ac-match").textContent = "vs " + m.rival;
+
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  const { data: accesos, error } = await window.spfc.rpc("admin_listar_accesos", { p_match_id: matchId });
+  const listaEl = document.getElementById("ac-lista");
+  if (error) { listaEl.innerHTML = `<p class="staff-empty">Error: ${esc(error.message)}</p>`; return; }
+
+  function render(filtro) {
+    let filas = accesos || [];
+    if (filtro === "correctos") filas = filas.filter((a) => !a.reversed);
+    else if (filtro === "anulados") filas = filas.filter((a) => a.reversed);
+    else if (filtro === "manuales") filas = filas.filter((a) => a.metodo === "manual");
+
+    if (!filas.length) { listaEl.innerHTML = '<p class="staff-empty">No hay accesos en esta categoría.</p>'; return; }
+
+    listaEl.innerHTML = filas.map((a) => {
+      const hora = new Date(a.scanned_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      const pill = a.reversed ? '<span class="status-pill status-pill--bad">Anulado</span>' : '<span class="status-pill status-pill--ok">Correcto</span>';
+      return `
+        <div class="staff-row">
+          <div>
+            <div class="staff-row__title">${esc(a.user_nombre || a.user_email || "—")}</div>
+            <div class="staff-row__meta">
+              ${a.member_number ? "Socio " + String(a.member_number).padStart(4, "0") : esc(a.origen || "")}
+              ${a.metodo === "manual" ? " · Manual" : ""}
+              ${a.reversed ? " · " + esc(a.reversal_reason || "") + (a.reversed_by ? " (" + esc(a.reversed_by) + ")" : "") : ""}
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="staff-row__time">${hora}</div>
+            ${pill}
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  document.querySelectorAll(".staff-filter").forEach((btn) => btn.addEventListener("click", () => {
+    document.querySelectorAll(".staff-filter").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    render(btn.dataset.filtro);
+  }));
+
+  render("todos");
+})();
+</script>
+</body>
+</html>

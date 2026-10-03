@@ -1,0 +1,71 @@
+/*
+  staff.css — Modo partido / escáner / búsqueda / historial de accesos.
+  Pensado para usarse con una mano, de pie, en la puerta del campo.
+  Fondo oscuro, botones grandes, nada que exija precisión.
+*/
+.staff-shell {
+  min-height: 100vh; min-height: 100dvh; background: var(--ink); color: #f4f0e8;
+  padding: max(env(safe-area-inset-top), 0.9rem) max(env(safe-area-inset-right), 1rem) max(env(safe-area-inset-bottom), 1rem) max(env(safe-area-inset-left), 1rem);
+  display: flex; flex-direction: column;
+}
+.staff-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; }
+.staff-topbar a, .staff-topbar button { color: rgba(244,240,232,0.6); font-size: 0.8rem; font-weight: 700; text-decoration: none; background: none; border: none; cursor: pointer; }
+
+.staff-fixture { text-align: center; padding: 1.1rem 0 1.4rem; }
+.staff-fixture__teams { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; }
+.staff-fixture__teams .vs { color: rgba(244,240,232,0.4); font-weight: 400; margin: 0 0.3em; font-size: 0.8em; }
+.staff-fixture__when { font-size: 0.85rem; color: rgba(244,240,232,0.6); margin-top: 0.3rem; }
+
+.staff-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.4rem; }
+.staff-stat { background: rgba(244,240,232,0.06); border-radius: 12px; padding: 0.9rem 1rem; text-align: center; }
+.staff-stat__value { font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; }
+.staff-stat__label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(244,240,232,0.5); margin-top: 0.2rem; }
+
+.staff-actions { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.6rem; }
+.staff-action {
+  display: flex; align-items: center; gap: 0.9rem; width: 100%;
+  background: rgba(244,240,232,0.06); border: 1px solid rgba(244,240,232,0.1); border-radius: 12px;
+  padding: 1.1rem 1.2rem; color: #fff; text-decoration: none; font-size: 1rem; font-weight: 700;
+  min-height: 58px; text-align: left;
+}
+.staff-action--primary { background: var(--accent); border-color: var(--accent); justify-content: center; font-size: 1.1rem; }
+.staff-action__icon { font-size: 1.3rem; flex-shrink: 0; }
+.staff-action__sub { display: block; font-size: 0.74rem; font-weight: 400; color: rgba(244,240,232,0.55); margin-top: 0.15rem; }
+
+.staff-section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(244,240,232,0.5); margin: 0 0 0.6rem; }
+
+.staff-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;
+  padding: 0.85rem 0; border-bottom: 1px solid rgba(244,240,232,0.08);
+}
+.staff-row:last-child { border-bottom: none; }
+.staff-row__title { font-weight: 700; font-size: 0.92rem; }
+.staff-row__meta { font-size: 0.76rem; color: rgba(244,240,232,0.5); margin-top: 0.1rem; }
+.staff-row__time { font-size: 0.78rem; color: rgba(244,240,232,0.55); white-space: nowrap; }
+.staff-row-btn { background: none; border: none; color: inherit; text-align: left; width: 100%; cursor: pointer; padding: 0.85rem 0; }
+
+.staff-search-input {
+  width: 100%; background: rgba(244,240,232,0.08); border: 1px solid rgba(244,240,232,0.15); border-radius: 10px;
+  padding: 0.9rem 1rem; color: #fff; font-size: 1rem; margin-bottom: 1.1rem;
+}
+.staff-search-input::placeholder { color: rgba(244,240,232,0.4); }
+
+.staff-filters { display: flex; gap: 0.5rem; overflow-x: auto; margin-bottom: 1rem; padding-bottom: 0.2rem; }
+.staff-filter { flex-shrink: 0; background: rgba(244,240,232,0.08); border: 1px solid transparent; border-radius: 20px; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 700; color: rgba(244,240,232,0.7); cursor: pointer; }
+.staff-filter.active { background: #fff; color: var(--ink); }
+
+.staff-empty { color: rgba(244,240,232,0.45); font-size: 0.88rem; text-align: center; padding: 2rem 0; }
+
+.staff-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 900; display: flex; align-items: flex-end; }
+.staff-modal {
+  background: #161616; width: 100%; border-radius: 18px 18px 0 0; padding: 1.4rem 1.2rem max(env(safe-area-inset-bottom), 1.4rem);
+  color: #f4f0e8;
+}
+@media (min-width: 640px) {
+  .staff-modal-backdrop { align-items: center; justify-content: center; }
+  .staff-modal { max-width: 420px; border-radius: 16px; }
+}
+.staff-modal h2 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 0.6rem; }
+.staff-modal p { font-size: 0.86rem; color: rgba(244,240,232,0.65); margin: 0 0 1rem; }
+.staff-radio { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0; border-bottom: 1px solid rgba(244,240,232,0.08); font-size: 0.92rem; }
+.staff-radio input { width: 18px; height: 18px; }

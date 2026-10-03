@@ -1199,3 +1199,176 @@ begin
   return coalesce(v_reservado, false);
 end;
 $$;
+
+-- ============================================================================
+-- CONTROL DE ACCESO EN LA PUERTA: anulación de escaneos + alta manual +
+-- búsqueda de personas (fase 3)
+-- Pensado para el caso real: el personal escanea sin querer, o la persona
+-- aún no ha entrado, o el QR falla y hay que admitir buscando por nombre.
+-- Nunca se borra el historial — una anulación añade un estado al mismo
+-- registro (reversed/reversed_at/reversed_by/reversal_reason) y dentro del
+-- QR vuelve a quedar disponible gracias a un índice único PARCIAL (solo
+-- sobre las filas no anuladas), en vez del unique(credential_id, match_id)
+-- de antes.
+-- ============================================================================
+
+alter table match_access_log add column if not exists metodo text not null default 'qr';
+alter table match_access_log drop constraint if exists match_access_log_metodo_chk;
+alter table match_access_log add constraint match_access_log_metodo_chk check (metodo in ('qr','manual'));
+alter table match_access_log add column if not exists manual_motivo text;
+alter table match_access_log add column if not exists reversed boolean not null default false;
+alter table match_access_log add column if not exists reversed_at timestamptz;
+alter table match_access_log add column if not exists reversed_by text;
+alter table match_access_log add column if not exists reversal_reason text;
+
+-- El unique(credential_id, match_id) de antes impedía CUALQUIER segunda
+-- fila, incluso después de anular la primera. Se sustituye por un índice
+-- único parcial: como mucho una fila ACTIVA (no anulada) por credencial y
+-- partido, pero se pueden acumular tantas filas anuladas como haga falta
+-- — así el historial completo (concedido → anulado → concedido otra vez)
+-- queda guardado de verdad, nunca se sobrescribe ni se borra.
+alter table match_access_log drop constraint if exists match_access_log_credential_id_match_id_key;
+drop index if exists match_access_log_credential_id_match_id_key;
+create unique index if not exists match_access_log_activo_uniq
+  on match_access_log(credential_id, match_id) where not reversed;
+
+-- ----------------------------------------------------------------------------
+-- registrar_acceso: inserción atómica con la MISMA garantía de antes
+-- (el índice único parcial de arriba hace que "on conflict ... do nothing"
+-- sea imposible de colar dos veces a la vez), pero ahora también sirve
+-- para altas manuales (p_metodo = 'manual'). No comprueba permisos aquí
+-- dentro a propósito: la llama siempre una Netlify Function con
+-- service_role, que ya ha comprobado que quien escanea es admin/staff
+-- (igual que reservar_aforo) — ver el bloqueo de permisos más abajo.
+-- ----------------------------------------------------------------------------
+create or replace function registrar_acceso(
+  p_credential_id uuid,
+  p_match_id uuid,
+  p_staff_email text,
+  p_metodo text default 'qr',
+  p_manual_motivo text default null
+)
+returns table (resultado text, log_id uuid, scanned_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id uuid;
+  v_scanned_at timestamptz;
+begin
+  insert into match_access_log (credential_id, match_id, staff_email, metodo, manual_motivo)
+  values (p_credential_id, p_match_id, p_staff_email, p_metodo, p_manual_motivo)
+  on conflict (credential_id, match_id) where not reversed do nothing
+  returning id, match_access_log.scanned_at into v_id, v_scanned_at;
+
+  if v_id is not null then
+    return query select 'VALIDO'::text, v_id, v_scanned_at;
+    return;
+  end if;
+
+  return query
+    select 'YA_USADO'::text, l.id, l.scanned_at
+    from match_access_log l
+    where l.credential_id = p_credential_id and l.match_id = p_match_id and not l.reversed
+    limit 1;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- anular_acceso: deshace un acceso concedido por error SIN borrar nada —
+-- deja el registro original intacto y solo le añade el estado de
+-- anulación. En cuanto se anula, el índice único parcial deja hueco para
+-- que esa misma credencial se pueda volver a registrar en ese partido.
+-- Tampoco comprueba permisos aquí dentro — la llama una Netlify Function
+-- con service_role tras comprobar que quien pide la anulación es
+-- admin/staff.
+-- ----------------------------------------------------------------------------
+create or replace function anular_acceso(p_log_id uuid, p_staff_email text, p_motivo text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ok boolean;
+begin
+  update match_access_log
+  set reversed = true, reversed_at = now(), reversed_by = p_staff_email, reversal_reason = p_motivo
+  where id = p_log_id and not reversed
+  returning true into v_ok;
+  return coalesce(v_ok, false);
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- buscar_persona: búsqueda unificada (nombre, email, nº de socio, id de
+-- entrada) para "Buscar persona o entrada" en el escáner/admin. Necesita
+-- cruzar con auth.users para el nombre/email, que la API pública de
+-- Supabase no expone — de ahí la función security definer, igual que los
+-- admin_listar_* de antes. A diferencia de esos, esta la llama una
+-- Netlify Function con service_role (no admin/ticketing.html
+-- directamente), así que tampoco lleva comprobación de rol aquí dentro —
+-- ver el bloqueo de permisos más abajo.
+-- ----------------------------------------------------------------------------
+create or replace function buscar_persona(p_query text)
+returns table (
+  tipo text, id uuid, user_id uuid, user_email text, user_nombre text,
+  member_number int, estado text, producto_nombre text, team_nombre text,
+  match_rival text, match_fecha date
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select 'socio'::text, m.id, m.user_id, u.email,
+         coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         m.member_number, m.estado, p.nombre, t.nombre, null::text, null::date
+  from memberships m
+  join auth.users u on u.id = m.user_id
+  join ticket_products p on p.id = m.product_id
+  left join teams t on t.id = m.team_id
+  where p_query is not null and length(trim(p_query)) > 0
+    and (
+      u.email ilike '%' || p_query || '%'
+      or coalesce(u.raw_user_meta_data->>'nombre', '') ilike '%' || p_query || '%'
+      or m.member_number::text = p_query
+    )
+  union all
+  select 'entrada'::text, tk.id, tk.user_id, u.email,
+         coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         null, tk.estado, null, null, mt.rival, mt.fecha
+  from tickets tk
+  join auth.users u on u.id = tk.user_id
+  join matches mt on mt.id = tk.match_id
+  where p_query is not null and length(trim(p_query)) > 0
+    and (
+      u.email ilike '%' || p_query || '%'
+      or coalesce(u.raw_user_meta_data->>'nombre', '') ilike '%' || p_query || '%'
+      or tk.id::text ilike p_query || '%'
+    )
+  limit 20;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- Bloqueo de permisos: estas funciones solo las deben poder llamar las
+-- Netlify Functions (service_role), nunca el navegador directamente —
+-- a diferencia de admin_listar_*/is_app_admin(), no llevan ningún
+-- "where is_app_admin()" por dentro (porque auth.jwt() no existe cuando
+-- se llama con la service_role key), así que sin este bloqueo cualquier
+-- usuaria con sesión podría llamarlas por su cuenta desde la consola del
+-- navegador. reservar_aforo ya estaba así de abierta desde que se creó
+-- (fallo encontrado ahora, se corrige de paso).
+-- ----------------------------------------------------------------------------
+revoke execute on function reservar_aforo(uuid) from public, anon, authenticated;
+grant execute on function reservar_aforo(uuid) to service_role;
+
+revoke execute on function registrar_acceso(uuid, uuid, text, text, text) from public, anon, authenticated;
+grant execute on function registrar_acceso(uuid, uuid, text, text, text) to service_role;
+
+revoke execute on function anular_acceso(uuid, text, text) from public, anon, authenticated;
+grant execute on function anular_acceso(uuid, text, text) to service_role;
+
+revoke execute on function buscar_persona(text) from public, anon, authenticated;
+grant execute on function buscar_persona(text) to service_role;

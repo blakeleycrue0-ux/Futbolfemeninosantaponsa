@@ -1148,6 +1148,83 @@ as $$
   order by tk.creado_en desc;
 $$;
 
+-- ----------------------------------------------------------------------------
+-- Ampliación (fase 3, panel simplificado): añade el nombre de la persona
+-- (no solo el email) y los identificadores internos (user_id/product_id/
+-- match_id), para que "Socios"/"Partidos y entradas"/"Pedidos" puedan
+-- mostrar un nombre en vez de un email como entrada principal y, para
+-- quien de verdad lo necesite, una sección aparte de "Información
+-- técnica" con los ids — sin tener que enseñarlos en la tabla normal.
+-- RETURNS TABLE no deja añadir columnas con CREATE OR REPLACE: hay que
+-- borrar la función antes.
+-- ----------------------------------------------------------------------------
+drop function if exists admin_listar_pedidos();
+create or replace function admin_listar_pedidos()
+returns table (
+  id uuid, estado text, importe numeric, creado_en timestamptz,
+  stripe_checkout_session_id text, user_id uuid, user_email text, user_nombre text,
+  producto_id uuid, producto_nombre text, producto_tipo text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select o.id, o.estado, o.importe, o.creado_en, o.stripe_checkout_session_id,
+         u.id, u.email, coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         p.id, p.nombre, p.tipo
+  from orders o
+  join ticket_products p on p.id = o.product_id
+  join auth.users u on u.id = o.user_id
+  where is_app_admin()
+  order by o.creado_en desc;
+$$;
+
+drop function if exists admin_listar_membresias();
+create or replace function admin_listar_membresias()
+returns table (
+  id uuid, member_number int, estado text, temporada text, creado_en timestamptz,
+  user_id uuid, user_email text, user_nombre text,
+  producto_id uuid, producto_nombre text, team_nombre text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.id, m.member_number, m.estado, m.temporada, m.creado_en,
+         u.id, u.email, coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         p.id, p.nombre, t.nombre
+  from memberships m
+  join ticket_products p on p.id = m.product_id
+  join auth.users u on u.id = m.user_id
+  left join teams t on t.id = m.team_id
+  where is_app_admin()
+  order by m.creado_en desc;
+$$;
+
+drop function if exists admin_listar_entradas();
+create or replace function admin_listar_entradas()
+returns table (
+  id uuid, estado text, creado_en timestamptz,
+  user_id uuid, user_email text, user_nombre text,
+  match_id uuid, rival text, fecha date
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select tk.id, tk.estado, tk.creado_en,
+         u.id, u.email, coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         mt.id, mt.rival, mt.fecha
+  from tickets tk
+  join auth.users u on u.id = tk.user_id
+  join matches mt on mt.id = tk.match_id
+  where is_app_admin()
+  order by tk.creado_en desc;
+$$;
+
 create or replace function admin_listar_accesos(p_match_id uuid)
 returns table (
   id uuid, scanned_at timestamptz, staff_email text,

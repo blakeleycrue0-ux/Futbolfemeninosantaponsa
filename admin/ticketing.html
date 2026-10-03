@@ -9,19 +9,32 @@
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/components.css">
 <link rel="stylesheet" href="../assets/css/admin.css">
+<link rel="stylesheet" href="../assets/css/ticketing.css">
 <style>
-  .tk-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.2rem; }
-  .tk-tab { border: 1px solid rgba(10,10,10,0.16); border-radius: var(--radius-md); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; background: var(--paper); cursor: pointer; }
-  .tk-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .tk-panel { display: none; }
-  .tk-panel.active { display: block; }
+  .view { display: none; }
+  .view.active { display: block; }
   .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
   @media (max-width: 900px) { .form-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
-  .pill-estado { font-size: 0.74rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); display: inline-block; }
-  .pill-ok { background: rgba(34,197,94,0.15); color: #15803d; }
-  .pill-warn { background: rgba(234,179,8,0.15); color: #a16207; }
-  .pill-bad { background: rgba(239,68,68,0.15); color: #b91c1c; }
+
+  /* ---- hub ---- */
+  .hub-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.84rem; font-weight: 600; color: var(--text-on-cream-muted); margin-bottom: 1.2rem; }
+  .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 720px) { .hub-grid { grid-template-columns: 1fr; } }
+  .hub-tile { display: flex; align-items: center; gap: 1rem; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 1.3rem 1.4rem; text-align: left; cursor: pointer; border: 1.5px solid transparent; text-decoration: none; color: inherit; }
+  .hub-tile:hover { border-color: rgba(168,85,247,0.35); }
+  .hub-tile--primary { background: var(--ink); color: #fff; }
+  .hub-tile__icon { font-size: 1.6rem; width: 2.4rem; text-align: center; flex-shrink: 0; }
+  .hub-tile__title { font-family: var(--font-display); font-weight: 800; font-size: 1.02rem; margin: 0 0 0.15rem; }
+  .hub-tile__sub { font-size: 0.82rem; opacity: 0.72; margin: 0; }
+  .hub-secondary { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.4rem; }
+  .hub-secondary .hub-tile { flex: 1 1 220px; padding: 1rem 1.2rem; }
+  .hub-secondary .hub-tile__title { font-size: 0.9rem; }
+
+  /* ---- tecnico ---- */
+  .tecnico-toggle { background: none; border: none; font-size: 0.76rem; color: var(--text-on-cream-muted); text-decoration: underline; cursor: pointer; padding: 0; }
+  .tecnico-row td { background: rgba(10,10,10,0.025); font-size: 0.76rem; font-family: ui-monospace, monospace; color: var(--text-on-cream-muted); }
+  .tecnico-row[hidden] { display: none; }
 </style>
 </head>
 <body class="admin">
@@ -54,139 +67,207 @@
   </aside>
 
   <main class="admin-main">
-    <div class="admin-topbar">
-      <h1>Socios y entradas</h1>
-    </div>
-    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:760px;">
-      Gestión de los productos de socio/abono/entrada que se venden en la web (cobro real por Stripe), de los
-      pedidos y credenciales que generan, y del personal con acceso al escáner de la puerta. Esto es distinto
-      del formulario de "Formularios de interés" y de las cuotas de inscripción de jugadoras.
-    </p>
 
-    <div class="tk-tabs">
-      <button class="tk-tab active" data-tab="productos" type="button">Productos</button>
-      <button class="tk-tab" data-tab="pedidos" type="button">Pedidos</button>
-      <button class="tk-tab" data-tab="membresias" type="button">Socios y abonos</button>
-      <button class="tk-tab" data-tab="entradas" type="button">Entradas</button>
-      <button class="tk-tab" data-tab="accesos" type="button">Registro de accesos</button>
-      <button class="tk-tab" data-tab="personal" type="button">Personal del escáner</button>
+    <!-- ======================= HUB ======================= -->
+    <div class="view active" id="view-hub">
+      <div class="admin-topbar">
+        <h1>¿Qué quieres hacer?</h1>
+      </div>
+      <div class="hub-grid">
+        <a class="hub-tile hub-tile--primary" href="../staff/partido.html">
+          <span class="hub-tile__icon">▣</span>
+          <span><p class="hub-tile__title">Escanear acceso</p><p class="hub-tile__sub">Abre el control de acceso de la puerta</p></span>
+        </a>
+        <button type="button" class="hub-tile" data-view="socios">
+          <span class="hub-tile__icon">👤</span>
+          <span><p class="hub-tile__title">Socios</p><p class="hub-tile__sub">Altas, carnés y estado de socios y abonos</p></span>
+        </button>
+        <button type="button" class="hub-tile" data-view="partidos">
+          <span class="hub-tile__icon">🎟</span>
+          <span><p class="hub-tile__title">Partidos y entradas</p><p class="hub-tile__sub">Precio, aforo y venta online de cada partido</p></span>
+        </button>
+        <button type="button" class="hub-tile" data-view="accesos">
+          <span class="hub-tile__icon">≡</span>
+          <span><p class="hub-tile__title">Accesos de hoy</p><p class="hub-tile__sub">Quién ha entrado en el partido de hoy</p></span>
+        </button>
+      </div>
+      <div class="hub-secondary">
+        <button type="button" class="hub-tile" data-view="pedidos">
+          <span class="hub-tile__icon">🧾</span>
+          <span><p class="hub-tile__title">Pedidos</p><p class="hub-tile__sub">Historial de pagos</p></span>
+        </button>
+        <button type="button" class="hub-tile" data-view="config">
+          <span class="hub-tile__icon">⚙</span>
+          <span><p class="hub-tile__title">Configuración</p><p class="hub-tile__sub">Personal con acceso al escáner</p></span>
+        </button>
+      </div>
     </div>
 
-    <!-- PRODUCTOS -->
-    <div class="tk-panel active" id="panel-productos">
-      <div class="admin-card admin-form-toggle" id="producto-form-card" style="display:none;">
-        <h2 id="producto-form-title">Nuevo producto</h2>
-        <form id="producto-form">
-          <input type="hidden" id="pr-id">
+    <!-- ======================= SOCIOS ======================= -->
+    <div class="view" id="view-socios">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Socios</h1></div>
+
+      <div class="admin-card admin-form-toggle" id="socio-form-card" style="display:none;">
+        <h2 id="socio-form-title">Nuevo producto de socio</h2>
+        <form id="socio-form">
+          <input type="hidden" id="so-id">
           <div class="form-grid">
             <div class="form-field">
-              <label for="pr-tipo">Tipo</label>
-              <select id="pr-tipo" required>
-                <option value="socio">Socio FFSP</option>
-                <option value="abono">Abono de temporada</option>
-                <option value="entrada">Entrada de partido</option>
+              <label for="so-tipo">Tipo</label>
+              <select id="so-tipo" required>
+                <option value="socio">Socio de temporada completa</option>
+                <option value="abono">Abono reducido</option>
               </select>
             </div>
-            <div class="form-field"><label for="pr-nombre">Nombre</label><input type="text" id="pr-nombre" required placeholder="Socio FFSP 2026/27"></div>
-            <div class="form-field"><label for="pr-precio">Precio (€)</label><input type="number" id="pr-precio" min="0" step="0.01" required></div>
-            <div class="form-field"><label for="pr-temporada">Temporada</label><input type="text" id="pr-temporada" value="2026/27" required></div>
-            <div class="form-field" id="pr-scope-field">
-              <label for="pr-scope">Alcance</label>
-              <select id="pr-scope">
+            <div class="form-field"><label for="so-nombre">Nombre</label><input type="text" id="so-nombre" required placeholder="Socio FFSP 2026/27"></div>
+            <div class="form-field"><label for="so-precio">Precio (€)</label><input type="number" id="so-precio" min="0" step="0.01" required></div>
+            <div class="form-field"><label for="so-temporada">Temporada</label><input type="text" id="so-temporada" value="2026/27" required></div>
+            <div class="form-field">
+              <label for="so-scope">Para quién</label>
+              <select id="so-scope">
                 <option value="club">Todo el club (cualquier partido en casa)</option>
                 <option value="team">Un equipo concreto</option>
               </select>
             </div>
-            <div class="form-field" id="pr-team-field" style="display:none;">
-              <label for="pr-team">Equipo</label>
-              <select id="pr-team"></select>
+            <div class="form-field" id="so-team-field" style="display:none;">
+              <label for="so-team">Equipo</label>
+              <select id="so-team"></select>
             </div>
-            <div class="form-field" id="pr-match-field" style="display:none;">
-              <label for="pr-match">Partido</label>
-              <select id="pr-match"></select>
-            </div>
-            <div class="form-field"><label for="pr-capacity">Aforo (vacío = sin límite)</label><input type="number" id="pr-capacity" min="0" step="1"></div>
-            <div class="form-field"><label for="pr-sales-start">Venta desde</label><input type="datetime-local" id="pr-sales-start"></div>
-            <div class="form-field"><label for="pr-sales-end">Venta hasta</label><input type="datetime-local" id="pr-sales-end"></div>
+            <div class="form-field"><label for="so-capacity">Nº máximo de socios (vacío = sin límite)</label><input type="number" id="so-capacity" min="0" step="1"></div>
+            <div class="form-field"><label for="so-sales-start">Venta desde</label><input type="datetime-local" id="so-sales-start"></div>
+            <div class="form-field"><label for="so-sales-end">Venta hasta</label><input type="datetime-local" id="so-sales-end"></div>
           </div>
-          <div class="form-field"><label for="pr-descripcion">Descripción (se ve en la web)</label><textarea id="pr-descripcion" rows="2"></textarea></div>
-          <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="pr-activo" checked> Activo (visible y comprable en la web)</label></div>
+          <div class="form-field"><label for="so-descripcion">Descripción (se ve en la web)</label><textarea id="so-descripcion" rows="2"></textarea></div>
+          <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="so-activo" checked> Venta online activada</label></div>
           <div style="display:flex;gap:0.8rem;">
             <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-            <button type="button" class="btn btn-outline btn-sm" id="producto-cancel-btn">Cancelar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="socio-cancel-btn">Cancelar</button>
           </div>
-          <p id="producto-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+          <p id="socio-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
         </form>
       </div>
 
       <div class="admin-card">
         <div class="admin-topbar" style="margin:0 0 1rem;">
-          <h2 style="margin:0;font-size:1rem;">Catálogo</h2>
-          <button class="btn btn-primary btn-sm" id="producto-new-btn" type="button">Nuevo producto</button>
+          <h2 style="margin:0;font-size:1rem;">Productos de socio/abono</h2>
+          <button class="btn btn-primary btn-sm" id="socio-new-btn" type="button">Nuevo producto</button>
         </div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Tipo</th><th>Nombre</th><th>Precio</th><th>Temporada</th><th>Aforo</th><th>Activo</th><th></th></tr></thead>
-            <tbody id="productos-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+            <thead><tr><th>Tipo</th><th>Nombre</th><th>Precio</th><th>Temporada</th><th>Plazas</th><th>Venta online</th><th></th></tr></thead>
+            <tbody id="socio-productos-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2 style="margin-top:0;">Socias y socios</h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Nº socio</th><th>Nombre</th><th>Producto</th><th>Equipo</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="membresias-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- PEDIDOS -->
-    <div class="tk-panel" id="panel-pedidos">
+    <!-- ======================= PARTIDOS Y ENTRADAS ======================= -->
+    <div class="view" id="view-partidos">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Partidos y entradas</h1></div>
+      <p style="font-size:0.84rem;color:var(--text-on-cream-muted);max-width:640px;">
+        El rival, la fecha, la hora y el campo de cada partido se gestionan en
+        <a href="partidos.html">Partidos</a>. Aquí solo se configura si ese partido vende entradas online, a qué
+        precio y con qué aforo.
+      </p>
+
+      <div class="admin-card admin-form-toggle" id="entrada-form-card" style="display:none;">
+        <h2 id="entrada-form-title">Nueva entrada de partido</h2>
+        <form id="entrada-form">
+          <input type="hidden" id="en-id">
+          <div class="form-grid">
+            <div class="form-field" style="grid-column: span 2;">
+              <label for="en-match">Partido</label>
+              <select id="en-match" required></select>
+            </div>
+            <div class="form-field"><label for="en-precio">Precio (€)</label><input type="number" id="en-precio" min="0" step="0.01" required></div>
+            <div class="form-field"><label for="en-capacity">Aforo (vacío = sin límite)</label><input type="number" id="en-capacity" min="0" step="1"></div>
+            <div class="form-field"><label for="en-sales-start">Venta desde</label><input type="datetime-local" id="en-sales-start"></div>
+            <div class="form-field"><label for="en-sales-end">Venta hasta</label><input type="datetime-local" id="en-sales-end"></div>
+          </div>
+          <div class="form-field"><label for="en-descripcion">Descripción (se ve en la web)</label><textarea id="en-descripcion" rows="2"></textarea></div>
+          <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="en-activo" checked> Venta online activada</label></div>
+          <div style="display:flex;gap:0.8rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="entrada-cancel-btn">Cancelar</button>
+          </div>
+          <p id="entrada-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
       <div class="admin-card">
+        <div class="admin-topbar" style="margin:0 0 1rem;">
+          <h2 style="margin:0;font-size:1rem;">Entradas por partido</h2>
+          <button class="btn btn-primary btn-sm" id="entrada-new-btn" type="button">Nueva entrada</button>
+        </div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Fecha</th><th>Socia/o</th><th>Producto</th><th>Importe</th><th>Estado</th></tr></thead>
-            <tbody id="pedidos-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+            <thead><tr><th>Partido</th><th>Fecha</th><th>Precio</th><th>Plazas</th><th>Venta online</th><th></th></tr></thead>
+            <tbody id="entrada-productos-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- MEMBRESIAS -->
-    <div class="tk-panel" id="panel-membresias">
       <div class="admin-card">
+        <h2 style="margin-top:0;">Entradas vendidas</h2>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Nº socio</th><th>Socia/o</th><th>Producto</th><th>Equipo</th><th>Temporada</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="membresias-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ENTRADAS -->
-    <div class="tk-panel" id="panel-entradas">
-      <div class="admin-card">
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>Fecha compra</th><th>Socia/o</th><th>Partido</th><th>Fecha partido</th><th>Estado</th><th></th></tr></thead>
+            <thead><tr><th>Fecha compra</th><th>Nombre</th><th>Partido</th><th>Fecha partido</th><th>Estado</th><th></th></tr></thead>
             <tbody id="entradas-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ACCESOS -->
-    <div class="tk-panel" id="panel-accesos">
+    <!-- ======================= ACCESOS DE HOY ======================= -->
+    <div class="view" id="view-accesos">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Accesos</h1></div>
       <div class="admin-card">
         <div class="form-field" style="max-width:420px;">
           <label for="acc-match">Partido</label>
           <select id="acc-match"></select>
         </div>
+        <p id="acc-resumen" style="font-size:0.9rem;font-weight:600;"></p>
+        <a href="#" id="acc-ir-escaner" class="btn btn-outline btn-sm" style="margin-bottom:1rem;display:none;">Ir al escáner de este partido →</a>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Hora</th><th>Socia/o</th><th>Tipo</th><th>Validado por</th></tr></thead>
-            <tbody id="accesos-body"><tr><td colspan="4">Elige un partido.</td></tr></tbody>
+            <thead><tr><th>Hora</th><th>Nombre</th><th>Tipo</th><th>Estado</th><th>Validado por</th></tr></thead>
+            <tbody id="accesos-body"><tr><td colspan="5">Elige un partido.</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- PERSONAL -->
-    <div class="tk-panel" id="panel-personal">
+    <!-- ======================= PEDIDOS ======================= -->
+    <div class="view" id="view-pedidos">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Pedidos</h1></div>
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Fecha</th><th>Nombre</th><th>Producto</th><th>Importe</th><th>Estado</th></tr></thead>
+            <tbody id="pedidos-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= CONFIGURACIÓN ======================= -->
+    <div class="view" id="view-config">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Configuración</h1></div>
       <div class="admin-card">
         <h2 style="margin-top:0;">Personal con acceso al panel/escáner</h2>
         <p style="font-size:0.86rem;color:var(--text-on-cream-muted);">
@@ -211,6 +292,7 @@
         </div>
       </div>
     </div>
+
   </main>
 </div>
 
@@ -228,138 +310,219 @@
   function fmtEuros(n) { return (Number(n) || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
   function fmtFecha(f) { return f ? new Date(f).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"; }
   function fmtFechaHora(f) { return f ? new Date(f).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"; }
+  function pill(ok, textoOk, textoNo, modo) {
+    if (modo === "warn") return `<span class="status-pill status-pill--warn">${escapeHtml(textoOk)}</span>`;
+    return ok
+      ? `<span class="status-pill status-pill--ok">${escapeHtml(textoOk)}</span>`
+      : `<span class="status-pill status-pill--bad">${escapeHtml(textoNo)}</span>`;
+  }
 
-  // ---- pestañas ----
-  document.querySelectorAll(".tk-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tk-tab").forEach((t) => t.classList.remove("active"));
-      document.querySelectorAll(".tk-panel").forEach((p) => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
-    });
-  });
+  // ---- navegación entre vistas ----
+  function mostrarVista(nombre) {
+    document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+    const el = document.getElementById("view-" + nombre);
+    if (el) el.classList.add("active");
+    history.replaceState(null, "", nombre === "hub" ? "ticketing.html" : "ticketing.html?view=" + nombre);
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll("[data-view]").forEach((btn) => btn.addEventListener("click", () => mostrarVista(btn.dataset.view)));
 
   let teams = [];
   let matches = [];
 
   const [{ data: teamsData }, { data: matchesData }] = await Promise.all([
     window.spfc.from("teams").select("*").order("orden"),
-    window.spfc.from("matches").select("id, rival, fecha, hora, team_id, teams(nombre)").order("fecha", { ascending: false }).limit(120),
+    window.spfc.from("matches").select("id, rival, fecha, hora, condicion, team_id, teams(nombre)").order("fecha", { ascending: false }).limit(150),
   ]);
   teams = teamsData || [];
   matches = matchesData || [];
-  const teamsById = Object.fromEntries(teams.map((t) => [t.id, t]));
 
-  document.getElementById("pr-team").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
+  document.getElementById("so-team").innerHTML = teams.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join("");
   const matchOptionsHtml = matches.map((m) =>
     `<option value="${m.id}">${fmtFecha(m.fecha)} — vs ${escapeHtml(m.rival)}${m.teams ? " (" + escapeHtml(m.teams.nombre) + ")" : ""}</option>`).join("");
-  document.getElementById("pr-match").innerHTML = matchOptionsHtml;
+  document.getElementById("en-match").innerHTML = matchOptionsHtml;
   document.getElementById("acc-match").innerHTML = `<option value="">— elige —</option>` + matchOptionsHtml;
 
-  // ================= PRODUCTOS =================
-  const prFormCard = document.getElementById("producto-form-card");
-  const prForm = document.getElementById("producto-form");
-
-  function prSyncFieldsByTipo() {
-    const tipo = document.getElementById("pr-tipo").value;
-    document.getElementById("pr-match-field").style.display = tipo === "entrada" ? "block" : "none";
-    document.getElementById("pr-scope-field").style.display = tipo === "entrada" ? "none" : "block";
-    const scope = document.getElementById("pr-scope").value;
-    document.getElementById("pr-team-field").style.display = tipo !== "entrada" && scope === "team" ? "block" : "none";
-  }
-  document.getElementById("pr-tipo").addEventListener("change", prSyncFieldsByTipo);
-  document.getElementById("pr-scope").addEventListener("change", prSyncFieldsByTipo);
-
-  document.getElementById("producto-new-btn").addEventListener("click", () => {
-    prForm.reset();
-    document.getElementById("pr-id").value = "";
-    document.getElementById("pr-temporada").value = "2026/27";
-    document.getElementById("pr-activo").checked = true;
-    document.getElementById("producto-form-title").textContent = "Nuevo producto";
-    document.getElementById("producto-form-status").textContent = "";
-    prSyncFieldsByTipo();
-    prFormCard.style.display = "block";
-    prFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  // ================= SOCIOS: productos =================
+  const soFormCard = document.getElementById("socio-form-card");
+  const soForm = document.getElementById("socio-form");
+  document.getElementById("so-scope").addEventListener("change", (e) => {
+    document.getElementById("so-team-field").style.display = e.target.value === "team" ? "block" : "none";
   });
-  document.getElementById("producto-cancel-btn").addEventListener("click", () => (prFormCard.style.display = "none"));
+  document.getElementById("socio-new-btn").addEventListener("click", () => {
+    soForm.reset();
+    document.getElementById("so-id").value = "";
+    document.getElementById("so-temporada").value = "2026/27";
+    document.getElementById("so-activo").checked = true;
+    document.getElementById("so-team-field").style.display = "none";
+    document.getElementById("socio-form-title").textContent = "Nuevo producto de socio";
+    document.getElementById("socio-form-status").textContent = "";
+    soFormCard.style.display = "block";
+    soFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("socio-cancel-btn").addEventListener("click", () => (soFormCard.style.display = "none"));
 
-  async function loadProductos() {
-    const { data, error } = await window.spfc.from("ticket_products").select("*").order("creado_en", { ascending: false });
-    const body = document.getElementById("productos-body");
+  let productosSocio = [];
+  async function loadProductosSocio() {
+    const { data, error } = await window.spfc.from("ticket_products").select("*").in("tipo", ["socio", "abono"]).order("creado_en", { ascending: false });
+    productosSocio = data || [];
+    const body = document.getElementById("socio-productos-body");
     if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay productos. Crea el primero.</td></tr>'; return; }
-    body.innerHTML = data.map((p) => `
+    if (!productosSocio.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay productos de socio. Crea el primero.</td></tr>'; return; }
+    body.innerHTML = productosSocio.map((p) => `
       <tr>
-        <td>${{ socio: "Socio", abono: "Abono", entrada: "Entrada" }[p.tipo] || p.tipo}</td>
+        <td>${p.tipo === "socio" ? "Socio" : "Abono"}</td>
         <td>${escapeHtml(p.nombre)}</td>
         <td>${fmtEuros(p.precio)}</td>
         <td>${escapeHtml(p.temporada)}</td>
         <td>${p.capacity != null ? (p.capacity_sold || 0) + " / " + p.capacity : "Sin límite"}</td>
-        <td>${p.activo ? '<span class="pill-estado pill-ok">Activo</span>' : '<span class="pill-estado pill-bad">Inactivo</span>'}</td>
+        <td>${pill(p.activo, "Activada", "Desactivada")}</td>
         <td class="actions">
           <button class="btn btn-outline btn-sm" data-edit="${p.id}" type="button">Editar</button>
           <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
         </td>
       </tr>`).join("");
-
     body.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => {
-      const p = data.find((x) => x.id === btn.dataset.edit);
+      const p = productosSocio.find((x) => x.id === btn.dataset.edit);
       if (!p) return;
-      document.getElementById("pr-id").value = p.id;
-      document.getElementById("pr-tipo").value = p.tipo;
-      document.getElementById("pr-nombre").value = p.nombre;
-      document.getElementById("pr-descripcion").value = p.descripcion || "";
-      document.getElementById("pr-precio").value = p.precio;
-      document.getElementById("pr-temporada").value = p.temporada;
-      document.getElementById("pr-activo").checked = p.activo;
-      document.getElementById("pr-capacity").value = p.capacity != null ? p.capacity : "";
-      document.getElementById("pr-sales-start").value = p.sales_start ? p.sales_start.slice(0, 16) : "";
-      document.getElementById("pr-sales-end").value = p.sales_end ? p.sales_end.slice(0, 16) : "";
-      document.getElementById("pr-scope").value = p.scope;
-      if (p.team_id) document.getElementById("pr-team").value = p.team_id;
-      if (p.match_id) document.getElementById("pr-match").value = p.match_id;
-      document.getElementById("producto-form-title").textContent = "Editar producto";
-      document.getElementById("producto-form-status").textContent = "";
-      prSyncFieldsByTipo();
-      prFormCard.style.display = "block";
-      prFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("so-id").value = p.id;
+      document.getElementById("so-tipo").value = p.tipo;
+      document.getElementById("so-nombre").value = p.nombre;
+      document.getElementById("so-descripcion").value = p.descripcion || "";
+      document.getElementById("so-precio").value = p.precio;
+      document.getElementById("so-temporada").value = p.temporada;
+      document.getElementById("so-activo").checked = p.activo;
+      document.getElementById("so-capacity").value = p.capacity != null ? p.capacity : "";
+      document.getElementById("so-sales-start").value = p.sales_start ? p.sales_start.slice(0, 16) : "";
+      document.getElementById("so-sales-end").value = p.sales_end ? p.sales_end.slice(0, 16) : "";
+      document.getElementById("so-scope").value = p.scope;
+      document.getElementById("so-team-field").style.display = p.scope === "team" ? "block" : "none";
+      if (p.team_id) document.getElementById("so-team").value = p.team_id;
+      document.getElementById("socio-form-title").textContent = "Editar producto de socio";
+      document.getElementById("socio-form-status").textContent = "";
+      soFormCard.style.display = "block";
+      soFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
     }));
     body.querySelectorAll("[data-del]").forEach((btn) => btn.addEventListener("click", async () => {
       if (!confirm("¿Eliminar este producto? Si ya tiene pedidos pagados, mejor desactívalo en vez de borrarlo.")) return;
       const { error } = await window.spfc.from("ticket_products").delete().eq("id", btn.dataset.del);
       if (error) { alert("Error: " + error.message); return; }
-      loadProductos();
+      loadProductosSocio();
     }));
   }
 
-  prForm.addEventListener("submit", async (e) => {
+  soForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const status = document.getElementById("producto-form-status");
-    const tipo = document.getElementById("pr-tipo").value;
-    const scope = tipo === "entrada" ? "club" : document.getElementById("pr-scope").value;
+    const status = document.getElementById("socio-form-status");
+    const scope = document.getElementById("so-scope").value;
     const fila = {
-      tipo,
-      nombre: document.getElementById("pr-nombre").value.trim(),
-      descripcion: document.getElementById("pr-descripcion").value.trim() || null,
-      precio: Number(document.getElementById("pr-precio").value),
-      temporada: document.getElementById("pr-temporada").value.trim(),
-      activo: document.getElementById("pr-activo").checked,
-      capacity: document.getElementById("pr-capacity").value === "" ? null : Number(document.getElementById("pr-capacity").value),
-      sales_start: document.getElementById("pr-sales-start").value || null,
-      sales_end: document.getElementById("pr-sales-end").value || null,
+      tipo: document.getElementById("so-tipo").value,
+      nombre: document.getElementById("so-nombre").value.trim(),
+      descripcion: document.getElementById("so-descripcion").value.trim() || null,
+      precio: Number(document.getElementById("so-precio").value),
+      temporada: document.getElementById("so-temporada").value.trim(),
+      activo: document.getElementById("so-activo").checked,
+      capacity: document.getElementById("so-capacity").value === "" ? null : Number(document.getElementById("so-capacity").value),
+      sales_start: document.getElementById("so-sales-start").value || null,
+      sales_end: document.getElementById("so-sales-end").value || null,
       scope,
-      team_id: scope === "team" ? document.getElementById("pr-team").value : null,
-      match_id: tipo === "entrada" ? document.getElementById("pr-match").value : null,
+      team_id: scope === "team" ? document.getElementById("so-team").value : null,
+      match_id: null,
     };
-    const id = document.getElementById("pr-id").value;
+    const id = document.getElementById("so-id").value;
     status.textContent = "Guardando…";
     const { error } = id
       ? await window.spfc.from("ticket_products").update(fila).eq("id", id)
       : await window.spfc.from("ticket_products").insert(fila);
     if (error) { status.textContent = "Error: " + error.message; return; }
     status.textContent = "Guardado ✓";
-    prFormCard.style.display = "none";
-    loadProductos();
+    soFormCard.style.display = "none";
+    loadProductosSocio();
+  });
+
+  // ================= PARTIDOS Y ENTRADAS: productos =================
+  const enFormCard = document.getElementById("entrada-form-card");
+  const enForm = document.getElementById("entrada-form");
+  document.getElementById("entrada-new-btn").addEventListener("click", () => {
+    enForm.reset();
+    document.getElementById("en-id").value = "";
+    document.getElementById("en-activo").checked = true;
+    document.getElementById("entrada-form-title").textContent = "Nueva entrada de partido";
+    document.getElementById("entrada-form-status").textContent = "";
+    enFormCard.style.display = "block";
+    enFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("entrada-cancel-btn").addEventListener("click", () => (enFormCard.style.display = "none"));
+
+  let productosEntrada = [];
+  async function loadProductosEntrada() {
+    const { data, error } = await window.spfc.from("ticket_products").select("*, matches(rival, fecha)").eq("tipo", "entrada").order("creado_en", { ascending: false });
+    productosEntrada = data || [];
+    const body = document.getElementById("entrada-productos-body");
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!productosEntrada.length) { body.innerHTML = '<tr><td colspan="6">Todavía no se vende ninguna entrada online.</td></tr>'; return; }
+    body.innerHTML = productosEntrada.map((p) => `
+      <tr>
+        <td>${p.matches ? "vs " + escapeHtml(p.matches.rival) : "—"}</td>
+        <td>${p.matches ? fmtFecha(p.matches.fecha) : "—"}</td>
+        <td>${fmtEuros(p.precio)}</td>
+        <td>${p.capacity != null ? (p.capacity_sold || 0) + " / " + p.capacity : "Sin límite"}</td>
+        <td>${pill(p.activo, "Activada", "Desactivada")}</td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" data-edit="${p.id}" type="button">Editar</button>
+          <button class="btn-icon danger" data-del="${p.id}" type="button">✕</button>
+        </td>
+      </tr>`).join("");
+    body.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => {
+      const p = productosEntrada.find((x) => x.id === btn.dataset.edit);
+      if (!p) return;
+      document.getElementById("en-id").value = p.id;
+      document.getElementById("en-match").value = p.match_id;
+      document.getElementById("en-precio").value = p.precio;
+      document.getElementById("en-descripcion").value = p.descripcion || "";
+      document.getElementById("en-activo").checked = p.activo;
+      document.getElementById("en-capacity").value = p.capacity != null ? p.capacity : "";
+      document.getElementById("en-sales-start").value = p.sales_start ? p.sales_start.slice(0, 16) : "";
+      document.getElementById("en-sales-end").value = p.sales_end ? p.sales_end.slice(0, 16) : "";
+      document.getElementById("entrada-form-title").textContent = "Editar entrada de partido";
+      document.getElementById("entrada-form-status").textContent = "";
+      enFormCard.style.display = "block";
+      enFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+    body.querySelectorAll("[data-del]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar esta entrada de partido? Si ya tiene pedidos pagados, mejor desactívala en vez de borrarla.")) return;
+      const { error } = await window.spfc.from("ticket_products").delete().eq("id", btn.dataset.del);
+      if (error) { alert("Error: " + error.message); return; }
+      loadProductosEntrada();
+    }));
+  }
+
+  enForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("entrada-form-status");
+    const fila = {
+      tipo: "entrada",
+      nombre: "Entrada — " + (matches.find((m) => m.id === document.getElementById("en-match").value) || {}).rival,
+      descripcion: document.getElementById("en-descripcion").value.trim() || null,
+      precio: Number(document.getElementById("en-precio").value),
+      temporada: "N/A",
+      activo: document.getElementById("en-activo").checked,
+      capacity: document.getElementById("en-capacity").value === "" ? null : Number(document.getElementById("en-capacity").value),
+      sales_start: document.getElementById("en-sales-start").value || null,
+      sales_end: document.getElementById("en-sales-end").value || null,
+      scope: "club",
+      team_id: null,
+      match_id: document.getElementById("en-match").value,
+    };
+    const id = document.getElementById("en-id").value;
+    status.textContent = "Guardando…";
+    const { error } = id
+      ? await window.spfc.from("ticket_products").update(fila).eq("id", id)
+      : await window.spfc.from("ticket_products").insert(fila);
+    if (error) { status.textContent = "Error: " + error.message; return; }
+    status.textContent = "Guardado ✓";
+    enFormCard.style.display = "none";
+    loadProductosEntrada();
   });
 
   // ================= PEDIDOS =================
@@ -368,33 +531,45 @@
     const body = document.getElementById("pedidos-body");
     if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     if (!data || !data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no hay pedidos.</td></tr>'; return; }
-    const pillByEstado = { pagado: "pill-ok", pendiente: "pill-warn", fallido: "pill-bad", cancelado: "pill-bad", reembolsado: "pill-bad" };
-    body.innerHTML = data.map((o) => `
+    const pillPorEstado = { pagado: ["ok", "Pagado"], pendiente: ["warn", "Pendiente"], fallido: ["bad", "Fallido"], cancelado: ["bad", "Cancelado"], reembolsado: ["bad", "Reembolsado"] };
+    body.innerHTML = data.map((o) => {
+      const [modo, texto] = pillPorEstado[o.estado] || ["muted", o.estado];
+      return `
       <tr>
         <td>${fmtFechaHora(o.creado_en)}</td>
-        <td>${escapeHtml(o.user_email)}</td>
+        <td>${escapeHtml(o.user_nombre)}</td>
         <td>${escapeHtml(o.producto_nombre)}</td>
         <td>${fmtEuros(o.importe)}</td>
-        <td><span class="pill-estado ${pillByEstado[o.estado] || ""}">${escapeHtml(o.estado)}</span></td>
-      </tr>`).join("");
+        <td><span class="status-pill status-pill--${modo}">${escapeHtml(texto)}</span></td>
+      </tr>`;
+    }).join("");
   }
 
-  // ================= MEMBRESIAS =================
+  // ================= SOCIOS: membresias =================
   async function loadMembresias() {
     const { data, error } = await window.spfc.rpc("admin_listar_membresias");
     const body = document.getElementById("membresias-body");
-    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay socias/os ni abonos.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay socias/os ni abonos.</td></tr>'; return; }
     body.innerHTML = data.map((m) => `
       <tr>
         <td>${String(m.member_number).padStart(4, "0")}</td>
-        <td>${escapeHtml(m.user_email)}</td>
+        <td>${escapeHtml(m.user_nombre)}</td>
         <td>${escapeHtml(m.producto_nombre)}</td>
         <td>${m.team_nombre ? escapeHtml(m.team_nombre) : "Todo el club"}</td>
-        <td>${escapeHtml(m.temporada)}</td>
-        <td><span class="pill-estado ${m.estado === "activa" ? "pill-ok" : "pill-bad"}">${escapeHtml(m.estado)}</span></td>
-        <td class="actions">${m.estado === "activa" ? `<button class="btn btn-outline btn-sm" data-cancelar="${m.id}" type="button">Cancelar</button>` : ""}</td>
+        <td>${pill(m.estado === "activa", "Activa", m.estado === "caducada" ? "Caducada" : "Cancelada")}</td>
+        <td class="actions">
+          <button class="tecnico-toggle" data-tecnico="m-${m.id}" type="button">Información técnica</button>
+          ${m.estado === "activa" ? `<button class="btn btn-outline btn-sm" data-cancelar="${m.id}" type="button">Cancelar</button>` : ""}
+        </td>
+      </tr>
+      <tr class="tecnico-row" id="m-${m.id}" hidden>
+        <td colspan="6">membership_id: ${m.id} · user_id: ${m.user_id} · producto_id: ${m.producto_id} · email: ${escapeHtml(m.user_email)}</td>
       </tr>`).join("");
+    body.querySelectorAll("[data-tecnico]").forEach((btn) => btn.addEventListener("click", () => {
+      const row = document.getElementById(btn.dataset.tecnico);
+      row.hidden = !row.hidden;
+    }));
     body.querySelectorAll("[data-cancelar]").forEach((btn) => btn.addEventListener("click", async () => {
       if (!confirm("¿Cancelar esta membresía? Dejará de dar acceso al campo. Esto NO hace el reembolso en Stripe — si corresponde, hazlo tú desde el dashboard de Stripe.")) return;
       const { error } = await window.spfc.from("memberships").update({ estado: "cancelada" }).eq("id", btn.dataset.cancelar);
@@ -403,7 +578,7 @@
     }));
   }
 
-  // ================= ENTRADAS =================
+  // ================= PARTIDOS Y ENTRADAS: entradas vendidas =================
   async function loadEntradas() {
     const { data, error } = await window.spfc.rpc("admin_listar_entradas");
     const body = document.getElementById("entradas-body");
@@ -412,12 +587,22 @@
     body.innerHTML = data.map((t) => `
       <tr>
         <td>${fmtFechaHora(t.creado_en)}</td>
-        <td>${escapeHtml(t.user_email)}</td>
+        <td>${escapeHtml(t.user_nombre)}</td>
         <td>vs ${escapeHtml(t.rival)}</td>
         <td>${fmtFecha(t.fecha)}</td>
-        <td><span class="pill-estado ${t.estado === "valido" ? "pill-ok" : "pill-bad"}">${escapeHtml(t.estado)}</span></td>
-        <td class="actions">${t.estado === "valido" ? `<button class="btn btn-outline btn-sm" data-cancelar="${t.id}" type="button">Cancelar</button>` : ""}</td>
+        <td>${pill(t.estado === "valido", "Válida", t.estado === "reembolsado" ? "Reembolsada" : "Cancelada")}</td>
+        <td class="actions">
+          <button class="tecnico-toggle" data-tecnico="t-${t.id}" type="button">Información técnica</button>
+          ${t.estado === "valido" ? `<button class="btn btn-outline btn-sm" data-cancelar="${t.id}" type="button">Cancelar</button>` : ""}
+        </td>
+      </tr>
+      <tr class="tecnico-row" id="t-${t.id}" hidden>
+        <td colspan="6">ticket_id: ${t.id} · user_id: ${t.user_id} · match_id: ${t.match_id} · email: ${escapeHtml(t.user_email)}</td>
       </tr>`).join("");
+    body.querySelectorAll("[data-tecnico]").forEach((btn) => btn.addEventListener("click", () => {
+      const row = document.getElementById(btn.dataset.tecnico);
+      row.hidden = !row.hidden;
+    }));
     body.querySelectorAll("[data-cancelar]").forEach((btn) => btn.addEventListener("click", async () => {
       if (!confirm("¿Cancelar esta entrada? Dejará de dar acceso al partido. Esto NO hace el reembolso en Stripe.")) return;
       const { error } = await window.spfc.from("tickets").update({ estado: "cancelado" }).eq("id", btn.dataset.cancelar);
@@ -427,24 +612,56 @@
   }
 
   // ================= ACCESOS =================
-  document.getElementById("acc-match").addEventListener("change", async (e) => {
+  function hoyISO() { return new Date().toISOString().slice(0, 10); }
+  async function cargarAccesosDe(matchId) {
     const body = document.getElementById("accesos-body");
-    const matchId = e.target.value;
-    if (!matchId) { body.innerHTML = '<tr><td colspan="4">Elige un partido.</td></tr>'; return; }
-    body.innerHTML = '<tr><td colspan="4">Cargando…</td></tr>';
+    const irEscaner = document.getElementById("acc-ir-escaner");
+    const resumen = document.getElementById("acc-resumen");
+    if (!matchId) {
+      body.innerHTML = '<tr><td colspan="5">Elige un partido.</td></tr>';
+      irEscaner.style.display = "none";
+      resumen.textContent = "";
+      return;
+    }
+    irEscaner.href = "../staff/partido.html?id=" + matchId;
+    irEscaner.style.display = "inline-block";
+    resumen.textContent = "";
+    body.innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
     const { data, error } = await window.spfc.rpc("admin_listar_accesos", { p_match_id: matchId });
-    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="4">Todavía no se ha validado ningún acceso para este partido.</td></tr>'; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    const activos = (data || []).filter((a) => !a.reversed).length;
+    resumen.textContent = activos + " persona" + (activos === 1 ? "" : "s") + " dentro ahora mismo.";
+    if (!data || !data.length) { body.innerHTML = '<tr><td colspan="5">Todavía no se ha validado ningún acceso para este partido.</td></tr>'; return; }
     body.innerHTML = data.map((a) => `
       <tr>
         <td>${fmtFechaHora(a.scanned_at)}</td>
-        <td>${escapeHtml(a.user_email)}</td>
-        <td>${escapeHtml(a.origen)}</td>
-        <td>${escapeHtml(a.staff_email || "—")}</td>
+        <td>${escapeHtml(a.user_nombre || a.user_email || "—")}${a.member_number ? " · Socio " + String(a.member_number).padStart(4, "0") : ""}</td>
+        <td>${escapeHtml(a.origen)}${a.metodo === "manual" ? " · Manual" : ""}</td>
+        <td>${a.reversed
+          ? `<span class="status-pill status-pill--bad">Anulado</span>`
+          : `<span class="status-pill status-pill--ok">Correcto</span>`}
+          ${a.reversed && a.reversal_reason ? `<div style="font-size:0.74rem;color:var(--text-on-cream-muted);margin-top:0.2rem;">${escapeHtml(a.reversal_reason)}</div>` : ""}
+        </td>
+        <td>${escapeHtml(a.reversed ? (a.reversed_by || "—") : (a.staff_email || "—"))}</td>
       </tr>`).join("");
-  });
+  }
+  document.getElementById("acc-match").addEventListener("change", (e) => cargarAccesosDe(e.target.value));
 
-  // ================= PERSONAL =================
+  function elegirPartidoPorDefecto() {
+    const hoy = hoyISO();
+    const deHoy = matches.find((m) => m.condicion === "local" && m.fecha === hoy);
+    if (deHoy) return deHoy;
+    return matches
+      .filter((m) => m.condicion === "local" && m.fecha >= hoy)
+      .sort((a, b) => a.fecha.localeCompare(b.fecha))[0];
+  }
+  const partidoPorDefecto = elegirPartidoPorDefecto();
+  if (partidoPorDefecto) {
+    document.getElementById("acc-match").value = partidoPorDefecto.id;
+    cargarAccesosDe(partidoPorDefecto.id);
+  }
+
+  // ================= CONFIGURACIÓN: personal =================
   async function loadPersonal() {
     const { data, error } = await window.spfc.from("app_admins").select("*").order("email");
     const body = document.getElementById("personal-body");
@@ -477,7 +694,11 @@
     loadPersonal();
   });
 
-  await Promise.all([loadProductos(), loadPedidos(), loadMembresias(), loadEntradas(), loadPersonal()]);
+  await Promise.all([loadProductosSocio(), loadProductosEntrada(), loadPedidos(), loadMembresias(), loadEntradas(), loadPersonal()]);
+
+  // ---- vista inicial según ?view= ----
+  const vistaInicial = new URLSearchParams(location.search).get("view");
+  if (vistaInicial) mostrarVista(vistaInicial);
 })();
 </script>
 </body>

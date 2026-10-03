@@ -17,6 +17,12 @@
 [functions."payment-reminders"]
   schedule = "0 8 * * *"
 
+# El icono/logo del modelo de Apple Wallet son ficheros estáticos leídos con
+# fs.readFileSync en tiempo de ejecución (no con require), así que esbuild
+# no los detecta solo — hay que decirle explícitamente que los empaquete.
+[functions."generate-wallet-pass"]
+  included_files = ["netlify/functions/lib/wallet-pass-model/**"]
+
 [[headers]]
   for = "/*"
   [headers.values]

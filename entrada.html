@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi entrada — Fútbol Femenino Santa Ponça</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .mc-wrap { max-width: 420px; margin: 0 auto; }
+  .mc-card { background: var(--ink); color: var(--text-on-dark); border-radius: var(--radius-lg); padding: 1.8rem; text-align: center; }
+  .mc-tipo { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-light); font-weight: 700; }
+  .mc-nombre { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; margin: 0.3rem 0; }
+  .mc-meta { font-size: 0.85rem; color: var(--text-on-dark-muted); }
+  .mc-qr { background: #fff; border-radius: var(--radius-md); padding: 1rem; display: inline-block; margin: 1.2rem 0; }
+  .mc-empty { color: var(--text-on-cream-muted); text-align: center; }
+  .pill-estado { font-size: 0.74rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); display: inline-block; margin-top: 0.6rem; }
+  .pill-bad { background: rgba(239,68,68,0.2); color: #fca5a5; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-cuenta-->
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Mi entrada</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="mc-wrap">
+        <div id="mc-loading">Cargando…</div>
+        <div id="mc-content" style="display:none;" class="mc-card">
+          <div class="mc-tipo">Entrada de partido</div>
+          <div class="mc-nombre" id="mc-nombre"></div>
+          <div class="mc-meta" id="mc-meta"></div>
+          <div id="mc-qr-wrap"><div class="mc-qr" id="mc-qr"></div></div>
+          <div id="mc-cancelada" class="pill-estado pill-bad" style="display:none;">Esta entrada ha sido cancelada</div>
+          <div>
+            <button type="button" class="btn btn-outline btn-sm" id="mc-wallet-btn">Añadir a Apple Wallet</button>
+          </div>
+          <p id="mc-wallet-status" style="margin-top:0.6rem;font-size:0.78rem;color:var(--text-on-dark-muted);"></p>
+        </div>
+        <div id="mc-error" class="mc-empty" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!--#include footer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/qr.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const id = new URLSearchParams(location.search).get("id");
+  if (!window.spfc) return;
+  const sesion = await SPFC_TICKETING.sesionActual();
+  if (!sesion) {
+    location.href = "cuenta.html?volver=" + encodeURIComponent(location.pathname + location.search);
+    return;
+  }
+
+  const loadingEl = document.getElementById("mc-loading");
+  const errorEl = document.getElementById("mc-error");
+
+  if (!id) { loadingEl.style.display = "none"; errorEl.textContent = "Falta el id de la entrada."; errorEl.style.display = "block"; return; }
+
+  const { data: ticket } = await window.spfc.from("tickets").select("*, matches(rival, fecha, hora, campo)").eq("id", id).single();
+  if (!ticket) {
+    loadingEl.style.display = "none";
+    errorEl.textContent = "No se ha encontrado esa entrada, o no es tuya.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  document.getElementById("mc-nombre").textContent = "vs " + ticket.matches.rival;
+  document.getElementById("mc-meta").textContent = SPFC_TICKETING.fmtFecha(ticket.matches.fecha) + (ticket.matches.hora ? " · " + ticket.matches.hora.slice(0, 5) + "h" : "") + (ticket.matches.campo ? " · " + ticket.matches.campo : "");
+
+  if (ticket.estado !== "valido") {
+    document.getElementById("mc-cancelada").style.display = "inline-block";
+    document.getElementById("mc-qr-wrap").style.display = "none";
+    document.getElementById("mc-wallet-btn").style.display = "none";
+  } else {
+    const token = await SPFC_TICKETING.credencialDeTicket(ticket.id);
+    if (token) SPFC_QR.render(document.getElementById("mc-qr"), token);
+  }
+
+  loadingEl.style.display = "none";
+  document.getElementById("mc-content").style.display = "block";
+
+  document.getElementById("mc-wallet-btn").addEventListener("click", async () => {
+    const statusEl = document.getElementById("mc-wallet-status");
+    statusEl.textContent = "Generando…";
+    try {
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch(`/.netlify/functions/generate-wallet-pass?ticket=${ticket.id}`, {
+        headers: { Authorization: "Bearer " + (session ? session.access_token : "") },
+      });
+      if (res.status === 501) {
+        const json = await res.json();
+        statusEl.textContent = json.error;
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ffsp.pkpass";
+      a.click();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = "";
+    } catch (err) {
+      statusEl.textContent = "Error: " + err.message;
+    }
+  });
+})();
+</script>
+</body>
+</html>

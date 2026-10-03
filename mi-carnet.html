@@ -3,48 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mi carnet — Fútbol Femenino Santa Ponça</title>
+<title>Mi carné — Fútbol Femenino Santa Ponça</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <script src="assets/js/ga4.js"></script>
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
 <style>
-  .mc-wrap { max-width: 420px; margin: 0 auto; }
-  .mc-card { background: var(--ink); color: var(--text-on-dark); border-radius: var(--radius-lg); padding: 1.8rem; text-align: center; margin-bottom: 1.4rem; }
-  .mc-crest { width: 56px; height: 56px; object-fit: contain; margin-bottom: 0.6rem; }
-  .mc-tipo { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-light); font-weight: 700; }
-  .mc-nombre { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; margin: 0.3rem 0; }
-  .mc-numero { font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; margin: 0.6rem 0; }
-  .mc-meta { font-size: 0.82rem; color: var(--text-on-dark-muted); }
-  .mc-qr { background: #fff; border-radius: var(--radius-md); padding: 1rem; display: inline-block; margin: 1.2rem 0; }
-  .mc-empty { color: var(--text-on-cream-muted); text-align: center; }
+  .mc-wrap { max-width: 440px; margin: 0 auto; }
+  .mc-item { margin-bottom: 2rem; text-align: center; }
+  .mc-item .membership-card { margin: 0 auto; text-align: left; }
 </style>
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
 <!--#include header-cuenta-->
-<main id="main">
-  <section class="hero hero--sub">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="container hero__content">
-      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
-      <h1 class="hero__title">Mi carnet</h1>
+<main id="main" class="tk-page">
+  <div class="container mc-wrap">
+    <div class="tk-pagehead" style="padding-top:0;">
+      <span class="tk-eyebrow">Mi carné</span>
     </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="mc-wrap">
-        <div id="mc-loading">Cargando…</div>
-        <div id="mc-list"></div>
-      </div>
-    </div>
-  </section>
+    <div id="mc-loading" class="tk-empty" style="margin-top:1rem;">Cargando…</div>
+    <div id="mc-list" style="margin-top:1.2rem;"></div>
+  </div>
 </main>
 
 <!--#include footer-->
@@ -65,60 +51,43 @@
     return;
   }
 
+  const nombreTitular = SPFC_TICKETING.nombreTitular(sesion.user);
   const membresias = (await SPFC_TICKETING.misMembresias()).filter((m) => m.estado === "activa");
   const loadingEl = document.getElementById("mc-loading");
   const listEl = document.getElementById("mc-list");
   loadingEl.style.display = "none";
 
   if (!membresias.length) {
-    listEl.innerHTML = '<p class="mc-empty">Todavía no eres socia/o ni tienes abono activo. <a href="socios.html">Hazte socia/o</a>.</p>';
+    listEl.innerHTML = '<p class="tk-empty">Todavía no eres socia/o ni tienes abono activo. <a href="socios.html">Hazte socia/o</a>.</p>';
     return;
   }
 
   listEl.innerHTML = membresias.map((m, i) => `
-    <div class="mc-card">
-      <img class="mc-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
-      <div class="mc-tipo">${m.ticket_products.tipo === "socio" ? "Socio FFSP" : "Abono de temporada"}</div>
-      <div class="mc-nombre">${m.ticket_products.nombre}</div>
-      <div class="mc-numero">Nº ${String(m.member_number).padStart(4, "0")}</div>
-      <div class="mc-meta">${m.teams ? m.teams.nombre : "Todo el club"} · Temporada ${m.temporada}</div>
-      <div class="mc-qr" id="mc-qr-${i}"></div>
-      <div>
-        <button type="button" class="btn btn-outline btn-sm" data-wallet="${m.id}" data-idx="${i}">Añadir a Apple Wallet</button>
+    <div class="mc-item">
+      ${SPFC_TICKETING.membershipCardHTML(m, nombreTitular)}
+      <div class="qr-toggle-wrap">
+        <button type="button" class="tk-btn tk-btn--outline" data-toggle-qr="${i}">Mostrar código de acceso</button>
       </div>
-      <p id="mc-wallet-status-${i}" style="margin-top:0.6rem;font-size:0.78rem;color:var(--text-on-dark-muted);"></p>
+      <div class="qr-panel" id="qr-panel-${i}">
+        <p class="tk-eyebrow" style="justify-content:center;">Código de acceso</p>
+        <div class="qr-panel__box" id="qr-box-${i}"></div>
+        <div class="qr-panel__titular">${SPFC_TICKETING.escapeHtml(nombreTitular)}</div>
+        <div class="qr-panel__hint">Socio ${String(m.member_number).padStart(4, "0")} · Presenta este código en el acceso.</div>
+        <button type="button" class="tk-btn tk-btn--outline" style="margin-top:1rem;" data-toggle-qr="${i}">Ocultar código</button>
+      </div>
     </div>`).join("");
 
-  for (let i = 0; i < membresias.length; i++) {
-    const token = await SPFC_TICKETING.credencialDeMembership(membresias[i].id);
-    if (token) SPFC_QR.render(document.getElementById(`mc-qr-${i}`), token);
-  }
+  const tokens = await Promise.all(membresias.map((m) => SPFC_TICKETING.credencialDeMembership(m.id)));
 
-  listEl.querySelectorAll("[data-wallet]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const statusEl = document.getElementById("mc-wallet-status-" + btn.dataset.idx);
-      statusEl.textContent = "Generando…";
-      try {
-        const { data: { session } } = await window.spfc.auth.getSession();
-        const res = await fetch(`/.netlify/functions/generate-wallet-pass?membership=${btn.dataset.wallet}`, {
-          headers: { Authorization: "Bearer " + (session ? session.access_token : "") },
-        });
-        if (res.status === 501) {
-          const json = await res.json();
-          statusEl.textContent = json.error;
-          return;
-        }
-        if (!res.ok) throw new Error(await res.text());
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "ffsp.pkpass";
-        a.click();
-        URL.revokeObjectURL(url);
-        statusEl.textContent = "";
-      } catch (err) {
-        statusEl.textContent = "Error: " + err.message;
+  listEl.querySelectorAll("[data-toggle-qr]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = btn.dataset.toggleQr;
+      const panel = document.getElementById(`qr-panel-${i}`);
+      const abriendo = !panel.classList.contains("is-open");
+      panel.classList.toggle("is-open", abriendo);
+      if (abriendo && !panel.dataset.rendered && tokens[i]) {
+        SPFC_QR.render(document.getElementById(`qr-box-${i}`), tokens[i]);
+        panel.dataset.rendered = "1";
       }
     });
   });

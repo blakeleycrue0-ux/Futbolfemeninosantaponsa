@@ -3,6 +3,21 @@
     el.textContent = new Date().getFullYear();
   });
 
+  // Enlace de "Mi cuenta" en el menú: se convierte en "Mi FFSP" (al carné/
+  // entradas/socio) en cuanto hay sesión iniciada — para que nunca vuelva a
+  // costar encontrar el área de la socia. Degrada bien sin JS/Supabase:
+  // el marcado ya trae "Iniciar sesión" por defecto.
+  if (window.spfc) {
+    window.spfc.auth.getSession().then(({ data: { session } }) => {
+      document.querySelectorAll("[data-session-link]").forEach((a) => {
+        if (session) {
+          a.textContent = "Mi FFSP";
+          a.href = "mi-ffsp.html";
+        }
+      });
+    });
+  }
+
   // Cabecera + menú a pantalla completa (.hdr / #burger / #fullnav) — antes
   // este bloque estaba copiado a mano, casi idéntico, en cada página.
   const header = document.getElementById("hdr");

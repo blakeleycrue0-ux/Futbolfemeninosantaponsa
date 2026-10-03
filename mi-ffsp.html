@@ -5,64 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mi FFSP — Fútbol Femenino Santa Ponça</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <script src="assets/js/ga4.js"></script>
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
-<style>
-  .mf-wrap { max-width: 680px; margin: 0 auto; }
-  .mf-card { background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 1.8rem; margin-bottom: 1.2rem; }
-  @media (max-width: 620px) { .mf-card { padding: 1.3rem; } }
-  .mf-card h2 { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--font-display); }
-  .mf-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(10,10,10,0.1); padding: 0.8rem 0; gap: 1rem; }
-  .mf-row:first-of-type { border-top: none; }
-  .mf-row-title { font-weight: 700; }
-  .mf-row-meta { font-size: 0.82rem; color: var(--text-on-cream-muted); }
-  .mf-empty { color: var(--text-on-cream-muted); font-size: 0.9rem; }
-  .pill-estado { font-size: 0.74rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); }
-  .pill-ok { background: rgba(34,197,94,0.15); color: #15803d; }
-  .pill-warn { background: rgba(234,179,8,0.15); color: #a16207; }
-  .pill-bad { background: rgba(239,68,68,0.15); color: #b91c1c; }
-</style>
+<link rel="stylesheet" href="assets/css/ticketing.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
 <!--#include header-cuenta-->
-<main id="main">
-  <section class="hero hero--sub">
-    <div class="hero__media" aria-hidden="true"></div>
-    <div class="container hero__content">
-      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
-      <h1 class="hero__title">Mi FFSP</h1>
-    </div>
-  </section>
+<main id="main" class="tk-page">
+  <div class="container" style="max-width:560px;">
+    <div id="mf-loading" class="tk-empty">Cargando…</div>
 
-  <section class="section">
-    <div class="container">
-      <div class="mf-wrap">
-        <div id="mf-loading">Cargando…</div>
-        <div id="mf-content" style="display:none;">
-          <div class="mf-card">
-            <h2>Socio / Abono</h2>
-            <div id="mf-membresias"></div>
-            <a class="btn btn-outline btn-sm" href="mi-carnet.html" style="margin-top:0.8rem;">Ver mi carnet</a>
-          </div>
-          <div class="mf-card">
-            <h2>Mis entradas</h2>
-            <div id="mf-entradas"></div>
-          </div>
-          <div class="mf-card">
-            <h2>Historial de pedidos</h2>
-            <div id="mf-pedidos"></div>
-          </div>
-        </div>
+    <div id="mf-content" style="display:none;">
+      <h1 class="hub-greeting" id="mf-saludo">Hola.</h1>
+
+      <div class="hub-section" id="mf-carnet-section" style="display:none;">
+        <div id="mf-carnet-module"></div>
+      </div>
+
+      <div class="hub-section" id="mf-proximo-section" style="display:none;">
+        <div class="hub-section__head"><h2>Próximo en casa</h2></div>
+        <div class="hub-row" id="mf-proximo-row"></div>
+      </div>
+
+      <div class="hub-section">
+        <div class="hub-section__head"><h2>Mis entradas</h2></div>
+        <div id="mf-entradas"></div>
+      </div>
+
+      <div class="hub-section">
+        <div class="hub-section__head"><h2>Historial</h2></div>
+        <div id="mf-pedidos" style="opacity:0.7;"></div>
       </div>
     </div>
-  </section>
+  </div>
 </main>
 
 <!--#include footer-->
@@ -81,7 +63,9 @@
     return;
   }
 
-  const pillByEstado = { activa: "pill-ok", valido: "pill-ok", pagado: "pill-ok", pendiente: "pill-warn" };
+  const esc = SPFC_TICKETING.escapeHtml;
+  const nombreTitular = SPFC_TICKETING.nombreTitular(sesion.user);
+  document.getElementById("mf-saludo").textContent = "Hola, " + nombreTitular.split("@")[0].split(" ")[0] + ".";
 
   const [membresias, entradas, pedidos] = await Promise.all([
     SPFC_TICKETING.misMembresias(),
@@ -89,28 +73,47 @@
     SPFC_TICKETING.misPedidos(),
   ]);
 
-  const mEl = document.getElementById("mf-membresias");
-  mEl.innerHTML = membresias.length ? membresias.map((m) => `
-    <div class="mf-row">
-      <div><div class="mf-row-title">${m.ticket_products.nombre}</div><div class="mf-row-meta">Nº ${String(m.member_number).padStart(4, "0")} · ${m.teams ? m.teams.nombre : "Todo el club"}</div></div>
-      <span class="pill-estado ${pillByEstado[m.estado] || "pill-bad"}">${m.estado}</span>
-    </div>`).join("") : '<p class="mf-empty">Todavía no eres socia/o ni tienes abono. <a href="socios.html">Hazte socia/o</a>.</p>';
+  const activa = membresias.find((m) => m.estado === "activa");
+  if (activa) {
+    document.getElementById("mf-carnet-section").style.display = "block";
+    document.getElementById("mf-carnet-module").innerHTML = SPFC_TICKETING.carnetModuleHTML({
+      nombre: nombreTitular,
+      numero: activa.member_number,
+      temporada: (activa.temporada || "").replace("20", ""),
+    });
+
+    const proximo = await SPFC_TICKETING.proximoPartidoElegible(activa);
+    if (proximo) {
+      document.getElementById("mf-proximo-section").style.display = "block";
+      document.getElementById("mf-proximo-row").innerHTML = `
+        <div>
+          <div class="hub-row__title">FFSP <span style="color:var(--text-on-cream-muted);font-weight:400;">vs</span> ${esc(proximo.rival)}</div>
+          <div class="hub-row__meta">${esc(SPFC_TICKETING.fmtFecha(proximo.fecha))}${proximo.hora ? " · " + esc(proximo.hora.slice(0, 5)) + "h" : ""}</div>
+        </div>`;
+    }
+  }
 
   const eEl = document.getElementById("mf-entradas");
   const ahora = new Date();
-  const proximas = entradas.filter((t) => t.matches && new Date(t.matches.fecha) >= ahora);
-  eEl.innerHTML = entradas.length ? entradas.map((t) => `
-    <div class="mf-row">
-      <div><div class="mf-row-title">vs ${t.matches.rival}</div><div class="mf-row-meta">${SPFC_TICKETING.fmtFecha(t.matches.fecha)}${t.matches.hora ? " · " + t.matches.hora.slice(0, 5) + "h" : ""}</div></div>
-      <a class="btn btn-outline btn-sm" href="entrada.html?id=${t.id}">Ver entrada</a>
-    </div>`).join("") : '<p class="mf-empty">Todavía no tienes ninguna entrada. <a href="entradas.html">Comprar entradas</a>.</p>';
+  const proximasEntradas = entradas.filter((t) => t.matches && new Date(t.matches.fecha) >= ahora && t.estado === "valido");
+  eEl.innerHTML = proximasEntradas.length ? proximasEntradas.map((t) => `
+    <a class="hub-row" href="entrada.html?id=${t.id}" style="text-decoration:none;color:inherit;">
+      <div>
+        <div class="hub-row__title">vs ${esc(t.matches.rival)}</div>
+        <div class="hub-row__meta">${esc(SPFC_TICKETING.fmtFecha(t.matches.fecha))}${t.matches.hora ? " · " + esc(t.matches.hora.slice(0, 5)) + "h" : ""}</div>
+      </div>
+      <span class="fixture-row__cta">Ver →</span>
+    </a>`).join("") : `<p class="tk-empty">Todavía no tienes entradas. <a href="entradas.html">Comprar entradas</a>.</p>`;
 
   const pEl = document.getElementById("mf-pedidos");
   pEl.innerHTML = pedidos.length ? pedidos.map((o) => `
-    <div class="mf-row">
-      <div><div class="mf-row-title">${o.ticket_products.nombre}</div><div class="mf-row-meta">${new Date(o.creado_en).toLocaleDateString("es-ES")} · ${SPFC_TICKETING.fmtEuros(o.importe)}</div></div>
-      <span class="pill-estado ${pillByEstado[o.estado] || "pill-bad"}">${o.estado}</span>
-    </div>`).join("") : '<p class="mf-empty">Todavía no has hecho ningún pedido.</p>';
+    <div class="hub-row hub-row--muted">
+      <div>
+        <div class="hub-row__title">${esc(o.ticket_products.nombre)}</div>
+        <div class="hub-row__meta">${esc(new Date(o.creado_en).toLocaleDateString("es-ES"))} · ${SPFC_TICKETING.fmtEuros(o.importe)}</div>
+      </div>
+      <span class="hub-row__meta">${esc(o.estado)}</span>
+    </div>`).join("") : '<p class="tk-empty">Todavía no has hecho ningún pedido.</p>';
 
   document.getElementById("mf-loading").style.display = "none";
   document.getElementById("mf-content").style.display = "block";

@@ -192,6 +192,21 @@
 .confirm-box__eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-dark); }
 .confirm-box__title { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; margin: 0.4rem 0 1.4rem; }
 
+/* ---------- Estados estandarizados — nunca solo por color ---------------- */
+.status-pill {
+  display: inline-flex; align-items: center; gap: 0.35em;
+  font-size: 0.74rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px;
+}
+.status-pill::before { font-weight: 900; }
+.status-pill--ok { background: rgba(34,197,94,0.14); color: #15803d; }
+.status-pill--ok::before { content: '✓'; }
+.status-pill--bad { background: rgba(239,68,68,0.14); color: #b91c1c; }
+.status-pill--bad::before { content: '✕'; }
+.status-pill--warn { background: rgba(234,179,8,0.16); color: #92700c; }
+.status-pill--warn::before { content: '●'; }
+.status-pill--muted { background: rgba(10,10,10,0.07); color: var(--text-on-cream-muted); }
+.status-pill--muted::before { content: '—'; }
+
 /* ---------- Estados vacíos / error — compartidos ------------------------- */
 .tk-empty { color: var(--text-on-cream-muted); font-size: 0.88rem; }
 .tk-empty a { color: var(--accent-dark); font-weight: 700; }

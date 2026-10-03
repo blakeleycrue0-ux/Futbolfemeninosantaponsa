@@ -2,58 +2,95 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Control de acceso — Escáner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escanear acceso</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="stylesheet" href="../assets/css/variables.css">
 <link rel="stylesheet" href="../assets/css/base.css">
-<link rel="stylesheet" href="../assets/css/components.css">
-<link rel="stylesheet" href="../assets/css/admin.css">
+<link rel="stylesheet" href="../assets/css/ticketing.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
 <style>
   html, body { height: 100%; }
-  body.admin { background: var(--ink); overflow: hidden; }
-  .sc-shell { display: flex; flex-direction: column; height: 100vh; color: var(--text-on-dark); }
-  .sc-top { padding: 0.9rem 1rem; display: flex; justify-content: space-between; align-items: center; background: var(--dark-2); }
-  .sc-top-match { font-size: 0.85rem; }
+  body { background: #000; overflow: hidden; }
+  .sc-shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; color: #f4f0e8; }
+  .sc-top {
+    padding: max(env(safe-area-inset-top), 0.7rem) 1rem 0.7rem; display: flex; justify-content: space-between; align-items: center; background: #141414;
+  }
+  .sc-top-match { font-size: 0.82rem; }
   .sc-top-match strong { display: block; font-family: var(--font-display); }
+  .sc-top a { color: rgba(244,240,232,0.6); font-size: 0.78rem; font-weight: 700; text-decoration: none; }
   .sc-video-wrap { flex: 1; position: relative; background: #000; overflow: hidden; }
   video { width: 100%; height: 100%; object-fit: cover; }
-  .sc-frame { position: absolute; inset: 12% 12%; border: 3px solid rgba(255,255,255,0.6); border-radius: 12px; pointer-events: none; }
+  .sc-frame { position: absolute; inset: 14% 10%; border: 3px solid rgba(255,255,255,0.55); border-radius: 16px; pointer-events: none; }
+  .sc-hint { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 0.86rem; color: rgba(244,240,232,0.75); }
   .sc-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-  .sc-result.valido { background: rgba(22,163,74,0.95); }
-  .sc-result.ya-usado { background: rgba(217,119,6,0.95); }
-  .sc-result.invalido { background: rgba(220,38,38,0.95); }
-  .sc-result-icono { font-size: 3.4rem; }
-  .sc-result-texto { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; margin: 0.6rem 0 0.2rem; }
-  .sc-result-sub { font-size: 0.95rem; opacity: 0.9; }
-  .sc-bottom { padding: 1rem; background: var(--dark-2); text-align: center; }
-  .sc-estado { font-size: 0.85rem; color: var(--text-on-dark-muted); min-height: 1.2em; }
+  .sc-result.valido { background: rgba(21,128,61,0.97); }
+  .sc-result.ya-usado { background: rgba(146,112,12,0.97); }
+  .sc-result.invalido { background: rgba(185,28,28,0.97); }
+  .sc-result.red { background: rgba(23,23,23,0.98); }
+  .sc-result-icono { font-size: 3.2rem; line-height: 1; }
+  .sc-result-texto { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin: 0.7rem 0 0.15rem; }
+  .sc-result-sub { font-size: 1rem; opacity: 0.92; }
+  .sc-result-motivo { font-size: 0.88rem; opacity: 0.85; margin-top: 0.3rem; max-width: 28ch; }
+  .sc-result-deshacer { margin-top: 1.3rem; background: rgba(0,0,0,0.25); border: 1.5px solid rgba(244,240,232,0.5); color: #fff; padding: 0.7em 1.4em; border-radius: 8px; font-weight: 700; font-size: 0.86rem; }
+  .sc-result-actions { margin-top: 1.1rem; display: flex; gap: 0.7rem; }
+  .sc-bottom { background: #141414; padding: 0.9rem 1rem max(env(safe-area-inset-bottom), 0.9rem); }
+  .sc-estado { font-size: 0.82rem; color: rgba(244,240,232,0.55); text-align: center; min-height: 1.2em; margin-bottom: 0.6rem; }
+  .sc-recientes { max-height: 30vh; overflow-y: auto; }
 </style>
 </head>
-<body class="admin">
+<body>
 <div class="sc-shell">
   <div class="sc-top">
     <div class="sc-top-match">
-      <strong id="sc-rival">Cargando partido…</strong>
+      <strong id="sc-rival">Cargando…</strong>
       <span id="sc-fecha"></span>
     </div>
-    <a href="partido.html" class="btn btn-ghost-light btn-sm">Cambiar</a>
+    <a href="partido.html" id="sc-cambiar">Cambiar</a>
   </div>
 
   <div class="sc-video-wrap">
     <video id="sc-video" playsinline autoplay muted></video>
     <div class="sc-frame" id="sc-frame"></div>
+    <p class="sc-hint" id="sc-hint">Apunta al código QR</p>
     <div class="sc-result" id="sc-result" style="display:none;">
       <div class="sc-result-icono" id="sc-result-icono"></div>
       <div class="sc-result-texto" id="sc-result-texto"></div>
       <div class="sc-result-sub" id="sc-result-sub"></div>
+      <div class="sc-result-motivo" id="sc-result-motivo"></div>
+      <button type="button" class="sc-result-deshacer" id="sc-deshacer-btn" style="display:none;">Deshacer</button>
+      <div class="sc-result-actions" id="sc-result-actions" style="display:none;">
+        <button type="button" class="tk-btn tk-btn--outline" id="sc-reintentar-btn" style="border-color:rgba(244,240,232,0.5);color:#fff;">Reintentar</button>
+      </div>
     </div>
   </div>
 
   <div class="sc-bottom">
-    <p class="sc-estado" id="sc-estado">Apunta la cámara al código QR.</p>
-    <button type="button" class="btn btn-primary btn-sm" id="sc-siguiente-btn" style="display:none;">Escanear siguiente</button>
+    <p class="sc-estado" id="sc-estado">&nbsp;</p>
+    <button type="button" class="tk-btn tk-btn--outline tk-btn--block" id="sc-siguiente-btn" style="display:none;border-color:rgba(244,240,232,0.4);color:#fff;margin-bottom:0.8rem;">Escanear siguiente</button>
+    <p class="staff-section-title" style="margin-bottom:0.5rem;">Últimos accesos</p>
+    <div class="sc-recientes" id="sc-recientes"><p class="staff-empty" style="padding:0.5rem 0;">—</p></div>
+  </div>
+</div>
+
+<!-- Modal de anulación (compartido: desde "Deshacer" o desde tocar un acceso reciente) -->
+<div class="staff-modal-backdrop" id="anular-backdrop" style="display:none;">
+  <div class="staff-modal">
+    <h2>Anular acceso</h2>
+    <p id="anular-quien"></p>
+    <p style="font-size:0.8rem;">El código volverá a estar disponible para acceder.</p>
+    <form id="anular-form">
+      <label class="staff-radio"><input type="radio" name="motivo" value="accidental" checked> Escaneo accidental</label>
+      <label class="staff-radio"><input type="radio" name="motivo" value="no_entro"> Persona no accedió</label>
+      <label class="staff-radio"><input type="radio" name="motivo" value="error_personal"> Error del personal</label>
+      <label class="staff-radio"><input type="radio" name="motivo" value="otro"> Otro</label>
+      <div style="display:flex;gap:0.7rem;margin-top:1.1rem;">
+        <button type="submit" class="tk-btn tk-btn--accent" style="flex:1;">Confirmar anulación</button>
+        <button type="button" class="tk-btn tk-btn--outline" id="anular-cancelar" style="border-color:rgba(244,240,232,0.4);color:#fff;">Cancelar</button>
+      </div>
+      <p id="anular-status" style="margin-top:0.8rem;font-size:0.84rem;"></p>
+    </form>
   </div>
 </div>
 
@@ -69,10 +106,8 @@
   if (!window.spfc) return;
   const matchId = new URLSearchParams(location.search).get("match");
   const estadoEl = document.getElementById("sc-estado");
-  if (!matchId) {
-    estadoEl.textContent = "Falta elegir un partido.";
-    return;
-  }
+  if (!matchId) { estadoEl.textContent = "Falta elegir un partido."; return; }
+  document.getElementById("sc-cambiar").href = "partido.html?id=" + matchId;
 
   const { data: match } = await window.spfc.from("matches").select("rival, fecha, hora").eq("id", matchId).single();
   if (match) {
@@ -80,67 +115,165 @@
     document.getElementById("sc-fecha").textContent = new Date(match.fecha).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }) + (match.hora ? " · " + match.hora.slice(0, 5) + "h" : "");
   }
 
+  async function token() {
+    const { data: { session } } = await window.spfc.auth.getSession();
+    return session ? session.access_token : null;
+  }
+
+  // ---------- últimos accesos ----------
+  async function cargarRecientes() {
+    const { data } = await window.spfc.rpc("admin_listar_accesos", { p_match_id: matchId });
+    const cont = document.getElementById("sc-recientes");
+    const recientes = (data || []).slice(0, 8);
+    if (!recientes.length) { cont.innerHTML = '<p class="staff-empty" style="padding:0.5rem 0;">Todavía no hay accesos.</p>'; return; }
+    cont.innerHTML = recientes.map((a) => {
+      const hora = new Date(a.scanned_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      const pill = a.reversed
+        ? '<span class="status-pill status-pill--bad">Anulado</span>'
+        : '<span class="status-pill status-pill--ok">Dentro</span>';
+      return `
+        <button type="button" class="staff-row-btn staff-row" data-log-id="${a.id}" data-nombre="${(a.user_nombre || "").replace(/"/g, '')}" data-ya-anulado="${a.reversed}">
+          <div>
+            <div class="staff-row__title">${a.user_nombre || a.user_email || "—"}</div>
+            <div class="staff-row__meta">${a.member_number ? "Socio " + String(a.member_number).padStart(4, "0") : (a.origen || "")}${a.reversal_reason ? " · " + a.reversal_reason : ""}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="staff-row__time">${hora}</div>
+            ${pill}
+          </div>
+        </button>`;
+    }).join("");
+    cont.querySelectorAll("[data-log-id]").forEach((btn) => btn.addEventListener("click", () => {
+      if (btn.dataset.yaAnulado === "true") return;
+      abrirAnular(btn.dataset.logId, btn.dataset.nombre);
+    }));
+  }
+
+  // ---------- anulación (modal compartido) ----------
+  const backdrop = document.getElementById("anular-backdrop");
+  let anularLogId = null;
+  function abrirAnular(logId, nombre) {
+    anularLogId = logId;
+    document.getElementById("anular-quien").textContent = nombre || "Esta persona";
+    document.getElementById("anular-status").textContent = "";
+    backdrop.style.display = "flex";
+  }
+  document.getElementById("anular-cancelar").addEventListener("click", () => { backdrop.style.display = "none"; });
+  document.getElementById("anular-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("anular-status");
+    const motivo = document.querySelector('input[name="motivo"]:checked').value;
+    status.textContent = "Anulando…";
+    try {
+      const res = await fetch("/.netlify/functions/revert-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (await token()) },
+        body: JSON.stringify({ log_id: anularLogId, motivo }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      status.textContent = "Acceso anulado ✓";
+      setTimeout(() => { backdrop.style.display = "none"; cargarRecientes(); }, 700);
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+    }
+  });
+
+  // ---------- escáner ----------
   const video = document.getElementById("sc-video");
   const canvas = document.getElementById("sc-canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const resultEl = document.getElementById("sc-result");
   const siguienteBtn = document.getElementById("sc-siguiente-btn");
+  const hintEl = document.getElementById("sc-hint");
 
   let escaneando = true;
   let ultimoCodigo = null;
   let ultimoCodigoEn = 0;
-  let rafId = null;
-
   let autoReanudarTimer = null;
+  let ultimoLogIdParaDeshacer = null;
 
   function reanudar() {
     clearTimeout(autoReanudarTimer);
     resultEl.style.display = "none";
+    hintEl.style.display = "block";
     siguienteBtn.style.display = "none";
+    document.getElementById("sc-deshacer-btn").style.display = "none";
+    document.getElementById("sc-result-actions").style.display = "none";
     ultimoCodigo = null;
     escaneando = true;
   }
   siguienteBtn.addEventListener("click", reanudar);
 
-  function mostrarResultado(tipo, icono, texto, sub) {
+  function mostrarResultado(tipo, icono, texto, sub, motivo, opts) {
+    opts = opts || {};
     escaneando = false;
+    hintEl.style.display = "none";
     resultEl.className = "sc-result " + tipo;
     document.getElementById("sc-result-icono").textContent = icono;
     document.getElementById("sc-result-texto").textContent = texto;
     document.getElementById("sc-result-sub").textContent = sub || "";
+    document.getElementById("sc-result-motivo").textContent = motivo || "";
     resultEl.style.display = "flex";
-    siguienteBtn.style.display = "inline-block";
-    // Reanuda sola a los 4s aunque nadie toque el botón, para no frenar la cola.
+    siguienteBtn.style.display = "block";
+
+    const deshacerBtn = document.getElementById("sc-deshacer-btn");
+    const accionesEl = document.getElementById("sc-result-actions");
+    deshacerBtn.style.display = "none";
+    accionesEl.style.display = "none";
+
+    if (opts.logId && tipo === "valido") {
+      ultimoLogIdParaDeshacer = opts.logId;
+      deshacerBtn.style.display = "inline-block";
+    }
+    if (opts.mostrarReintentar) {
+      accionesEl.style.display = "flex";
+    }
+
     clearTimeout(autoReanudarTimer);
-    autoReanudarTimer = setTimeout(reanudar, 4000);
+    if (!opts.sinAutoReanudar) autoReanudarTimer = setTimeout(reanudar, 6000);
   }
 
-  async function validar(token) {
+  document.getElementById("sc-deshacer-btn").addEventListener("click", () => {
+    if (!ultimoLogIdParaDeshacer) return;
+    abrirAnular(ultimoLogIdParaDeshacer, document.getElementById("sc-result-sub").textContent);
+  });
+
+  let ultimoTokenEscaneado = null;
+  document.getElementById("sc-reintentar-btn").addEventListener("click", () => {
+    if (ultimoTokenEscaneado) validar(ultimoTokenEscaneado);
+  });
+
+  async function validar(codigo) {
+    ultimoTokenEscaneado = codigo;
     estadoEl.textContent = "Comprobando…";
+    let res;
     try {
-      const { data: { session } } = await window.spfc.auth.getSession();
-      const res = await fetch("/.netlify/functions/scan-access", {
+      res = await fetch("/.netlify/functions/scan-access", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
-        body: JSON.stringify({ token, match_id: matchId }),
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (await token()) },
+        body: JSON.stringify({ token: codigo, match_id: matchId }),
       });
-      if (!res.ok) {
-        mostrarResultado("invalido", "⚠️", "Error de red", await res.text());
-        return;
-      }
-      const json = await res.json();
-      estadoEl.textContent = "Apunta la cámara al código QR.";
-      if (json.resultado === "VALIDO") {
-        mostrarResultado("valido", "✓", "ACCESO VÁLIDO", json.etiqueta || "");
-      } else if (json.resultado === "YA_USADO") {
-        const hora = json.hora_original ? new Date(json.hora_original).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "";
-        mostrarResultado("ya-usado", "⟳", "YA USADO", (json.etiqueta || "") + (hora ? " · entró a las " + hora : ""));
-      } else {
-        mostrarResultado("invalido", "✕", "NO VÁLIDO", json.motivo || "");
-      }
     } catch (err) {
-      mostrarResultado("invalido", "⚠️", "Error de red", "Comprueba la conexión e inténtalo de nuevo.");
+      mostrarResultado("red", "⚠", "SIN CONEXIÓN", "No se ha podido comprobar el acceso.", "Comprueba tu conexión e inténtalo de nuevo.", { mostrarReintentar: true, sinAutoReanudar: true });
+      estadoEl.textContent = "";
+      return;
     }
+    if (!res.ok) {
+      mostrarResultado("red", "⚠", "ERROR", "No se ha podido comprobar el acceso.", await res.text(), { mostrarReintentar: true, sinAutoReanudar: true });
+      estadoEl.textContent = "";
+      return;
+    }
+    const json = await res.json();
+    estadoEl.textContent = "";
+    if (json.resultado === "VALIDO") {
+      mostrarResultado("valido", "✓", "ACCESO CORRECTO", json.etiqueta || "", "✓ Entrada registrada", { logId: json.log_id });
+    } else if (json.resultado === "YA_USADO") {
+      const hora = json.hora_original ? new Date(json.hora_original).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "";
+      mostrarResultado("ya-usado", "⟳", "ENTRADA YA UTILIZADA", json.etiqueta || "", hora ? "Ya entró a las " + hora : "", {});
+    } else {
+      mostrarResultado("invalido", "✕", "ACCESO NO VÁLIDO", json.etiqueta || "", json.motivo || "Código no reconocido.", {});
+    }
+    cargarRecientes();
   }
 
   function tick() {
@@ -159,7 +292,7 @@
         }
       }
     }
-    rafId = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
   }
 
   try {
@@ -169,13 +302,15 @@
     tick();
   } catch (err) {
     if (err.name === "NotAllowedError") {
-      estadoEl.textContent = "Permiso de cámara denegado — autorízalo en los ajustes del navegador y recarga la página.";
+      estadoEl.textContent = "Permiso de cámara denegado — autorízalo en los ajustes del navegador y recarga.";
     } else if (err.name === "NotFoundError") {
       estadoEl.textContent = "No se ha encontrado ninguna cámara en este dispositivo.";
     } else {
       estadoEl.textContent = "No se ha podido abrir la cámara: " + err.message;
     }
   }
+
+  cargarRecientes();
 })();
 </script>
 </body>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buscar persona — Control de acceso</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="stylesheet" href="../assets/css/variables.css">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/ticketing.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+</head>
+<body style="background:var(--ink);">
+<div class="staff-shell">
+  <div class="staff-topbar">
+    <a href="#" id="bk-back" style="color:rgba(244,240,232,0.6);">← Volver</a>
+    <strong style="color:#fff;font-size:0.85rem;" id="bk-match"></strong>
+  </div>
+
+  <p class="staff-section-title">Buscar persona o entrada</p>
+  <input type="search" class="staff-search-input" id="bk-input" placeholder="Nombre, nº de socio, id de entrada…" autofocus>
+  <div id="bk-resultados"><p class="staff-empty">Escribe para buscar.</p></div>
+</div>
+
+<div class="staff-modal-backdrop" id="detalle-backdrop" style="display:none;">
+  <div class="staff-modal" id="detalle-modal"></div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="js/staff-auth.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  const matchId = new URLSearchParams(location.search).get("match");
+  document.getElementById("bk-back").href = matchId ? "partido.html?id=" + matchId : "partido.html";
+  if (matchId) {
+    const { data: m } = await window.spfc.from("matches").select("rival").eq("id", matchId).single();
+    if (m) document.getElementById("bk-match").textContent = "vs " + m.rival;
+  }
+
+  async function token() {
+    const { data: { session } } = await window.spfc.auth.getSession();
+    return session ? session.access_token : null;
+  }
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  const input = document.getElementById("bk-input");
+  const resultadosEl = document.getElementById("bk-resultados");
+  let ultimaBusqueda = 0;
+
+  async function buscar(q) {
+    const miTurno = ++ultimaBusqueda;
+    if (q.trim().length < 2) { resultadosEl.innerHTML = '<p class="staff-empty">Escribe para buscar.</p>'; return; }
+    resultadosEl.innerHTML = '<p class="staff-empty">Buscando…</p>';
+    let json;
+    try {
+      const res = await fetch("/.netlify/functions/buscar-persona", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (await token()) },
+        body: JSON.stringify({ q, match_id: matchId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      json = await res.json();
+    } catch (err) {
+      if (miTurno === ultimaBusqueda) resultadosEl.innerHTML = `<p class="staff-empty">No se ha podido buscar: ${esc(err.message)}</p>`;
+      return;
+    }
+    if (miTurno !== ultimaBusqueda) return; // respuesta vieja, ya se ha vuelto a buscar
+    const resultados = json.resultados || [];
+    if (!resultados.length) { resultadosEl.innerHTML = '<p class="staff-empty">Sin resultados.</p>'; return; }
+    resultadosEl.innerHTML = resultados.map((r, i) => {
+      const estadoLinea = r.acceso_hoy
+        ? `<span class="status-pill status-pill--ok">Dentro · ${new Date(r.acceso_hoy.hora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</span>`
+        : (matchId ? `<span class="status-pill status-pill--muted">No ha accedido</span>` : "");
+      return `
+        <button type="button" class="staff-row-btn staff-row" data-i="${i}">
+          <div>
+            <div class="staff-row__title">${esc(r.nombre)}</div>
+            <div class="staff-row__meta">${r.tipo === "socio" ? "Socio " + String(r.member_number).padStart(4, "0") + (r.team_nombre ? " · " + esc(r.team_nombre) : "") : "Entrada vs " + esc(r.match_rival)}${r.email ? " · " + esc(r.email) : ""}</div>
+          </div>
+          ${estadoLinea}
+        </button>`;
+    }).join("");
+
+    resultadosEl.querySelectorAll("[data-i]").forEach((btn) => btn.addEventListener("click", () => abrirDetalle(resultados[Number(btn.dataset.i)])));
+  }
+
+  let debounceTimer = null;
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => buscar(input.value), 300);
+  });
+
+  const backdrop = document.getElementById("detalle-backdrop");
+  function cerrarDetalle() { backdrop.style.display = "none"; }
+
+  function abrirDetalle(r) {
+    const modal = document.getElementById("detalle-modal");
+    const titulo = r.tipo === "socio" ? `Socio ${String(r.member_number).padStart(4, "0")} · ${esc(r.estado)}` : `Entrada vs ${esc(r.match_rival)} · ${esc(r.estado)}`;
+    modal.innerHTML = `
+      <h2>${esc(r.nombre)}</h2>
+      <p>${titulo}</p>
+      <div id="detalle-status" style="font-size:0.84rem;margin-bottom:0.8rem;"></div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem;">
+        ${matchId ? (r.acceso_hoy
+          ? `<button type="button" class="tk-btn tk-btn--outline" id="detalle-anular" style="border-color:rgba(244,240,232,0.4);color:#fff;">Anular acceso</button>`
+          : `<button type="button" class="tk-btn tk-btn--accent" id="detalle-registrar">Registrar acceso manualmente</button>`
+        ) : '<p style="font-size:0.8rem;color:rgba(244,240,232,0.5);">Elige un partido desde "Modo partido" para registrar accesos.</p>'}
+        <button type="button" class="tk-btn tk-btn--outline" id="detalle-cerrar" style="border-color:rgba(244,240,232,0.4);color:#fff;">Cerrar</button>
+      </div>`;
+    backdrop.style.display = "flex";
+    document.getElementById("detalle-cerrar").addEventListener("click", cerrarDetalle);
+
+    const registrarBtn = document.getElementById("detalle-registrar");
+    if (registrarBtn) registrarBtn.addEventListener("click", async () => {
+      const status = document.getElementById("detalle-status");
+      if (!confirm(`¿Registrar el acceso de ${r.nombre} manualmente? Esto pasa por las mismas comprobaciones que el escáner.`)) return;
+      status.textContent = "Registrando…";
+      try {
+        const res = await fetch("/.netlify/functions/manual-admit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + (await token()) },
+          body: JSON.stringify({ tipo: r.tipo, id: r.id, match_id: matchId }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json) throw new Error("No se ha podido registrar.");
+        if (json.resultado === "VALIDO") {
+          status.textContent = "✓ Acceso registrado.";
+          setTimeout(() => { cerrarDetalle(); buscar(input.value); }, 800);
+        } else if (json.resultado === "YA_USADO") {
+          status.textContent = "Ya tenía acceso registrado.";
+        } else {
+          status.textContent = json.motivo || "No se ha podido registrar.";
+        }
+      } catch (err) {
+        status.textContent = "Error: " + err.message;
+      }
+    });
+
+    const anularBtn = document.getElementById("detalle-anular");
+    if (anularBtn) anularBtn.addEventListener("click", async () => {
+      const status = document.getElementById("detalle-status");
+      if (!confirm(`¿Anular el acceso de ${r.nombre}? El código volverá a estar disponible.`)) return;
+      status.textContent = "Anulando…";
+      try {
+        const res = await fetch("/.netlify/functions/revert-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + (await token()) },
+          body: JSON.stringify({ log_id: r.acceso_hoy.log_id, motivo: "error_personal" }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        status.textContent = "✓ Acceso anulado.";
+        setTimeout(() => { cerrarDetalle(); buscar(input.value); }, 800);
+      } catch (err) {
+        status.textContent = "Error: " + err.message;
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

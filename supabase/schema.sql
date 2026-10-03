@@ -1060,3 +1060,102 @@ alter table stripe_webhook_events enable row level security;
 
 -- Recuerda añadir al personal de control de acceso en la puerta, p.ej.:
 -- insert into app_admins (email, role) values ('alguien@gmail.com', 'staff');
+
+-- ----------------------------------------------------------------------------
+-- app_admins: política de gestión. Hasta ahora esta tabla no tenía ninguna
+-- política (RLS activada sin políticas = nadie podía leerla ni escribirla
+-- desde el cliente, solo is_app_admin()/is_app_staff() por dentro, siendo
+-- security definer). Con admin/ticketing.html ya hace falta que un admin
+-- pueda dar/quitar acceso de staff sin pedir que se ejecute SQL a mano cada
+-- vez — se añade la misma política admin-gestiona-todo que ya usan el
+-- resto de tablas de este fichero.
+-- ----------------------------------------------------------------------------
+create policy "app_admins_admin_all" on app_admins for all using (is_app_admin()) with check (is_app_admin());
+
+-- ----------------------------------------------------------------------------
+-- RPCs de admin para el panel de Socios y entradas: necesitan mostrar el
+-- email de quien compró, que vive en auth.users (la API pública de
+-- Supabase no expone ese esquema) — por eso van por función security
+-- definer en vez de una consulta normal desde el cliente. Cada una
+-- comprueba is_app_admin() por dentro: quien no sea admin no recibe filas.
+-- ----------------------------------------------------------------------------
+create or replace function admin_listar_pedidos()
+returns table (
+  id uuid, estado text, importe numeric, creado_en timestamptz,
+  stripe_checkout_session_id text, user_email text,
+  producto_nombre text, producto_tipo text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select o.id, o.estado, o.importe, o.creado_en, o.stripe_checkout_session_id,
+         u.email, p.nombre, p.tipo
+  from orders o
+  join ticket_products p on p.id = o.product_id
+  join auth.users u on u.id = o.user_id
+  where is_app_admin()
+  order by o.creado_en desc;
+$$;
+
+create or replace function admin_listar_membresias()
+returns table (
+  id uuid, member_number int, estado text, temporada text, creado_en timestamptz,
+  user_email text, producto_nombre text, team_nombre text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.id, m.member_number, m.estado, m.temporada, m.creado_en,
+         u.email, p.nombre, t.nombre
+  from memberships m
+  join ticket_products p on p.id = m.product_id
+  join auth.users u on u.id = m.user_id
+  left join teams t on t.id = m.team_id
+  where is_app_admin()
+  order by m.creado_en desc;
+$$;
+
+create or replace function admin_listar_entradas()
+returns table (
+  id uuid, estado text, creado_en timestamptz,
+  user_email text, rival text, fecha date
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select tk.id, tk.estado, tk.creado_en, u.email, mt.rival, mt.fecha
+  from tickets tk
+  join auth.users u on u.id = tk.user_id
+  join matches mt on mt.id = tk.match_id
+  where is_app_admin()
+  order by tk.creado_en desc;
+$$;
+
+create or replace function admin_listar_accesos(p_match_id uuid)
+returns table (
+  id uuid, scanned_at timestamptz, staff_email text,
+  user_email text, origen text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select l.id, l.scanned_at, l.staff_email,
+         coalesce(mu.email, tu.email),
+         case when l.credential_id in (select id from access_credentials where membership_id is not null) then 'socio/abono' else 'entrada' end
+  from match_access_log l
+  join access_credentials c on c.id = l.credential_id
+  left join memberships ms on ms.id = c.membership_id
+  left join auth.users mu on mu.id = ms.user_id
+  left join tickets tk on tk.id = c.ticket_id
+  left join auth.users tu on tu.id = tk.user_id
+  where is_app_staff() and l.match_id = p_match_id
+  order by l.scanned_at desc;
+$$;

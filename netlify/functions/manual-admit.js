@@ -1,20 +1,18 @@
 /*
-  Valida una credencial (QR) en la puerta del campo. Único sitio donde se
-  decide si un acceso es válido — el scanner del móvil nunca decide nada
-  por sí mismo, solo manda el token leído y el partido elegido.
+  Alta manual de acceso: para cuando el QR falla (pantalla rota, poca luz,
+  cámara estropeada, cobertura mala...) pero la persona tiene un carné o
+  entrada válidos. Busca primero con buscar-persona.js, y llama a esta
+  Function con el resultado elegido.
 
-  Anti-doble-uso / concurrencia: la inserción en match_access_log la hace
-  la función de Postgres registrar_acceso() con un
-  "insert ... on conflict (credential_id, match_id) where not reversed
-  do nothing" — si dos escaneos del mismo QR para el mismo partido llegan
-  a la vez, como mucho uno de los dos puede insertar la fila; lo
-  garantiza Postgres con una sola instrucción, no hace falta ningún lock
-  a mano. El índice es PARCIAL (solo sobre filas no anuladas) para que,
-  tras una anulación (ver revert-access.js), la credencial vuelva a
-  poder usarse en ese mismo partido sin perder el historial de antes.
+  IMPORTANTE: pasa por las MISMAS reglas de elegibilidad que el escáner
+  (evaluarCredencial, en lib/match-access.js) — un alta manual nunca
+  puede saltarse "partido equivocado", "carné no activo" o "entrada ya
+  usada". Si existiera alguna vez una anulación de esas reglas, tendría
+  que ser explícita y quedar auditada, no un efecto colateral de este
+  endpoint.
 
   Requiere Authorization: Bearer <access_token> de una cuenta admin o
-  staff (tabla app_admins, cualquier rol).
+  staff.
 */
 const { createClient } = require("@supabase/supabase-js");
 const { cuentaAutorizada, evaluarCredencial } = require("./lib/match-access");
@@ -35,9 +33,9 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-  const { token, match_id } = payload;
-  if (!token || !match_id) {
-    return { statusCode: 400, body: "Falta token o match_id" };
+  const { tipo, id, match_id } = payload;
+  if (!tipo || !id || !match_id || !["socio", "entrada"].includes(tipo)) {
+    return { statusCode: 400, body: "Falta tipo, id o match_id." };
   }
 
   const authHeader = event.headers.authorization || event.headers.Authorization || "";
@@ -53,16 +51,17 @@ exports.handler = async function (event) {
 
   const staff = await cuentaAutorizada(supabase, staffEmail);
   if (!staff) {
-    return { statusCode: 403, body: "Esta cuenta no tiene acceso al escáner." };
+    return { statusCode: 403, body: "Esta cuenta no tiene permiso para registrar accesos." };
   }
 
   function respuesta(resultado, extra) {
     return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ resultado }, extra)) };
   }
 
-  const { data: credencial } = await supabase.from("access_credentials").select("*").eq("token", token).maybeSingle();
+  const columna = tipo === "socio" ? "membership_id" : "ticket_id";
+  const { data: credencial } = await supabase.from("access_credentials").select("*").eq(columna, id).maybeSingle();
   if (!credencial) {
-    return respuesta("INVALIDO", { motivo: "Código no reconocido." });
+    return respuesta("INVALIDO", { motivo: "No se ha encontrado una credencial para esa persona." });
   }
 
   const { valida, motivo, etiqueta } = await evaluarCredencial(supabase, credencial, match_id);
@@ -75,12 +74,12 @@ exports.handler = async function (event) {
       p_credential_id: credencial.id,
       p_match_id: match_id,
       p_staff_email: staffEmail,
-      p_metodo: "qr",
+      p_metodo: "manual",
     })
     .single();
 
   if (registroError || !registro) {
-    return respuesta("INVALIDO", { motivo: "No se ha podido comprobar el acceso. Inténtalo de nuevo.", etiqueta });
+    return respuesta("INVALIDO", { motivo: "No se ha podido registrar el acceso. Inténtalo de nuevo.", etiqueta });
   }
 
   if (registro.resultado === "VALIDO") {

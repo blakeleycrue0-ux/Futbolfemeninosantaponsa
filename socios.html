@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Socios — Fútbol Femenino Santa Ponça</title>
+<meta name="description" content="Hazte socia/o del Fútbol Femenino Santa Ponça: apoya al club durante toda la temporada y entra al campo con tu carnet digital.">
+<meta name="theme-color" content="#17151b">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<style>
+  .tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.4rem; }
+  .tk-card { background: var(--paper); border: 1px solid rgba(10,10,10,0.12); border-radius: var(--radius-lg); padding: 1.6rem; display: flex; flex-direction: column; }
+  .tk-card h3 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 0.4rem; }
+  .tk-card p { font-size: 0.9rem; color: var(--text-on-cream-muted); flex-grow: 1; }
+  .tk-price { font-family: var(--font-display); font-weight: 900; font-size: 1.8rem; color: var(--accent-dark); margin: 0.6rem 0; }
+  .tk-empty { color: var(--text-on-cream-muted); }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<main id="main">
+  <section class="hero hero--sub">
+    <div class="hero__media" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <span class="hero__tag">Fútbol Femenino Santa Ponça</span>
+      <h1 class="hero__title">Socios</h1>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Hazte socia/o</span>
+          <h2>Apoya al club durante toda la temporada</h2>
+        </div>
+      </div>
+      <p style="max-width:640px;">
+        Al hacerte socia/o recibes tu carnet digital (con número de socio y código QR) y entras al campo en
+        los partidos en casa durante toda la temporada. Si no has iniciado sesión todavía, te la pediremos
+        al elegir tu cuota.
+      </p>
+      <div id="tk-grid" class="tk-grid">
+        <p class="tk-empty">Cargando…</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!--#include footer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const grid = document.getElementById("tk-grid");
+  if (!window.spfc) { grid.innerHTML = '<p class="tk-empty">La tienda de socios no está disponible ahora mismo.</p>'; return; }
+  const productos = await SPFC_TICKETING.productosActivos(["socio"]);
+  if (!productos.length) {
+    grid.innerHTML = '<p class="tk-empty">Todavía no hay ninguna cuota de socio a la venta. Vuelve a mirar pronto.</p>';
+    return;
+  }
+  grid.innerHTML = productos.map((p) => `
+    <div class="tk-card">
+      <h3>${p.nombre}</h3>
+      <p>${p.descripcion || ""}</p>
+      <div class="tk-price">${SPFC_TICKETING.fmtEuros(p.precio)}</div>
+      <a class="btn btn-primary btn-block" href="checkout.html?producto=${p.id}">Hazte socia/o</a>
+    </div>`).join("");
+})();
+</script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

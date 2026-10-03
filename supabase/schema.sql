@@ -917,7 +917,9 @@ create index if not exists ticket_products_tipo_idx on ticket_products(tipo) whe
 create index if not exists ticket_products_match_idx on ticket_products(match_id) where match_id is not null;
 
 alter table ticket_products enable row level security;
+drop policy if exists "ticket_products_public_read" on ticket_products;
 create policy "ticket_products_public_read" on ticket_products for select using (activo = true or is_app_admin());
+drop policy if exists "ticket_products_admin_write" on ticket_products;
 create policy "ticket_products_admin_write" on ticket_products for all using (is_app_admin()) with check (is_app_admin());
 
 -- ----------------------------------------------------------------------------
@@ -944,7 +946,9 @@ create index if not exists orders_user_idx on orders(user_id);
 create index if not exists orders_estado_idx on orders(estado);
 
 alter table orders enable row level security;
+drop policy if exists "orders_owner_read" on orders;
 create policy "orders_owner_read" on orders for select using (auth.uid() = user_id or is_app_admin());
+drop policy if exists "orders_admin_update" on orders;
 create policy "orders_admin_update" on orders for update using (is_app_admin()) with check (is_app_admin());
 
 -- ----------------------------------------------------------------------------
@@ -970,7 +974,9 @@ create unique index if not exists memberships_member_number_idx on memberships(m
 create index if not exists memberships_user_idx on memberships(user_id);
 
 alter table memberships enable row level security;
+drop policy if exists "memberships_owner_read" on memberships;
 create policy "memberships_owner_read" on memberships for select using (auth.uid() = user_id or is_app_admin());
+drop policy if exists "memberships_admin_update" on memberships;
 create policy "memberships_admin_update" on memberships for update using (is_app_admin()) with check (is_app_admin());
 
 -- ----------------------------------------------------------------------------
@@ -989,7 +995,9 @@ create index if not exists tickets_user_idx on tickets(user_id);
 create index if not exists tickets_match_idx on tickets(match_id);
 
 alter table tickets enable row level security;
+drop policy if exists "tickets_owner_read" on tickets;
 create policy "tickets_owner_read" on tickets for select using (auth.uid() = user_id or is_app_admin());
+drop policy if exists "tickets_admin_update" on tickets;
 create policy "tickets_admin_update" on tickets for update using (is_app_admin()) with check (is_app_admin());
 
 -- ----------------------------------------------------------------------------
@@ -1015,6 +1023,7 @@ create unique index if not exists access_credentials_membership_idx on access_cr
 create unique index if not exists access_credentials_ticket_idx on access_credentials(ticket_id) where ticket_id is not null;
 
 alter table access_credentials enable row level security;
+drop policy if exists "access_credentials_owner_read" on access_credentials;
 create policy "access_credentials_owner_read" on access_credentials for select using (
   is_app_admin()
   or exists (select 1 from memberships m where m.id = membership_id and m.user_id = auth.uid())
@@ -1042,6 +1051,7 @@ create table if not exists match_access_log (
 create index if not exists match_access_log_match_idx on match_access_log(match_id);
 
 alter table match_access_log enable row level security;
+drop policy if exists "match_access_log_staff_read" on match_access_log;
 create policy "match_access_log_staff_read" on match_access_log for select using (is_app_staff());
 
 -- ----------------------------------------------------------------------------
@@ -1070,6 +1080,7 @@ alter table stripe_webhook_events enable row level security;
 -- vez — se añade la misma política admin-gestiona-todo que ya usan el
 -- resto de tablas de este fichero.
 -- ----------------------------------------------------------------------------
+drop policy if exists "app_admins_admin_all" on app_admins;
 create policy "app_admins_admin_all" on app_admins for all using (is_app_admin()) with check (is_app_admin());
 
 -- ----------------------------------------------------------------------------

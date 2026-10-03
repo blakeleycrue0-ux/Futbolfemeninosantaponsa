@@ -100,6 +100,10 @@ exports.handler = async function (event) {
       metadata: { order_id: order.id, product_id: product.id, user_id: user.id },
       success_url: `${baseUrl}/compra-completada.html?order=${order.id}`,
       cancel_url: `${baseUrl}/checkout.html?producto=${product.id}&cancelado=1`,
+      // Deja que Stripe muestre su propio campo de "código promocional" en
+      // la página de pago — los códigos se crean/gestionan en el dashboard
+      // de Stripe (Productos > Cupones), no hace falta nada más aquí.
+      allow_promotion_codes: true,
     });
   } catch (err) {
     await supabase.from("orders").update({ estado: "fallido" }).eq("id", order.id);

@@ -20,6 +20,12 @@
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
   .filters-bar label { font-size: 0.8rem; font-weight: 600; align-self: center; color: var(--text-on-cream-muted); }
+  .cal-group + .cal-group { margin-top: 2.2rem; }
+  .cal-group__title {
+    font-family: var(--font-display); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent-dark); margin: 0 0 1rem; padding-bottom: 0.6rem; border-bottom: 2px solid var(--accent-dark);
+  }
+  .section-dark .cal-group__title { color: var(--accent-light); border-bottom-color: var(--accent-light); }
 </style>
 </head>
 <body>
@@ -110,13 +116,53 @@
   const protagonistaMatch = document.getElementById("protagonista-match");
   const crestHtml = spfcMatchCrest;
   let liveRefreshTimer = null;
+  let teams = [];
+
+  // Agrupa una lista de partidos por equipo, en el mismo orden que ya usan
+  // "Equipos"/admin (teams.orden) — así nunca se ven mezclados partidos de
+  // categorías distintas (3ª RFEF, Regional, Cadete…) cuando se ven todos
+  // los equipos a la vez. Si la lista ya es de un solo equipo (se ha usado
+  // el filtro de arriba) no hace falta ningún título de grupo.
+  function agruparPorEquipo(list) {
+    const porTeamId = new Map();
+    list.forEach((m) => {
+      const key = m.team_id || "—";
+      if (!porTeamId.has(key)) porTeamId.set(key, { team: m.teams || null, matches: [] });
+      porTeamId.get(key).matches.push(m);
+    });
+    // Mismo orden que "teams" (teams.orden), no el orden en que aparecen
+    // cronológicamente — así un partido de Regional que caiga antes en el
+    // calendario no "adelanta" a su grupo por delante de 3ª RFEF.
+    const ordenados = teams.map((t) => porTeamId.get(t.id)).filter(Boolean);
+    const sinEquipo = porTeamId.get("—");
+    if (sinEquipo) ordenados.push(sinEquipo);
+    return ordenados;
+  }
+
+  function tituloEquipo(team) {
+    if (!team) return "";
+    return team.nombre + (team.categoria ? " · " + team.categoria : "");
+  }
 
   function renderProximos(list) {
     if (!list.length) {
       proximosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">No hay próximos partidos programados por ahora.</p>`;
       return;
     }
-    proximosGrid.innerHTML = list.map((m) => {
+    const grupos = agruparPorEquipo(list);
+    if (grupos.length > 1) {
+      proximosGrid.innerHTML = grupos.map((g) => `
+        <div class="cal-group">
+          <p class="cal-group__title">${tituloEquipo(g.team)}</p>
+          <div class="grid grid-3">${matchCardsProximos(g.matches)}</div>
+        </div>`).join("");
+      return;
+    }
+    proximosGrid.innerHTML = matchCardsProximos(list);
+  }
+
+  function matchCardsProximos(list) {
+    return list.map((m) => {
       const esLocal = m.condicion === "local";
       const enVivo = spfcEsEnVivo(m);
       return `
@@ -146,7 +192,20 @@
       resultadosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Todavía no hay resultados registrados.</p>`;
       return;
     }
-    resultadosGrid.innerHTML = list.map((m) => {
+    const grupos = agruparPorEquipo(list);
+    if (grupos.length > 1) {
+      resultadosGrid.innerHTML = grupos.map((g) => `
+        <div class="cal-group">
+          <p class="cal-group__title">${tituloEquipo(g.team)}</p>
+          <div class="grid grid-3">${matchCardsResultados(g.matches)}</div>
+        </div>`).join("");
+      return;
+    }
+    resultadosGrid.innerHTML = matchCardsResultados(list);
+  }
+
+  function matchCardsResultados(list) {
+    return list.map((m) => {
       const esLocal = m.condicion === "local";
       const res = spfcResultLabel(m);
       const resLabel = res === "W" ? "Victoria" : res === "L" ? "Derrota" : "Empate";
@@ -209,7 +268,7 @@
   }
 
   try {
-    const teams = await SPFC_DATA.teams();
+    teams = await SPFC_DATA.teams();
     const paramTeam = new URLSearchParams(location.search).get("team");
     let currentTeamId = "";
 

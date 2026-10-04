@@ -62,6 +62,7 @@
         <li><span class="membership-product__num">02</span> Acceso incluido a los partidos en casa${p.teams ? " de " + esc(p.teams.nombre) : ""}</li>
         <li><span class="membership-product__num">03</span> Identificación de socio</li>
       </ul>
+      ${p.teams ? `<p class="membership-product__scope-note">Este carné solo da acceso a los partidos en casa de <strong>${esc(p.teams.nombre)}${p.teams.categoria ? " (" + esc(p.teams.categoria) + ")" : ""}</strong>. Los partidos de los demás equipos del club son gratuitos y abiertos a todo el público.</p>` : ""}
       <div class="membership-product__price-row">
         <div class="membership-product__price">${SPFC_TICKETING.fmtEuros(p.precio)}<small>${esc(p.nombre)}</small></div>
         <a class="tk-btn tk-btn--dark" href="checkout.html?producto=${p.id}">Hacerme socio</a>

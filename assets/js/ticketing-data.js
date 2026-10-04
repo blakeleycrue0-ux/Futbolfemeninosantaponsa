@@ -11,7 +11,7 @@
 window.SPFC_TICKETING = {
   async productosActivos(tipos) {
     if (!window.spfc) return [];
-    let query = window.spfc.from("ticket_products").select("*, teams(nombre), matches(rival, fecha, hora)").eq("activo", true);
+    let query = window.spfc.from("ticket_products").select("*, teams(nombre, categoria), matches(rival, fecha, hora)").eq("activo", true);
     if (tipos && tipos.length) query = query.in("tipo", tipos);
     const { data, error } = await query.order("precio");
     if (error) { console.warn("[ticketing] error cargando productos:", error.message); return []; }

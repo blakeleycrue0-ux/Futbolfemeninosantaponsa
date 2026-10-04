@@ -84,6 +84,11 @@
 .membership-product__items { list-style: none; margin: 0 0 1.3rem; padding: 0; display: flex; flex-direction: column; gap: 0.7rem; }
 .membership-product__items li { display: flex; gap: 0.8rem; align-items: baseline; font-size: 0.9rem; }
 .membership-product__num { font-family: var(--font-display); font-weight: 800; font-size: 0.78rem; color: var(--accent-dark); width: 1.4rem; flex-shrink: 0; }
+.membership-product__scope-note {
+  background: var(--accent-soft); color: var(--accent-dark); border-radius: 8px;
+  padding: 0.7em 0.9em; font-size: 0.8rem; line-height: 1.45; margin: 0 0 1.2rem;
+}
+.membership-product__scope-note strong { font-weight: 800; }
 .membership-product__price-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.1rem; border-top: 1px solid rgba(10,10,10,0.1); }
 .membership-product__price { font-family: var(--font-display); font-weight: 900; font-size: 1.7rem; }
 .membership-product__price small { font-family: var(--font-body); font-weight: 600; font-size: 0.72rem; color: var(--text-on-cream-muted); display: block; text-transform: uppercase; }

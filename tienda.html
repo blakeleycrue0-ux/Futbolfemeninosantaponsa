@@ -50,7 +50,8 @@
     return;
   }
   const esc = SPFC_TICKETING.escapeHtml;
-  list.innerHTML = `<div class="shop-grid">${productos.map((p) => {
+  const contador = `<p class="shop-count">${productos.length} producto${productos.length === 1 ? "" : "s"}</p>`;
+  list.innerHTML = `${contador}<div class="shop-grid">${productos.map((p) => {
     const tieneTallas = p.tallas && p.tallas.length;
     return `
     <div class="shop-product" data-producto="${p.id}">
@@ -58,6 +59,7 @@
         ? `<img class="shop-product__img" src="${esc(p.imagen_url)}" alt="${esc(p.nombre)}">`
         : `<div class="shop-product__img"></div>`}
       <div class="shop-product__body">
+        <p class="shop-product__precio">${SPFC_TICKETING.fmtEuros(p.precio)}</p>
         <h2 class="shop-product__nombre">${esc(p.nombre)}</h2>
         ${p.descripcion ? `<p class="shop-product__desc">${esc(p.descripcion)}</p>` : ""}
         ${tieneTallas ? `
@@ -68,7 +70,6 @@
           </div>` : ""}
         <div class="shop-product__row">
           <input type="number" data-cantidad value="1" min="1" max="10" aria-label="Cantidad">
-          <span class="shop-product__precio">${SPFC_TICKETING.fmtEuros(p.precio)}</span>
         </div>
         <button type="button" class="tk-btn tk-btn--dark tk-btn--block" data-comprar>Comprar</button>
       </div>

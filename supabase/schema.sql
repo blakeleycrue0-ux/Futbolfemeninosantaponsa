@@ -1486,3 +1486,91 @@ as $$
   where is_app_staff() and l.match_id = p_match_id
   order by l.scanned_at desc;
 $$;
+
+-- ============================================================================
+-- TIENDA (merchandising: camisetas, pantalones...)
+-- Recogida solo en el club (sin envíos) — por eso no hay dirección postal
+-- en ningún sitio. Con tallas (un array de texto por producto; vacío =
+-- talla única) pero SIN control de stock: una talla agotada no existe
+-- como concepto aquí, se vende siempre bajo pedido. Igual que
+-- ticket_products/orders, el pago es con Stripe real y el precio se lee
+-- siempre del servidor — el navegador nunca manda el precio.
+-- ============================================================================
+
+create table if not exists shop_products (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  descripcion text,
+  precio numeric not null check (precio >= 0),
+  imagen_url text,
+  tallas text[] not null default '{}',
+  activo boolean not null default true,
+  orden int not null default 0,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists shop_products_activo_idx on shop_products(activo);
+
+alter table shop_products enable row level security;
+drop policy if exists "shop_products_public_read" on shop_products;
+create policy "shop_products_public_read" on shop_products for select using (activo = true);
+drop policy if exists "shop_products_admin_write" on shop_products;
+create policy "shop_products_admin_write" on shop_products for all using (is_app_admin()) with check (is_app_admin());
+
+create table if not exists shop_orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id),
+  product_id uuid not null references shop_products(id),
+  talla text,
+  cantidad int not null default 1 check (cantidad > 0),
+  importe numeric not null check (importe >= 0),
+  estado text not null default 'pendiente' check (estado in ('pendiente','pagado','recogido','cancelado','fallido')),
+  stripe_checkout_session_id text unique,
+  stripe_payment_intent_id text,
+  recogido_en timestamptz,
+  recogido_por text,
+  creado_en timestamptz not null default now(),
+  actualizado_en timestamptz
+);
+
+create index if not exists shop_orders_user_idx on shop_orders(user_id);
+
+alter table shop_orders enable row level security;
+drop policy if exists "shop_orders_own_read" on shop_orders;
+create policy "shop_orders_own_read" on shop_orders for select using (auth.uid() = user_id);
+drop policy if exists "shop_orders_staff_read" on shop_orders;
+create policy "shop_orders_staff_read" on shop_orders for select using (is_app_staff());
+-- Sin policy de insert pública — los pedidos solo los crea
+-- create-shop-checkout-session.js con la service role. El estado solo lo
+-- marca "pagado" el webhook (también con service role); el personal SÍ
+-- puede marcar "recogido" directamente desde admin/tienda.html, por eso
+-- esta es la única escritura abierta a is_app_staff().
+drop policy if exists "shop_orders_staff_update" on shop_orders;
+create policy "shop_orders_staff_update" on shop_orders for update using (is_app_staff()) with check (is_app_staff());
+
+-- admin_listar_pedidos_tienda: mismo patrón que admin_listar_pedidos —
+-- junta el pedido con el email/nombre de quien compró (auth.users no es
+-- consultable directamente desde el cliente) para la lista de "Pedidos"
+-- en admin/tienda.html.
+create or replace function admin_listar_pedidos_tienda()
+returns table (
+  id uuid, estado text, talla text, cantidad int, importe numeric, creado_en timestamptz,
+  recogido_en timestamptz, recogido_por text,
+  user_id uuid, user_email text, user_nombre text,
+  producto_id uuid, producto_nombre text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select o.id, o.estado, o.talla, o.cantidad, o.importe, o.creado_en,
+         o.recogido_en, o.recogido_por,
+         u.id, u.email, coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         p.id, p.nombre
+  from shop_orders o
+  join shop_products p on p.id = o.product_id
+  join auth.users u on u.id = o.user_id
+  where is_app_staff()
+  order by o.creado_en desc;
+$$;

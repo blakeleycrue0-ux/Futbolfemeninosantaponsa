@@ -54,6 +54,24 @@ exports.handler = async function (event) {
 
   if (stripeEvent.type === "checkout.session.completed") {
     const session = stripeEvent.data.object;
+    const shopOrderId = session.metadata && session.metadata.shop_order_id;
+    if (shopOrderId) {
+      // Pedido de la tienda (merchandising) — rama totalmente aparte de la
+      // de socios/entradas de abajo: aquí solo se marca "pagado", no se
+      // emite ninguna credencial (la recogida es en persona en el club,
+      // sin QR ni control de acceso).
+      await supabase
+        .from("shop_orders")
+        .update({
+          estado: "pagado",
+          stripe_payment_intent_id: session.payment_intent || null,
+          actualizado_en: new Date().toISOString(),
+        })
+        .eq("id", shopOrderId)
+        .eq("estado", "pendiente");
+      return { statusCode: 200, body: "ok" };
+    }
+
     const orderId = session.metadata && session.metadata.order_id;
     if (!orderId) {
       return { statusCode: 200, body: "Sesión sin order_id en metadata, ignorada." };
@@ -152,6 +170,10 @@ exports.handler = async function (event) {
     }
   } else if (stripeEvent.type === "checkout.session.expired") {
     const session = stripeEvent.data.object;
+    const shopOrderId = session.metadata && session.metadata.shop_order_id;
+    if (shopOrderId) {
+      await supabase.from("shop_orders").update({ estado: "cancelado" }).eq("id", shopOrderId).eq("estado", "pendiente");
+    }
     const orderId = session.metadata && session.metadata.order_id;
     if (orderId) {
       await supabase.from("orders").update({ estado: "cancelado" }).eq("id", orderId).eq("estado", "pendiente");

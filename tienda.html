@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tienda — Fútbol Femenino Santa Ponça</title>
+<meta name="description" content="Tienda oficial del Fútbol Femenino Santa Ponça: camisetas, pantalones y más. Recogida en el club.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<main id="main" class="tk-page">
+  <div class="container">
+    <div class="tk-pagehead">
+      <span class="tk-eyebrow">Tienda</span>
+      <h1>Equipación y merchandising.</h1>
+      <p class="tk-lede">Compra online y recoge tu pedido en el club — sin gastos de envío.</p>
+    </div>
+
+    <div id="tk-shop-list">
+      <p class="tk-empty" style="margin-top:1.3rem;">Cargando…</p>
+    </div>
+  </div>
+</main>
+
+<!--#include footer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const list = document.getElementById("tk-shop-list");
+  if (!window.spfc) { list.innerHTML = '<p class="tk-empty">La tienda no está disponible ahora mismo.</p>'; return; }
+  const productos = await SPFC_SHOP.productosActivos();
+  if (!productos.length) {
+    list.innerHTML = '<p class="tk-empty">Todavía no hay ningún producto a la venta. Vuelve a mirar pronto.</p>';
+    return;
+  }
+  const esc = SPFC_TICKETING.escapeHtml;
+  list.innerHTML = `<div class="shop-grid">${productos.map((p) => {
+    const tieneTallas = p.tallas && p.tallas.length;
+    return `
+    <div class="shop-product" data-producto="${p.id}">
+      ${p.imagen_url
+        ? `<img class="shop-product__img" src="${esc(p.imagen_url)}" alt="${esc(p.nombre)}">`
+        : `<div class="shop-product__img"></div>`}
+      <div class="shop-product__body">
+        <h2 class="shop-product__nombre">${esc(p.nombre)}</h2>
+        ${p.descripcion ? `<p class="shop-product__desc">${esc(p.descripcion)}</p>` : ""}
+        ${tieneTallas ? `
+          <div class="shop-product__row">
+            <select data-talla aria-label="Talla">
+              ${p.tallas.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}
+            </select>
+          </div>` : ""}
+        <div class="shop-product__row">
+          <input type="number" data-cantidad value="1" min="1" max="10" aria-label="Cantidad">
+          <span class="shop-product__precio">${SPFC_TICKETING.fmtEuros(p.precio)}</span>
+        </div>
+        <button type="button" class="tk-btn tk-btn--dark tk-btn--block" data-comprar>Comprar</button>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+
+  list.querySelectorAll("[data-producto]").forEach((card) => {
+    card.querySelector("[data-comprar]").addEventListener("click", () => {
+      const productoId = card.dataset.producto;
+      const tallaEl = card.querySelector("[data-talla]");
+      const cantidadEl = card.querySelector("[data-cantidad]");
+      const params = new URLSearchParams({ producto: productoId });
+      if (tallaEl) params.set("talla", tallaEl.value);
+      if (cantidadEl) params.set("cantidad", cantidadEl.value || "1");
+      location.href = `tienda-checkout.html?${params.toString()}`;
+    });
+  });
+})();
+</script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

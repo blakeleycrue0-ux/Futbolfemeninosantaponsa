@@ -125,6 +125,20 @@
     <div class="admin-card admin-form-toggle" id="stats-card" style="display:none;">
       <h2>Estadísticas</h2>
       <p class="form-note" id="stats-sub" style="margin-top:-0.6rem;"></p>
+
+      <div style="background:var(--cream-deep);border-radius:var(--radius-md);padding:1rem 1.1rem;margin-bottom:1.2rem;">
+        <p style="font-size:0.84rem;font-weight:700;margin:0 0 0.4rem;">Rellenar con IA desde una captura de la FFIB</p>
+        <p style="font-size:0.8rem;color:var(--text-on-cream-muted);margin:0 0 0.7rem;">
+          Haz una captura del acta/resultado en la web de la FFIB y súbela aquí. La IA solo propone los números —
+          revísalos antes de guardar, igual que si los escribieras a mano.
+        </p>
+        <input type="file" accept="image/png, image/jpeg, image/webp" id="ia-acta-file" style="margin-bottom:0.6rem;">
+        <div>
+          <button type="button" class="btn btn-outline btn-sm" id="ia-acta-btn">Analizar captura con IA</button>
+        </div>
+        <p id="ia-acta-status" style="margin-top:0.6rem;font-size:0.84rem;"></p>
+      </div>
+
       <div class="admin-table-wrap">
         <table class="admin-table">
           <thead><tr><th>Jugadora</th><th>Minutos</th><th>Goles</th><th>Amarillas</th><th>Rojas</th></tr></thead>
@@ -444,16 +458,23 @@
   const statsCard = document.getElementById("stats-card");
   const statsLista = document.getElementById("stats-lista");
   let statsMatchId = null;
+  let statsJugadoras = []; // [{id, nombre}] — plantilla del equipo del partido abierto, para la IA
+  let statsEquipoNombre = "";
+  let statsRivalNombre = "";
 
   async function abrirStats(match) {
     formCard.style.display = "none";
     convocatoriaCard.style.display = "none";
     statsMatchId = match.id;
     const equipo = teams.find((t) => t.id === match.team_id);
+    statsEquipoNombre = equipo ? equipo.nombre : "";
+    statsRivalNombre = match.rival;
     document.getElementById("stats-sub").textContent =
-      `${equipo ? equipo.nombre : ""} vs ${match.rival} — ${match.fecha}`;
+      `${statsEquipoNombre} vs ${match.rival} — ${match.fecha}`;
     statsLista.innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
     document.getElementById("stats-status").textContent = "";
+    document.getElementById("ia-acta-status").textContent = "";
+    document.getElementById("ia-acta-file").value = "";
     statsCard.style.display = "block";
     statsCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -462,6 +483,7 @@
       window.spfc.from("match_player_stats").select("*").eq("match_id", match.id),
     ]);
     const statsPorJugadora = Object.fromEntries((existentes || []).map((s) => [s.player_id, s]));
+    statsJugadoras = jugadoras || [];
 
     if (!jugadoras || !jugadoras.length) {
       statsLista.innerHTML = '<tr><td colspan="5">Este equipo todavía no tiene jugadoras en Plantilla.</td></tr>';
@@ -478,6 +500,69 @@
       </tr>`;
     }).join("");
   }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById("ia-acta-btn").addEventListener("click", async () => {
+    const iaStatus = document.getElementById("ia-acta-status");
+    const fileInput = document.getElementById("ia-acta-file");
+    const btn = document.getElementById("ia-acta-btn");
+    const file = fileInput.files[0];
+    if (!file) { iaStatus.textContent = "Elige antes una imagen."; return; }
+    if (!statsJugadoras.length) { iaStatus.textContent = "Este equipo no tiene plantilla — no hay con quién emparejar los datos."; return; }
+
+    btn.disabled = true;
+    iaStatus.textContent = "Leyendo la captura con IA (unos segundos)…";
+    try {
+      const base64 = await fileToBase64(file);
+      const { data: { session } } = await window.spfc.auth.getSession();
+      const res = await fetch("/.netlify/functions/parse-acta-ffib", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + (session ? session.access_token : "") },
+        body: JSON.stringify({
+          image_base64: base64,
+          image_media_type: file.type,
+          equipo_propio: statsEquipoNombre,
+          rival: statsRivalNombre,
+          jugadoras: statsJugadoras,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const resultado = await res.json();
+
+      let rellenadas = 0;
+      const sinIdentificar = [];
+      (resultado.jugadoras || []).forEach((j) => {
+        if (!j.jugadora_id) { sinIdentificar.push(j.nombre_detectado); return; }
+        const fila = statsLista.querySelector(`tr[data-player="${j.jugadora_id}"]`);
+        if (!fila) { sinIdentificar.push(j.nombre_detectado); return; }
+        fila.querySelector(".stat-goles").value = j.goles;
+        fila.querySelector(".stat-amarillas").value = j.tarjetas_amarillas;
+        fila.querySelector(".stat-rojas").value = j.tarjetas_rojas;
+        fila.style.background = "rgba(168,85,247,0.08)";
+        rellenadas++;
+      });
+
+      const partes = [];
+      partes.push(rellenadas ? `${rellenadas} jugadora${rellenadas === 1 ? "" : "s"} rellenada${rellenadas === 1 ? "" : "s"} — revísalo antes de guardar.` : "No se ha podido emparejar ninguna jugadora con la plantilla.");
+      if (resultado.resultado && (resultado.resultado.goles_equipo != null || resultado.resultado.goles_rival != null)) {
+        partes.push(`Resultado detectado: ${resultado.resultado.goles_equipo ?? "?"} - ${resultado.resultado.goles_rival ?? "?"} (no se guarda aquí — ponlo en "Editar partido" si hace falta).`);
+      }
+      if (sinIdentificar.length) partes.push(`Sin identificar: ${sinIdentificar.join(", ")} — búscalas a mano en la tabla.`);
+      if (resultado.aviso) partes.push(resultado.aviso);
+      iaStatus.textContent = partes.join(" ");
+    } catch (err) {
+      iaStatus.textContent = "No se ha podido analizar la captura: " + err.message;
+    }
+    btn.disabled = false;
+  });
 
   document.getElementById("stats-cancel-btn").addEventListener("click", () => (statsCard.style.display = "none"));
 

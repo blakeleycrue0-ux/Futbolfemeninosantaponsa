@@ -156,6 +156,9 @@
       <div class="admin-table-wrap">
         <table class="admin-table">
           <thead><tr><th>Fecha</th><th>Rival</th><th>Resultado</th><th>Estado</th><th>Fuente</th><th></th><th></th><th></th><th></th><th></th></tr></thead>
+          <!-- Las filas se agrupan por equipo (con fila de cabecera gris oscuro) en
+               cuanto hay partidos de más de un equipo, para que nunca se vean
+               mezclados partidos de categorías distintas (3ª RFEF, Regional...). -->
           <tbody id="matches-body"><tr><td colspan="10">Cargando…</td></tr></tbody>
         </table>
       </div>
@@ -219,13 +222,24 @@
   });
   document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
 
-  async function loadMatches() {
-    const { data, error } = await window.spfc.from("matches").select("*").order("fecha", { ascending: false });
-    const body = document.getElementById("matches-body");
-    if (error) { body.innerHTML = `<tr><td colspan="10">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    matches = data || [];
-    if (!matches.length) { body.innerHTML = '<tr><td colspan="10">Todavía no hay partidos.</td></tr>'; return; }
-    body.innerHTML = matches.map((m) => `
+  // Agrupa los partidos por equipo, en el mismo orden que "teams" (teams.orden),
+  // con una fila de cabecera por grupo — así nunca se ven mezclados partidos de
+  // categorías distintas (3ª RFEF, Regional, Cadete...) en la misma tabla.
+  function agruparPorEquipo(list) {
+    const porTeamId = new Map();
+    list.forEach((m) => {
+      const key = m.team_id || "—";
+      if (!porTeamId.has(key)) porTeamId.set(key, { team: m.teams || null, matches: [] });
+      porTeamId.get(key).matches.push(m);
+    });
+    const ordenados = teams.map((t) => porTeamId.get(t.id)).filter(Boolean);
+    const sinEquipo = porTeamId.get("—");
+    if (sinEquipo) ordenados.push(sinEquipo);
+    return ordenados;
+  }
+
+  function filaPartido(m) {
+    return `
       <tr>
         <td>${m.fecha}</td>
         <td>${escapeHtml(m.rival)} <span class="form-note">(${m.condicion === "local" ? "local" : "visitante"})</span></td>
@@ -252,7 +266,23 @@
             : `<button class="btn btn-outline btn-sm" data-directo-marcar="${m.id}" type="button">🔴 Marcar EN DIRECTO</button>`}
           <span data-directo-status="${m.id}" style="margin-left:0.5rem;font-size:0.82rem;"></span>
         </td>
-      </tr>`).join("");
+      </tr>`;
+  }
+
+  async function loadMatches() {
+    const { data, error } = await window.spfc.from("matches").select("*, teams(nombre, categoria)").order("fecha", { ascending: false });
+    const body = document.getElementById("matches-body");
+    if (error) { body.innerHTML = `<tr><td colspan="10">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    matches = data || [];
+    if (!matches.length) { body.innerHTML = '<tr><td colspan="10">Todavía no hay partidos.</td></tr>'; return; }
+    const grupos = agruparPorEquipo(matches);
+    if (grupos.length > 1) {
+      body.innerHTML = grupos.map((g) => `
+        <tr class="admin-table-group"><td colspan="10">⚽ ${escapeHtml(g.team ? g.team.nombre + (g.team.categoria ? " · " + g.team.categoria : "") : "Sin equipo")}</td></tr>
+        ${g.matches.map(filaPartido).join("")}`).join("");
+    } else {
+      body.innerHTML = matches.map(filaPartido).join("");
+    }
 
     body.querySelectorAll("[data-edit]").forEach((btn) =>
       btn.addEventListener("click", () => openForm(matches.find((m) => m.id === btn.dataset.edit))));

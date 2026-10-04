@@ -124,10 +124,11 @@
 
     <div class="admin-card">
       <h2>Jugadoras</h2>
+      <p style="font-size:0.86rem;color:var(--text-on-cream-muted);margin-top:-0.6rem;">Agrupadas por equipo para no mezclar categorías distintas.</p>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th></th><th>#</th><th>Nombre</th><th>Equipo</th><th>Posición</th><th>Ficha FFIB</th><th></th></tr></thead>
-          <tbody id="players-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
+          <thead><tr><th></th><th>#</th><th>Nombre</th><th>Posición</th><th>Ficha FFIB</th><th></th></tr></thead>
+          <tbody id="players-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -250,19 +251,27 @@
   });
   document.getElementById("cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
 
-  async function loadPlayers() {
-    const { data, error } = await window.spfc.from("players").select("*").order("dorsal");
-    const body = document.getElementById("players-body");
-    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
-    players = data || [];
-    if (!players.length) { body.innerHTML = '<tr><td colspan="7">Todavía no hay jugadoras.</td></tr>'; return; }
-    body.innerHTML = players.map((p) => {
-      const team = teams.find((t) => t.id === p.team_id);
-      return `<tr>
+  // Agrupa las jugadoras por equipo, en el mismo orden que "teams"
+  // (teams.orden), con una fila de cabecera por grupo — así nunca se ven
+  // mezcladas jugadoras de categorías distintas (3ª RFEF, Regional, Cadete...).
+  function agruparPorEquipo(list) {
+    const porTeamId = new Map();
+    list.forEach((p) => {
+      const key = p.team_id || "—";
+      if (!porTeamId.has(key)) porTeamId.set(key, []);
+      porTeamId.get(key).push(p);
+    });
+    const ordenados = teams.map((t) => ({ team: t, jugadoras: porTeamId.get(t.id) })).filter((g) => g.jugadoras);
+    const sinEquipo = porTeamId.get("—");
+    if (sinEquipo) ordenados.push({ team: null, jugadoras: sinEquipo });
+    return ordenados;
+  }
+
+  function filaJugadora(p) {
+    return `<tr>
         <td>${p.foto_url ? `<img src="${escapeHtml(p.foto_url)}" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;display:block;">` : `<span style="display:block;width:34px;height:34px;border-radius:8px;background:var(--cream-deep);"></span>`}</td>
         <td>${p.dorsal ?? "-"}</td>
         <td>${escapeHtml(p.nombre)}</td>
-        <td>${team ? escapeHtml(team.nombre) : "-"}</td>
         <td>${escapeHtml(p.posicion || "")}</td>
         <td>${p.foto_federacion_url ? `<a href="${escapeHtml(p.foto_federacion_url)}" target="_blank" rel="noopener" class="pill pill-ok">Recibida</a>` : `<span class="pill pill-warn">Falta</span>`}</td>
         <td class="actions">
@@ -271,7 +280,18 @@
           <button class="btn-icon danger" data-del="${p.id}" type="button" title="Eliminar">✕</button>
         </td>
       </tr>`;
-    }).join("");
+  }
+
+  async function loadPlayers() {
+    const { data, error } = await window.spfc.from("players").select("*").order("dorsal");
+    const body = document.getElementById("players-body");
+    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    players = data || [];
+    if (!players.length) { body.innerHTML = '<tr><td colspan="6">Todavía no hay jugadoras.</td></tr>'; return; }
+    const grupos = agruparPorEquipo(players);
+    body.innerHTML = grupos.map((g) => `
+      <tr class="admin-table-group"><td colspan="6">👥 ${escapeHtml(g.team ? g.team.nombre + (g.team.categoria ? " · " + g.team.categoria : "") : "Sin equipo")}</td></tr>
+      ${g.jugadoras.map(filaJugadora).join("")}`).join("");
 
     body.querySelectorAll("[data-edit]").forEach((btn) =>
       btn.addEventListener("click", () => openForm(players.find((p) => p.id === btn.dataset.edit))));

@@ -127,6 +127,22 @@ table.admin-table td.actions button { margin-left: 0.4rem; }
 .hub-secondary .hub-tile { flex: 1 1 220px; padding: 1rem 1.2rem; }
 .hub-secondary .hub-tile__title { font-size: 0.9rem; }
 
+/* ---- Fila de cabecera de grupo dentro de una tabla de admin — separa
+   visiblemente los partidos/jugadoras de equipos o categorías distintas
+   (3ª RFEF, Regional, Cadete...) para que nunca se vean mezclados ---- */
+table.admin-table tr.admin-table-group td {
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.6em 0.8em;
+  border-bottom: none;
+}
+table.admin-table tr.admin-table-group:first-child td { border-top: none; }
+
 /* ---- Disclosure de "información técnica" (ids, uuids...) — oculta por
    defecto en cualquier tabla de admin, nunca se enseña sin pedirlo ---- */
 .tecnico-toggle { background: none; border: none; font-size: 0.76rem; color: var(--text-on-cream-muted); text-decoration: underline; cursor: pointer; padding: 0; }

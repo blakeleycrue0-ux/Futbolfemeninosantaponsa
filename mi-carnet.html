@@ -64,31 +64,25 @@
 
   listEl.innerHTML = membresias.map((m, i) => `
     <div class="mc-item">
-      ${SPFC_TICKETING.membershipCardHTML(m, nombreTitular)}
-      <div class="qr-toggle-wrap">
-        <button type="button" class="tk-btn tk-btn--outline" data-toggle-qr="${i}">Mostrar código de acceso</button>
-      </div>
-      <div class="qr-panel" id="qr-panel-${i}">
-        <p class="tk-eyebrow" style="justify-content:center;">Código de acceso</p>
-        <div class="qr-panel__box" id="qr-box-${i}"></div>
-        <div class="qr-panel__titular">${SPFC_TICKETING.escapeHtml(nombreTitular)}</div>
-        <div class="qr-panel__hint">Socio ${String(m.member_number).padStart(4, "0")} · Presenta este código en el acceso.</div>
-        <button type="button" class="tk-btn tk-btn--outline" style="margin-top:1rem;" data-toggle-qr="${i}">Ocultar código</button>
-      </div>
+      ${SPFC_TICKETING.membershipCardHTML(m, nombreTitular, i)}
+      <p class="mc-flip-hint">Toca la tarjeta para ver tu código de acceso</p>
     </div>`).join("");
 
   const tokens = await Promise.all(membresias.map((m) => SPFC_TICKETING.credencialDeMembership(m.id)));
 
-  listEl.querySelectorAll("[data-toggle-qr]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const i = btn.dataset.toggleQr;
-      const panel = document.getElementById(`qr-panel-${i}`);
-      const abriendo = !panel.classList.contains("is-open");
-      panel.classList.toggle("is-open", abriendo);
-      if (abriendo && !panel.dataset.rendered && tokens[i]) {
-        SPFC_QR.render(document.getElementById(`qr-box-${i}`), tokens[i]);
-        panel.dataset.rendered = "1";
+  listEl.querySelectorAll("[data-card]").forEach((card, i) => {
+    function voltear() {
+      const abriendo = !card.classList.contains("is-flipped");
+      card.classList.toggle("is-flipped", abriendo);
+      card.setAttribute("aria-pressed", String(abriendo));
+      if (abriendo && !card.dataset.rendered && tokens[i]) {
+        SPFC_QR.render(card.querySelector("[data-qr-box]"), tokens[i]);
+        card.dataset.rendered = "1";
       }
+    }
+    card.addEventListener("click", voltear);
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); voltear(); }
     });
   });
 })();

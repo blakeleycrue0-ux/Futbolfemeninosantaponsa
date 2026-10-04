@@ -122,25 +122,40 @@ window.SPFC_TICKETING = {
   */
 
   // membership: fila de `memberships` con join a ticket_products(nombre,tipo) y teams(nombre).
-  membershipCardHTML(membership, nombreTitular) {
+  // id: identificador único (dentro de la página) para el contenedor del QR
+  // de esta tarjeta, p.ej. el índice de la lista — así mi-carnet.html puede
+  // tener varias tarjetas sin que los QR se pisen.
+  //
+  // Tarjeta con flip real (como la física / como Apple Wallet): la
+  // "portada" es solo el escudo + el nombre genérico de la tarjeta, igual
+  // que la tarjeta impresa — nada de datos personales ahí. Al tocar la
+  // tarjeta entera (sin botón aparte) gira y enseña el reverso con el
+  // nombre, el nº de socio, el equipo y el código QR.
+  membershipCardHTML(membership, nombreTitular, id) {
     const esc = this.escapeHtml;
-    const temporadaCorta = (membership.temporada || "").replace("20", "");
+    const qrBoxId = `mc-qr-${id}`;
     return `
-      <div class="membership-card">
-        <div class="membership-card__top">
-          <img class="membership-card__crest" src="assets/img/escudo-santa-ponsa.png" alt="">
-          <span class="membership-card__temporada">${esc(temporadaCorta)}</span>
-        </div>
-        <div>
-          <div class="membership-card__tipo">${membership.ticket_products.tipo === "socio" ? "Socio" : "Abono"}</div>
-          <div class="membership-card__nombre">${esc(nombreTitular)}</div>
-        </div>
-        <div class="membership-card__foot">
-          <div>
-            <div class="membership-card__label">Nº socio</div>
-            <div class="membership-card__numero">${String(membership.member_number).padStart(4, "0")}</div>
+      <div class="membership-card" tabindex="0" role="button" aria-pressed="false"
+           aria-label="Tarjeta de socio de ${esc(nombreTitular)}. Toca para ver el código de acceso." data-card>
+        <div class="membership-card__flip">
+          <div class="membership-card__face membership-card__face--front">
+            <img class="membership-card__front-crest" src="assets/img/escudo-santa-ponsa.png" alt="">
+            <span class="membership-card__front-caption">Tarjeta de socio ${esc(membership.temporada)}</span>
           </div>
-          <div class="membership-card__scope">${membership.teams ? esc(membership.teams.nombre) : "Todo el club"}</div>
+          <div class="membership-card__face membership-card__face--back">
+            <div class="membership-card__back-head">
+              <div class="membership-card__tipo">${membership.ticket_products.tipo === "socio" ? "Socio" : "Abono"}</div>
+              <div class="membership-card__nombre">${esc(nombreTitular)}</div>
+            </div>
+            <div class="membership-card__back-qr" id="${qrBoxId}" data-qr-box></div>
+            <div class="membership-card__back-foot">
+              <div>
+                <div class="membership-card__label">Nº socio</div>
+                <div class="membership-card__numero">${String(membership.member_number).padStart(4, "0")}</div>
+              </div>
+              <div class="membership-card__scope">${membership.teams ? esc(membership.teams.nombre) : "Todo el club"}</div>
+            </div>
+          </div>
         </div>
       </div>`;
   },

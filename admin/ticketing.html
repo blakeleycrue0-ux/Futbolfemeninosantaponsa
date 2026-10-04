@@ -10,32 +10,7 @@
 <link rel="stylesheet" href="../assets/css/components.css">
 <link rel="stylesheet" href="../assets/css/admin.css">
 <link rel="stylesheet" href="../assets/css/ticketing.css">
-<style>
-  .view { display: none; }
-  .view.active { display: block; }
-  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
-  @media (max-width: 900px) { .form-grid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
-
-  /* ---- hub ---- */
-  .hub-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.84rem; font-weight: 600; color: var(--text-on-cream-muted); margin-bottom: 1.2rem; }
-  .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
-  @media (max-width: 720px) { .hub-grid { grid-template-columns: 1fr; } }
-  .hub-tile { display: flex; align-items: center; gap: 1rem; background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 1.3rem 1.4rem; text-align: left; cursor: pointer; border: 1.5px solid transparent; text-decoration: none; color: inherit; }
-  .hub-tile:hover { border-color: rgba(168,85,247,0.35); }
-  .hub-tile--primary { background: var(--ink); color: #fff; }
-  .hub-tile__icon { font-size: 1.6rem; width: 2.4rem; text-align: center; flex-shrink: 0; }
-  .hub-tile__title { font-family: var(--font-display); font-weight: 800; font-size: 1.02rem; margin: 0 0 0.15rem; }
-  .hub-tile__sub { font-size: 0.82rem; opacity: 0.72; margin: 0; }
-  .hub-secondary { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.4rem; }
-  .hub-secondary .hub-tile { flex: 1 1 220px; padding: 1rem 1.2rem; }
-  .hub-secondary .hub-tile__title { font-size: 0.9rem; }
-
-  /* ---- tecnico ---- */
-  .tecnico-toggle { background: none; border: none; font-size: 0.76rem; color: var(--text-on-cream-muted); text-decoration: underline; cursor: pointer; padding: 0; }
-  .tecnico-row td { background: rgba(10,10,10,0.025); font-size: 0.76rem; font-family: ui-monospace, monospace; color: var(--text-on-cream-muted); }
-  .tecnico-row[hidden] { display: none; }
-</style>
+<!-- .view/.hub-*/.tecnico-* ya están en admin.css (compartidas con el resto del panel) -->
 </head>
 <body class="admin">
 <div class="admin-shell">
@@ -45,20 +20,20 @@
       <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
     </div>
     <nav class="admin-nav" data-nav>
-      <a href="dashboard.html">Resumen</a>
-      <a href="destacado.html">Destacado</a>
-      <a href="noticias.html">Noticias</a>
-      <a href="emails.html">Emails</a>
-      <a href="avisos.html">Avisos</a>
-      <a href="citas.html">Citas</a>
-      <a href="plantilla.html">Plantilla</a>
-      <a href="partidos.html">Partidos</a>
-      <a href="entrenos.html">Entrenos</a>
-      <a href="pagos-extra.html">Pagos extra</a>
-      <a href="finanzas.html">Finanzas</a>
-      <a href="galeria.html">Galería</a>
-      <a href="inscripciones.html">Formularios de interés</a>
-      <a href="ticketing.html">Socios y entradas</a>
+      <a href="dashboard.html">🏠 Resumen</a>
+      <a href="destacado.html">⭐ Destacado</a>
+      <a href="noticias.html">📰 Noticias</a>
+      <a href="emails.html">✉️ Emails</a>
+      <a href="avisos.html">📢 Avisos</a>
+      <a href="citas.html">📅 Citas</a>
+      <a href="plantilla.html">👥 Plantilla</a>
+      <a href="partidos.html">⚽ Partidos</a>
+      <a href="entrenos.html">🏃 Entrenos</a>
+      <a href="pagos-extra.html">💳 Pagos extra</a>
+      <a href="finanzas.html">💰 Finanzas</a>
+      <a href="galeria.html">🖼️ Galería</a>
+      <a href="inscripciones.html">📋 Formularios de interés</a>
+      <a href="ticketing.html">🎟️ Socios y entradas</a>
     </nav>
     <div class="admin-sidebar-foot">
       <span data-admin-email>—</span>

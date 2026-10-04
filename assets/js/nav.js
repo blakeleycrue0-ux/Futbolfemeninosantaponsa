@@ -14,6 +14,12 @@
       document.querySelectorAll('[data-auth-link="in"]').forEach((a) => { a.hidden = !dentro; });
       document.querySelectorAll('[data-auth-link="out"]').forEach((a) => { a.hidden = dentro; });
     });
+    document.querySelectorAll("[data-logout]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await window.spfc.auth.signOut();
+        location.href = "index.html";
+      });
+    });
   }
 
   // Cabecera + menú a pantalla completa (.hdr / #burger / #fullnav) — antes

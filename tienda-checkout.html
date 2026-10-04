@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pago — Tienda FFSP</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<main id="main" class="tk-page">
+  <div class="container checkout-box">
+    <button type="button" class="tk-btn tk-btn--outline" style="padding:0.5em 1em;margin-bottom:1.3rem;" onclick="history.back()">← Volver</button>
+
+    <div id="co-loading" class="tk-empty">Cargando…</div>
+
+    <div id="co-content" style="display:none;">
+      <span class="tk-eyebrow">Tu pedido</span>
+      <h1 style="font-family:var(--font-display);font-weight:800;font-size:1.3rem;margin:0.4rem 0 1.3rem;" id="co-nombre"></h1>
+
+      <div id="co-cancelado" style="display:none;background:rgba(239,68,68,0.08);border-radius:8px;padding:0.8rem 1rem;font-size:0.84rem;margin-bottom:1.1rem;">
+        El pago anterior se canceló — no se te ha cobrado nada. Puedes intentarlo otra vez.
+      </div>
+
+      <div class="checkout-line" id="co-talla-row" style="display:none;">
+        <span>Talla</span>
+        <span id="co-talla"></span>
+      </div>
+      <div class="checkout-line">
+        <span>Cantidad</span>
+        <span id="co-cantidad"></span>
+      </div>
+      <div class="checkout-line">
+        <span>Cuenta</span>
+        <span id="co-email"></span>
+      </div>
+      <div class="checkout-line checkout-line--total">
+        <span>Total</span>
+        <span id="co-total"></span>
+      </div>
+
+      <p style="font-size:0.82rem;color:var(--text-on-cream-muted);margin-top:0.9rem;">Recogida en el club — sin gastos de envío.</p>
+
+      <button type="button" class="tk-btn tk-btn--dark tk-btn--block" id="co-pagar-btn" style="margin-top:1.3rem;">Continuar al pago</button>
+      <p id="co-status" style="margin-top:0.8rem;font-size:0.84rem;text-align:center;"></p>
+      <p class="checkout-trust">Pago seguro gestionado por Stripe · no guardamos tu tarjeta</p>
+    </div>
+
+    <div id="co-error" class="form-error" style="display:none;"></div>
+  </div>
+</main>
+
+<!--#include footer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const loadingEl = document.getElementById("co-loading");
+  const contentEl = document.getElementById("co-content");
+  const errorEl = document.getElementById("co-error");
+  const params = new URLSearchParams(location.search);
+  const productoId = params.get("producto");
+  const talla = params.get("talla") || "";
+  const cantidad = Math.max(1, Math.min(10, Number(params.get("cantidad")) || 1));
+
+  function mostrarError(msg) {
+    loadingEl.style.display = "none";
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+  }
+
+  if (!window.spfc) { mostrarError("La tienda no está disponible ahora mismo."); return; }
+  if (!productoId) { mostrarError("Falta elegir un producto."); return; }
+
+  const sesion = await SPFC_TICKETING.sesionActual();
+  if (!sesion) {
+    const volver = encodeURIComponent(location.pathname + location.search);
+    location.href = `cuenta.html?volver=${volver}`;
+    return;
+  }
+
+  const producto = await SPFC_SHOP.producto(productoId);
+  if (!producto || !producto.activo) { mostrarError("Ese producto no existe o ya no está a la venta."); return; }
+  if (producto.tallas && producto.tallas.length && !producto.tallas.includes(talla)) {
+    mostrarError("Elige una talla válida desde la tienda.");
+    return;
+  }
+
+  document.getElementById("co-nombre").textContent = producto.nombre;
+  if (producto.tallas && producto.tallas.length) {
+    document.getElementById("co-talla-row").style.display = "flex";
+    document.getElementById("co-talla").textContent = talla;
+  }
+  document.getElementById("co-cantidad").textContent = cantidad;
+  const total = Number(producto.precio) * cantidad;
+  document.getElementById("co-total").textContent = SPFC_TICKETING.fmtEuros(total);
+  document.getElementById("co-email").textContent = sesion.user.email;
+  if (params.get("cancelado")) document.getElementById("co-cancelado").style.display = "block";
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+
+  document.getElementById("co-pagar-btn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const status = document.getElementById("co-status");
+    btn.disabled = true;
+    status.textContent = "Conectando con Stripe…";
+    try {
+      const { url } = await SPFC_SHOP.iniciarCheckout(producto.id, talla, cantidad);
+      location.href = url;
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

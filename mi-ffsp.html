@@ -39,6 +39,11 @@
         <div id="mf-entradas"></div>
       </div>
 
+      <div class="hub-section" id="mis-pedidos-tienda">
+        <div class="hub-section__head"><h2>Mis pedidos de tienda</h2></div>
+        <div id="mf-pedidos-tienda"></div>
+      </div>
+
       <div class="hub-section">
         <div class="hub-section__head"><h2>Historial</h2></div>
         <div id="mf-pedidos" style="opacity:0.7;"></div>
@@ -53,6 +58,7 @@
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/mantenimiento-check.js"></script>
 <script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/shop-data.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
@@ -67,10 +73,11 @@
   const nombreTitular = SPFC_TICKETING.nombreTitular(sesion.user);
   document.getElementById("mf-saludo").textContent = "Hola, " + nombreTitular.split("@")[0].split(" ")[0] + ".";
 
-  const [membresias, entradas, pedidos] = await Promise.all([
+  const [membresias, entradas, pedidos, pedidosTienda] = await Promise.all([
     SPFC_TICKETING.misMembresias(),
     SPFC_TICKETING.misEntradas(),
     SPFC_TICKETING.misPedidos(),
+    SPFC_SHOP.misPedidos(),
   ]);
 
   const activa = membresias.find((m) => m.estado === "activa");
@@ -104,6 +111,16 @@
       </div>
       <span class="fixture-row__cta">Ver →</span>
     </a>`).join("") : `<p class="tk-empty">Todavía no tienes entradas. <a href="entradas.html">Comprar entradas</a>.</p>`;
+
+  const ptEl = document.getElementById("mf-pedidos-tienda");
+  ptEl.innerHTML = pedidosTienda.length ? pedidosTienda.map((o) => `
+    <div class="hub-row">
+      <div>
+        <div class="hub-row__title">${esc(o.shop_products.nombre)}${o.talla ? " · Talla " + esc(o.talla) : ""} · x${o.cantidad}</div>
+        <div class="hub-row__meta">${esc(new Date(o.creado_en).toLocaleDateString("es-ES"))} · ${SPFC_TICKETING.fmtEuros(o.importe)}</div>
+      </div>
+      <span class="hub-row__meta">${esc(SPFC_SHOP.nombreEstado(o.estado))}</span>
+    </div>`).join("") : `<p class="tk-empty">Todavía no has comprado nada en la <a href="tienda.html">tienda</a>.</p>`;
 
   const pEl = document.getElementById("mf-pedidos");
   pEl.innerHTML = pedidos.length ? pedidos.map((o) => `

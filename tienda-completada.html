@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido confirmado — Tienda FFSP</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<main id="main" class="tk-page">
+  <div class="container confirm-box">
+    <div id="cc-esperando">
+      <p class="tk-empty">Confirmando tu pago con Stripe…</p>
+      <p id="cc-esperando-largo" style="display:none;font-size:0.82rem;color:var(--text-on-cream-muted);margin-top:0.6rem;">
+        Está tardando más de lo normal. Si ya has pagado, no te preocupes.
+      </p>
+      <button type="button" class="tk-btn tk-btn--outline" id="cc-reintentar-btn" style="display:none;margin-top:1rem;">Comprobar de nuevo</button>
+    </div>
+    <div id="cc-ok" style="display:none;">
+      <span class="confirm-box__eyebrow">Pedido confirmado</span>
+      <h1 class="confirm-box__title">¡Gracias por tu compra!</h1>
+      <p id="cc-ok-detalle" class="tk-empty" style="margin-bottom:0.4rem;"></p>
+      <p class="tk-empty" style="margin-bottom:1.4rem;">Recoge tu pedido en el club — te avisaremos cuando esté listo.</p>
+      <a class="tk-btn tk-btn--dark tk-btn--block" href="tienda.html">Seguir comprando</a>
+    </div>
+    <div id="cc-error" class="form-error" style="display:none;"></div>
+  </div>
+</main>
+
+<!--#include footer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/ticketing-data.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const orderId = new URLSearchParams(location.search).get("order");
+  const errorEl = document.getElementById("cc-error");
+  if (!window.spfc || !orderId) {
+    document.getElementById("cc-esperando").style.display = "none";
+    errorEl.textContent = "No se ha encontrado el pedido.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  let intentos = 0;
+  async function comprobar() {
+    intentos++;
+    const pedido = await SPFC_SHOP.pedido(orderId);
+    if (!pedido) {
+      errorEl.textContent = "No se ha encontrado ese pedido en tu cuenta.";
+      errorEl.style.display = "block";
+      document.getElementById("cc-esperando").style.display = "none";
+      return;
+    }
+    if (pedido.estado === "pagado" || pedido.estado === "recogido") {
+      document.getElementById("cc-esperando").style.display = "none";
+      document.getElementById("cc-ok").style.display = "block";
+      const detalle = pedido.shop_products.nombre + (pedido.talla ? ` · Talla ${pedido.talla}` : "") + ` · x${pedido.cantidad}`;
+      document.getElementById("cc-ok-detalle").textContent = detalle;
+      return;
+    }
+    if (pedido.estado === "fallido" || pedido.estado === "cancelado") {
+      document.getElementById("cc-esperando").style.display = "none";
+      errorEl.textContent = "El pago no se ha completado. Si crees que es un error, escríbenos a ffsp2026@gmail.com.";
+      errorEl.style.display = "block";
+      return;
+    }
+    // sigue pendiente
+    if (intentos >= 6) {
+      document.getElementById("cc-esperando-largo").style.display = "block";
+      document.getElementById("cc-reintentar-btn").style.display = "inline-block";
+      return;
+    }
+    setTimeout(comprobar, 3000);
+  }
+
+  document.getElementById("cc-reintentar-btn").addEventListener("click", () => {
+    document.getElementById("cc-reintentar-btn").style.display = "none";
+    intentos = 0;
+    comprobar();
+  });
+
+  comprobar();
+})();
+</script>
+</body>
+</html>

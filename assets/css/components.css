@@ -596,26 +596,30 @@ table.standings td.pts { font-weight: 900; font-family: var(--font-display); }
 .conocer-link { display: inline-flex; align-items: center; gap: 10px; margin-top: 34px; font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--ink); padding-bottom: 4px; transition: color 0.3s, border-color 0.3s; }
 .conocer-link:hover { color: var(--accent-dark); border-color: var(--accent-dark); }
 
-/* ─── Join v2 ─── */
-.join-sec { background: var(--accent); padding: 120px var(--gutter); position: relative; overflow: hidden; text-align: center; }
+/* ─── Join v2 ───
+   Antes era un bloque entero relleno de --accent (morado "a bordo franco"),
+   lo que contradice el resto del sistema (morado como acento de líneas/
+   etiquetas/estados, nunca como fondo grande — ver ticketing.css). Pasa a
+   negro/carbón dominante, con el morado solo en el ojo/el botón. */
+.join-sec { background: var(--dark); padding: 120px var(--gutter); position: relative; overflow: hidden; text-align: center; }
 .join-sec::before {
   content: 'ÚNETE'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
   font-family: var(--font-display); font-weight: 900; font-size: clamp(80px,22vw,260px);
-  color: rgba(255,255,255,0.1); pointer-events: none; white-space: nowrap; letter-spacing: -0.04em;
+  color: rgba(244,240,232,0.05); pointer-events: none; white-space: nowrap; letter-spacing: -0.04em;
 }
 .join-sec > * { position: relative; z-index: 1; }
-.join-eyebrow { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
-.join-eyebrow::before, .join-eyebrow::after { content: ''; width: 22px; height: 1px; background: rgba(255,255,255,0.55); }
-.join-title { font-family: var(--font-display); font-size: clamp(34px,8vw,88px); font-weight: 900; letter-spacing: -0.04em; line-height: 0.92; color: #fff; text-transform: uppercase; }
-.join-desc { font-size: 15px; line-height: 1.75; color: rgba(255,255,255,0.8); max-width: 380px; margin: 22px auto 34px; }
+.join-eyebrow { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 16px; }
+.join-eyebrow::before, .join-eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--accent-light); }
+.join-title { font-family: var(--font-display); font-size: clamp(34px,8vw,88px); font-weight: 900; letter-spacing: -0.04em; line-height: 0.92; color: var(--text-on-dark); text-transform: uppercase; }
+.join-desc { font-size: 15px; line-height: 1.75; color: var(--text-on-dark-muted); max-width: 380px; margin: 22px auto 34px; }
 .join-btn {
   display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--accent-dark); padding: 0 32px; height: 54px; text-decoration: none; border-radius: var(--radius-sm);
-  position: relative; overflow: hidden; background: #fff; transition: color 0.35s; border: 2px solid #fff;
+  color: #fff; padding: 0 32px; height: 54px; text-decoration: none; border-radius: var(--radius-sm);
+  position: relative; overflow: hidden; background: var(--accent); transition: color 0.35s, border-color 0.35s; border: 2px solid var(--accent);
 }
-.join-btn::before { content: ''; position: absolute; inset: 0; background: var(--dark); transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--ease-out); z-index: 0; }
+.join-btn::before { content: ''; position: absolute; inset: 0; background: #fff; transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--ease-out); z-index: 0; }
 .join-btn:hover::before { transform: scaleX(1); }
-.join-btn:hover { color: #fff; border-color: var(--dark); }
+.join-btn:hover { color: var(--accent-dark); border-color: #fff; }
 .join-btn span, .join-btn svg { position: relative; z-index: 1; }
 .join-btn svg { transition: transform 0.3s; }
 .join-btn:hover svg { transform: translateX(4px); }

@@ -18,20 +18,20 @@
       <span class="brand__name">Fútbol Femenino<small>Panel club</small></span>
     </div>
     <nav class="admin-nav" data-nav>
-      <a href="dashboard.html">Resumen</a>
-      <a href="destacado.html">Destacado</a>
-      <a href="noticias.html">Noticias</a>
-      <a href="emails.html">Emails</a>
-      <a href="avisos.html">Avisos</a>
-      <a href="citas.html">Citas</a>
-      <a href="plantilla.html">Plantilla</a>
-      <a href="partidos.html">Partidos</a>
-      <a href="entrenos.html">Entrenos</a>
-      <a href="pagos-extra.html">Pagos extra</a>
-      <a href="finanzas.html">Finanzas</a>
-      <a href="galeria.html">Galería</a>
-      <a href="inscripciones.html">Formularios de interés</a>
-      <a href="ticketing.html">Socios y entradas</a>
+      <a href="dashboard.html">🏠 Resumen</a>
+      <a href="destacado.html">⭐ Destacado</a>
+      <a href="noticias.html">📰 Noticias</a>
+      <a href="emails.html">✉️ Emails</a>
+      <a href="avisos.html">📢 Avisos</a>
+      <a href="citas.html">📅 Citas</a>
+      <a href="plantilla.html">👥 Plantilla</a>
+      <a href="partidos.html">⚽ Partidos</a>
+      <a href="entrenos.html">🏃 Entrenos</a>
+      <a href="pagos-extra.html">💳 Pagos extra</a>
+      <a href="finanzas.html">💰 Finanzas</a>
+      <a href="galeria.html">🖼️ Galería</a>
+      <a href="inscripciones.html">📋 Formularios de interés</a>
+      <a href="ticketing.html">🎟️ Socios y entradas</a>
     </nav>
     <div class="admin-sidebar-foot">
       <span data-admin-email>—</span>
@@ -40,30 +40,42 @@
   </aside>
 
   <main class="admin-main">
-    <div class="admin-topbar">
-      <h1>Finanzas</h1>
-    </div>
-    <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
-      Visión de conjunto del dinero del club: lo recaudado en inscripciones, los acuerdos con patrocinadores
-      y los gastos. Las inscripciones se gestionan desde "Formularios de interés" — aquí solo se ve el total.
-    </p>
 
-    <div class="admin-stat-grid" id="resumen-stats">
-      <div class="admin-stat admin-stat--ok"><strong id="stat-ins">—</strong><span>Inscripciones</span></div>
-      <div class="admin-stat admin-stat--ok"><strong id="stat-patro">—</strong><span>Patrocinadores</span></div>
-      <div class="admin-stat"><strong id="stat-ingresos">—</strong><span>Total ingresos</span></div>
-      <div class="admin-stat admin-stat--warn"><strong id="stat-gastos">—</strong><span>Gastos</span></div>
-      <div class="admin-stat admin-stat--accent" id="stat-balance-card"><strong id="stat-balance">—</strong><span>Balance</span></div>
+    <!-- ======================= HUB ======================= -->
+    <div class="view active" id="view-hub">
+      <div class="admin-topbar">
+        <h1>💰 Finanzas</h1>
+      </div>
+      <p style="font-size:0.86rem;color:var(--text-on-cream-muted);max-width:640px;">
+        Visión de conjunto del dinero del club: lo recaudado en inscripciones, los acuerdos con patrocinadores
+        y los gastos. Las inscripciones se gestionan desde "Formularios de interés" — aquí solo se ve el total.
+      </p>
+
+      <div class="admin-stat-grid" id="resumen-stats">
+        <div class="admin-stat admin-stat--ok"><strong id="stat-ins">—</strong><span>Inscripciones</span></div>
+        <div class="admin-stat admin-stat--ok"><strong id="stat-patro">—</strong><span>Patrocinadores</span></div>
+        <div class="admin-stat"><strong id="stat-ingresos">—</strong><span>Total ingresos</span></div>
+        <div class="admin-stat admin-stat--warn"><strong id="stat-gastos">—</strong><span>Gastos</span></div>
+        <div class="admin-stat admin-stat--accent" id="stat-balance-card"><strong id="stat-balance">—</strong><span>Balance</span></div>
+      </div>
+
+      <div class="hub-grid">
+        <button type="button" class="hub-tile" data-view="patrocinadores">
+          <span class="hub-tile__icon">🤝</span>
+          <span><p class="hub-tile__title">Patrocinadores</p><p class="hub-tile__sub">Acuerdos y packs de patrocinio</p></span>
+        </button>
+        <button type="button" class="hub-tile" data-view="gastos">
+          <span class="hub-tile__icon">🧾</span>
+          <span><p class="hub-tile__title">Gastos</p><p class="hub-tile__sub">Equipación, desplazamientos y más</p></span>
+        </button>
+      </div>
     </div>
 
-    <div class="admin-tabs">
-      <button type="button" class="admin-tab active" data-tab="patrocinadores">Patrocinadores</button>
-      <button type="button" class="admin-tab" data-tab="gastos">Gastos</button>
-    </div>
-
-    <div class="admin-tab-panel active" data-panel="patrocinadores">
-      <div class="admin-topbar" style="margin-bottom:1.2rem;">
-        <h2 style="margin:0;font-size:1.1rem;">Patrocinadores</h2>
+    <!-- ======================= PATROCINADORES ======================= -->
+    <div class="view" id="view-patrocinadores">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar">
+        <h1>🤝 Patrocinadores</h1>
         <button class="btn btn-primary btn-sm" id="new-patro-btn" type="button">Nuevo patrocinio</button>
       </div>
 
@@ -97,9 +109,11 @@
       </div>
     </div>
 
-    <div class="admin-tab-panel" data-panel="gastos">
-      <div class="admin-topbar" style="margin-bottom:1.2rem;">
-        <h2 style="margin:0;font-size:1.1rem;">Gastos</h2>
+    <!-- ======================= GASTOS ======================= -->
+    <div class="view" id="view-gastos">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar">
+        <h1>🧾 Gastos</h1>
         <button class="btn btn-primary btn-sm" id="new-gasto-btn" type="button">Nuevo gasto</button>
       </div>
 
@@ -155,13 +169,15 @@
     return new Date(iso + "T00:00:00").toLocaleDateString("es-ES");
   }
 
-  /* ── Pestañas ── */
-  document.querySelectorAll(".admin-tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".admin-tab").forEach((b) => b.classList.toggle("active", b === btn));
-      document.querySelectorAll(".admin-tab-panel").forEach((p) => p.classList.toggle("active", p.dataset.panel === btn.dataset.tab));
-    });
-  });
+  /* ── Navegación entre vistas ── */
+  function mostrarVista(nombre) {
+    document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+    const el = document.getElementById("view-" + nombre);
+    if (el) el.classList.add("active");
+    history.replaceState(null, "", nombre === "hub" ? "finanzas.html" : "finanzas.html?view=" + nombre);
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll("[data-view]").forEach((btn) => btn.addEventListener("click", () => mostrarVista(btn.dataset.view)));
 
   /* ── Resumen ── */
   async function loadResumen() {
@@ -293,6 +309,9 @@
   });
 
   await Promise.all([loadResumen(), loadPatrocinios(), loadGastos()]);
+
+  const vistaInicial = new URLSearchParams(location.search).get("view");
+  if (vistaInicial) mostrarVista(vistaInicial);
 })();
 </script>
 </body>

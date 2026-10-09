@@ -39,10 +39,12 @@
         <div id="mf-entradas"></div>
       </div>
 
+      <!-- OCULTO temporalmente (tienda) — no borrar
       <div class="hub-section" id="mis-pedidos-tienda">
         <div class="hub-section__head"><h2>Mis pedidos de tienda</h2></div>
         <div id="mf-pedidos-tienda"></div>
       </div>
+      -->
 
       <div class="hub-section">
         <div class="hub-section__head"><h2>Historial</h2></div>
@@ -112,15 +114,21 @@
       <span class="fixture-row__cta">Ver →</span>
     </a>`).join("") : `<p class="tk-empty">Todavía no tienes entradas. <a href="entradas.html">Comprar entradas</a>.</p>`;
 
+  // OCULTO temporalmente (tienda) — la sección #mf-pedidos-tienda está
+  // comentada en el HTML, así que esto ya no encuentra el elemento. No
+  // borrar: en cuanto se reactive la sección de arriba, esto vuelve a
+  // rellenarla solo.
   const ptEl = document.getElementById("mf-pedidos-tienda");
-  ptEl.innerHTML = pedidosTienda.length ? pedidosTienda.map((o) => `
-    <div class="hub-row">
-      <div>
-        <div class="hub-row__title">${esc(o.shop_products.nombre)}${o.talla ? " · Talla " + esc(o.talla) : ""} · x${o.cantidad}</div>
-        <div class="hub-row__meta">${esc(new Date(o.creado_en).toLocaleDateString("es-ES"))} · ${SPFC_TICKETING.fmtEuros(o.importe)}</div>
-      </div>
-      <span class="hub-row__meta">${esc(SPFC_SHOP.nombreEstado(o.estado))}</span>
-    </div>`).join("") : `<p class="tk-empty">Todavía no has comprado nada en la <a href="tienda.html">tienda</a>.</p>`;
+  if (ptEl) {
+    ptEl.innerHTML = pedidosTienda.length ? pedidosTienda.map((o) => `
+      <div class="hub-row">
+        <div>
+          <div class="hub-row__title">${esc(o.shop_products.nombre)}${o.talla ? " · Talla " + esc(o.talla) : ""} · x${o.cantidad}</div>
+          <div class="hub-row__meta">${esc(new Date(o.creado_en).toLocaleDateString("es-ES"))} · ${SPFC_TICKETING.fmtEuros(o.importe)}</div>
+        </div>
+        <span class="hub-row__meta">${esc(SPFC_SHOP.nombreEstado(o.estado))}</span>
+      </div>`).join("") : `<p class="tk-empty">Todavía no has comprado nada en la <a href="tienda.html">tienda</a>.</p>`;
+  }
 
   const pEl = document.getElementById("mf-pedidos");
   pEl.innerHTML = pedidos.length ? pedidos.map((o) => `

@@ -13,6 +13,7 @@ window.SPFC_FALLBACK = {
   teams: [],
   players: [],
   matches: [],
+  competitions: [],
   standings: [],
   news: [],
   gallery: [],
@@ -39,6 +40,14 @@ const SPFC_DATA = (function () {
   return {
     async teams() {
       return safe((c) => c.from("teams").select("*").order("orden"), window.SPFC_FALLBACK.teams);
+    },
+    // Competiciones propias (torneos, y opcionalmente "Liga") con nombre,
+    // fechas oficiales y descripción — hoy solo la usa calendario.html para
+    // mostrar la cabecera especial de un torneo (p.ej. East Mallorca Girls
+    // Cup) cuando se selecciona. Si no hay ninguna fila activa, la vista de
+    // calendario sigue funcionando exactamente igual que antes (solo "Liga").
+    async competiciones() {
+      return safe((c) => c.from("competitions").select("*").eq("activo", true).order("orden"), window.SPFC_FALLBACK.competitions);
     },
     async players(teamId) {
       return safe(
@@ -99,6 +108,15 @@ const SPFC_DATA = (function () {
       const list = await safe((c) => c.from("matches").select("*, teams(nombre, categoria)").eq("id", id).limit(1), null);
       if (Array.isArray(list) && list[0]) return list[0];
       return window.SPFC_FALLBACK.matches.find((m) => m.id === id);
+    },
+    // Estadísticas de todas las jugadoras de un partido (para la pestaña
+    // "Alineaciones" de partido.html) — solo datos reales ya cargados en el
+    // admin tras el partido; si no hay ninguna fila, la pestaña no se enseña.
+    async matchPlayerStats(matchId) {
+      return safe(
+        (c) => c.from("match_player_stats").select("*, players(nombre, dorsal, foto_url, posicion)").eq("match_id", matchId).order("dorsal", { foreignTable: "players" }),
+        []
+      );
     },
     async standings(teamId) {
       return safe(

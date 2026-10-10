@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Partido — Fútbol Femenino Santa Ponça</title>
-<meta name="description" content="Ficha del partido del Fútbol Femenino Santa Ponça: resultado, crónica, vídeo y estadísticas.">
+<meta name="description" content="Ficha del partido del Fútbol Femenino Santa Ponça: resultado, crónica, alineaciones, vídeo y estadísticas.">
 <link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/partido.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Partido — Fútbol Femenino Santa Ponça">
 <meta property="og:description" content="Resultado, crónica, vídeo y estadísticas del partido.">
 <meta property="og:url" content="https://futbolfemeninosantaponsa.netlify.app/partido.html">
 <meta property="og:locale" content="es_ES">
-<meta name="theme-color" content="#17151b">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
 <script src="assets/js/ga4.js"></script>
@@ -19,10 +19,126 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <style>
-  .match-hero .match-card__comp { display: block; text-align: center; margin-bottom: 0.6rem; }
-  #cronica-content p { color: var(--text-on-cream); line-height: 1.75; }
-  #gallery-grid a.card { display: block; }
-  #gallery-grid .card__media { aspect-ratio: 1; }
+/* ============================================================================
+   Ficha de partido — espacio de nombres propio ".pd-*", no toca nada de
+   ".match-card"/".match-hero" (las tarjetas de listados/portada). Pensado
+   para una sola página, por eso vive aquí en vez de en components.css.
+   ============================================================================ */
+
+/* ---- Cabecera ------------------------------------------------------------ */
+.pd-hero { padding: 7rem 0 2.6rem; background: var(--dark); color: var(--text-on-dark); position: relative; overflow: hidden; }
+.pd-hero::before {
+  content: ""; position: absolute; inset: 0; opacity: 0.5; pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(168,85,247,0.22), transparent 70%);
+}
+.pd-hero__inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; text-align: center; }
+.pd-hero__comp {
+  font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-on-dark-muted); margin: 0 0 1.1rem;
+}
+.pd-hero__comp strong { color: var(--accent-light); font-weight: 800; }
+.pd-status {
+  display: inline-flex; align-items: center; gap: 0.5em; font-family: var(--font-display); font-size: 0.68rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45em 0.9em; border-radius: var(--radius-pill);
+  margin-bottom: 1.4rem; background: rgba(244,240,232,0.08); color: var(--text-on-dark-muted); border: 1px solid rgba(244,240,232,0.14);
+}
+.pd-status--live { background: rgba(239,68,68,0.16); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+.pd-status--live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: pdPulse 1.4s ease-in-out infinite; }
+.pd-status--win { background: rgba(34,197,94,0.14); color: #86efac; border-color: rgba(34,197,94,0.28); }
+.pd-status--loss { background: rgba(239,68,68,0.14); color: #fca5a5; border-color: rgba(239,68,68,0.28); }
+.pd-status--draw { background: rgba(234,179,8,0.14); color: #fde047; border-color: rgba(234,179,8,0.28); }
+.pd-status--warn { background: rgba(234,179,8,0.14); color: #fde047; border-color: rgba(234,179,8,0.28); }
+@keyframes pdPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .pd-status--live::before { animation: none; } }
+
+.pd-teams { display: flex; align-items: center; justify-content: center; gap: clamp(1rem, 5vw, 3rem); margin-bottom: 1.6rem; }
+.pd-team { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; flex: 1; min-width: 0; max-width: 220px; }
+.pd-team__crest { width: 92px; height: 92px; border-radius: 50%; object-fit: contain; background: rgba(244,240,232,0.06); border: 1px solid rgba(244,240,232,0.14); padding: 0.9rem; }
+.pd-team__crest--fallback { display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; color: rgba(244,240,232,0.5); }
+.pd-team__name { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; line-height: 1.25; }
+.pd-team__flag { font-size: 1rem; margin-right: 0.35em; }
+.pd-team__pais { font-size: 0.72rem; color: var(--text-on-dark-muted); font-weight: 600; }
+.pd-score { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.pd-score__num { font-family: var(--font-display); font-weight: 900; font-size: clamp(2.2rem, 7vw, 3.2rem); line-height: 1; display: flex; align-items: center; gap: 0.3em; }
+.pd-score__sep { color: var(--text-on-dark-muted); font-size: 0.6em; }
+.pd-score__vs { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; color: rgba(244,240,232,0.4); }
+.pd-countdown { display: flex; gap: 0.9rem; justify-content: center; margin-top: 0.3rem; }
+.pd-countdown__unit { display: flex; flex-direction: column; align-items: center; min-width: 2.6rem; }
+.pd-countdown__num { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; }
+.pd-countdown__label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-on-dark-muted); }
+
+.pd-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em 1.4em; font-size: 0.86rem; color: var(--text-on-dark-muted); }
+.pd-meta span { white-space: nowrap; }
+
+/* ---- Pestañas ------------------------------------------------------------- */
+.pd-tabs-section { background: var(--paper); }
+.pd-tabs {
+  display: flex; gap: 0.3rem; border-bottom: 1px solid rgba(10,10,10,0.1); overflow-x: auto;
+  position: sticky; top: 0; background: var(--paper); z-index: 5; -ms-overflow-style: none; scrollbar-width: none;
+}
+.pd-tabs::-webkit-scrollbar { display: none; }
+.pd-tab {
+  background: none; border: none; padding: 1.1em 1.1em 0.9em; font-family: var(--font-display); font-weight: 700; font-size: 0.82rem;
+  letter-spacing: 0.01em; color: var(--text-on-cream-muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease; white-space: nowrap;
+}
+.pd-tab:hover { color: var(--ink); }
+.pd-tab[aria-selected="true"] { color: var(--accent-dark); border-bottom-color: var(--accent); }
+
+.pd-panel { padding: 2.2rem 0 2.6rem; animation: pdFadeIn 0.22s ease; }
+.pd-panel[hidden] { display: none; }
+@keyframes pdFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .pd-panel { animation: none; } }
+
+/* Resumen */
+.pd-summary__live-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--ink); color: #fff;
+  border-radius: var(--radius-lg); padding: 1.1rem 1.4rem; margin-bottom: 1.6rem; flex-wrap: wrap;
+}
+.pd-summary__live-cta strong { font-family: var(--font-display); }
+.pd-summary__live-cta button { flex-shrink: 0; white-space: nowrap; }
+.pd-cronica p { color: var(--text-on-cream); line-height: 1.75; margin-bottom: 1em; }
+
+/* Información */
+.pd-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.4rem 2rem; }
+.pd-info-row dt { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-on-cream-muted); margin-bottom: 0.3em; }
+.pd-info-row dd { font-size: 1rem; font-weight: 600; margin: 0; }
+.pd-info-row dd a { color: var(--accent-dark); font-weight: 700; text-decoration: none; }
+.pd-info-row dd a:hover { text-decoration: underline; }
+
+/* Alineaciones */
+.pd-lineup-group + .pd-lineup-group { margin-top: 2rem; }
+.pd-lineup-group__title { font-family: var(--font-display); font-weight: 800; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-on-cream-muted); margin: 0 0 1rem; }
+.pd-lineup-list { display: flex; flex-direction: column; gap: 0.1rem; }
+.pd-lineup-row { display: flex; align-items: center; gap: 0.9rem; padding: 0.7em 0.2em; border-bottom: 1px solid rgba(10,10,10,0.06); }
+.pd-lineup-row__dorsal {
+  font-family: var(--font-display); font-weight: 800; font-size: 0.82rem; color: var(--accent-dark); background: var(--accent-soft);
+  width: 1.9rem; height: 1.9rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.pd-lineup-row__nombre { flex: 1; font-weight: 600; font-size: 0.92rem; }
+.pd-lineup-row__badges { display: flex; gap: 0.4em; flex-shrink: 0; }
+.pd-lineup-row__badge { font-size: 0.82rem; }
+
+/* Directo */
+.pd-video-grid { display: grid; gap: 1.2rem; }
+.pd-video-grid--multi { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.pd-video-frame { position: relative; aspect-ratio: 16/9; border-radius: var(--radius-lg); overflow: hidden; background: #000; }
+.pd-video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.pd-wait { text-align: center; padding: 3rem 1.5rem; background: var(--cream-deep); border-radius: var(--radius-lg); }
+.pd-wait__icon { font-size: 2rem; margin-bottom: 0.8rem; }
+.pd-wait h3 { font-family: var(--font-display); margin-bottom: 0.5rem; }
+.pd-wait p { color: var(--text-on-cream-muted); font-size: 0.9rem; }
+
+#gallery-grid a.card { display: block; }
+#gallery-grid .card__media { aspect-ratio: 1; }
+
+@media (max-width: 640px) {
+  .pd-hero { padding: 6.2rem 0 2rem; }
+  .pd-team__crest { width: 68px; height: 68px; padding: 0.6rem; }
+  .pd-team__name { font-size: 0.88rem; }
+  .pd-countdown { gap: 0.6rem; }
+  .pd-countdown__num { font-size: 1.05rem; }
+}
 </style>
 </head>
 <body>
@@ -31,9 +147,9 @@
 <!--#include header-->
 <main id="main">
 
-  <section class="section section-dark" style="padding-top:7.5rem;padding-bottom:2.6rem;">
-    <div class="container">
-      <nav class="breadcrumb" style="margin-bottom:2rem;">
+  <section class="pd-hero">
+    <div class="container pd-hero__inner">
+      <nav class="breadcrumb" style="justify-content:center;margin-bottom:1.6rem;">
         <a href="index.html">Inicio</a>
         <span>/</span>
         <a href="calendario.html">Calendario</a>
@@ -48,39 +164,26 @@
 
   <div id="match-body" style="display:none;">
 
-    <section class="section" aria-labelledby="cronica-heading">
+    <section class="pd-tabs-section" aria-label="Secciones del partido">
       <div class="container">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Después del pitido final</span>
-            <h2 id="cronica-heading">Crónica</h2>
-          </div>
-        </div>
-        <div id="cronica-content"></div>
-      </div>
-    </section>
+        <nav class="pd-tabs" id="pd-tabs" role="tablist" aria-label="Pestañas del partido"></nav>
 
-    <section class="section section-dark" id="video-section" style="display:none;" aria-labelledby="video-heading">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Repite las jugadas</span>
-            <h2 id="video-heading">Vídeo del partido</h2>
-          </div>
+        <div class="pd-panel" id="panel-resumen" role="tabpanel" aria-labelledby="tab-resumen">
+          <div id="pd-live-cta"></div>
+          <div class="pd-cronica" id="cronica-content"></div>
         </div>
-        <div id="video-wrap"></div>
-      </div>
-    </section>
 
-    <section class="section" aria-labelledby="stats-heading">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Datos del partido</span>
-            <h2 id="stats-heading">Ficha del partido</h2>
-          </div>
+        <div class="pd-panel" id="panel-info" role="tabpanel" aria-labelledby="tab-info" hidden>
+          <dl class="pd-info-grid" id="info-grid"></dl>
         </div>
-        <dl id="stats-strip" class="match-facts"></dl>
+
+        <div class="pd-panel" id="panel-alineaciones" role="tabpanel" aria-labelledby="tab-alineaciones" hidden>
+          <div id="lineup-content"></div>
+        </div>
+
+        <div class="pd-panel" id="panel-directo" role="tabpanel" aria-labelledby="tab-directo" hidden>
+          <div id="directo-content"></div>
+        </div>
       </div>
     </section>
 
@@ -114,6 +217,7 @@
   const headerEl = document.getElementById("match-header");
   const bodyEl = document.getElementById("match-body");
   const breadcrumbCurrent = document.getElementById("breadcrumb-current");
+  let countdownTimer = null;
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -133,6 +237,17 @@
     return null;
   }
 
+  // Convierte un código de país de 2 letras (ES, FR, DE...) en su emoji de
+  // bandera real (los dos "regional indicator symbols" correspondientes) —
+  // nunca se adivina ni se mapea un nombre de país a mano, así que si el
+  // dato guardado no es un código válido simplemente no se muestra bandera.
+  function paisToFlag(pais) {
+    if (!pais || !/^[a-zA-Z]{2}$/.test(pais.trim())) return null;
+    const cc = pais.trim().toUpperCase();
+    const codePoints = [...cc].map((c) => 127397 + c.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  }
+
   function setMeta(selector, value) {
     const el = document.querySelector(selector);
     if (el) el.setAttribute("content", value);
@@ -141,10 +256,8 @@
   function showNotFound(message) {
     breadcrumbCurrent.textContent = "Partido no encontrado";
     headerEl.innerHTML = `
-      <div style="text-align:center;padding:2.5rem 0;">
-        <p class="empty-state" style="color:var(--text-on-dark-muted);">${message}</p>
-        <a href="calendario.html" class="btn btn-primary">Volver al calendario</a>
-      </div>`;
+      <p class="empty-state" style="color:var(--text-on-dark-muted);">${message}</p>
+      <a href="calendario.html" class="btn btn-primary">Volver al calendario</a>`;
     document.title = "Partido no encontrado — Fútbol Femenino Santa Ponça";
   }
 
@@ -168,81 +281,287 @@
   }
 
   const esLocal = match.condicion === "local";
-  const jugado = match.estado === "jugado";
   const rivalName = match.rival || "Rival";
 
   breadcrumbCurrent.textContent = `Santa Ponça vs ${rivalName}`;
 
-  headerEl.innerHTML = spfcMatchProtagonistHTML(match);
-  if (match.estado === "programado") {
-    // Repinta cada minuto para que pase a "En vivo" solo, en cuanto
-    // llega la hora del partido, sin que haga falta recargar la página.
-    setInterval(() => { headerEl.innerHTML = spfcMatchProtagonistHTML(match); }, 60000);
+  // -------------------------------------------------------------------------
+  // Cabecera
+  // -------------------------------------------------------------------------
+  function estadoActual() {
+    if (match.estado === "aplazado") return "aplazado";
+    if (match.estado === "suspendido") return "suspendido";
+    if (match.estado === "jugado") return "jugado";
+    if (spfcEsEnVivo(match)) return "en-vivo";
+    return "programado";
   }
 
-  const resultLine = jugado
+  function crestHtml(esClub, nombre) {
+    if (esClub) return `<img class="pd-team__crest" src="assets/img/escudo-santa-ponsa.png" alt="">`;
+    if (match.rival_escudo_url) return `<img class="pd-team__crest" src="${escapeHtml(match.rival_escudo_url)}" alt="">`;
+    return `<span class="pd-team__crest pd-team__crest--fallback">${escapeHtml((nombre || "").trim().slice(0, 2).toUpperCase() || "--")}</span>`;
+  }
+
+  function statusBadgeHtml(estado) {
+    const res = match.estado === "jugado" ? spfcResultLabel(match) : null;
+    const map = {
+      "programado": { cls: "", label: "Próximo partido" },
+      "en-vivo": { cls: "pd-status--live", label: "En directo" },
+      "jugado": res === "W" ? { cls: "pd-status--win", label: "Victoria" } : res === "L" ? { cls: "pd-status--loss", label: "Derrota" } : res === "D" ? { cls: "pd-status--draw", label: "Empate" } : { cls: "", label: "Finalizado" },
+      "aplazado": { cls: "pd-status--warn", label: "Aplazado" },
+      "suspendido": { cls: "pd-status--warn", label: "Suspendido" },
+    };
+    const s = map[estado] || map.programado;
+    return `<span class="pd-status ${s.cls}">${s.label}</span>`;
+  }
+
+  function countdownHtml(estado) {
+    if (estado !== "programado" || !match.hora) return "";
+    const target = new Date(match.fecha + "T" + match.hora).getTime();
+    const diff = target - Date.now();
+    if (diff <= 0) return "";
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const unidades = d > 0 ? [[d, "Días"], [h, "Horas"], [m, "Min"]] : [[h, "Horas"], [m, "Min"], [s, "Seg"]];
+    return `<div class="pd-countdown">${unidades.map(([v, l]) => `
+      <div class="pd-countdown__unit"><span class="pd-countdown__num">${String(v).padStart(2, "0")}</span><span class="pd-countdown__label">${l}</span></div>`).join("")}</div>`;
+  }
+
+  function renderHeader() {
+    const estado = estadoActual();
+    const jugado = estado === "jugado";
+    const golesEquipo = esLocal ? match.goles_equipo : match.goles_rival;
+    const golesRival = esLocal ? match.goles_rival : match.goles_equipo;
+    const pais = match.rival_pais;
+    const bandera = paisToFlag(pais);
+
+    const metaBits = [];
+    if (estado === "en-vivo") {
+      metaBits.push("Jugándose ahora mismo");
+    } else {
+      metaBits.push(spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" }));
+      if (match.hora) metaBits.push(match.hora.slice(0, 5) + "h");
+    }
+    if (match.campo) metaBits.push(escapeHtml(match.campo));
+
+    headerEl.innerHTML = `
+      <p class="pd-hero__comp">${match.teams && match.teams.categoria ? escapeHtml(match.teams.categoria) + " · " : ""}${match.tipo && match.tipo !== "Liga" ? escapeHtml(match.tipo) + " · " : ""}<strong>${escapeHtml(match.competicion || "")}</strong>${match.jornada ? " · Jornada " + escapeHtml(match.jornada) : ""}</p>
+      ${statusBadgeHtml(estado)}
+      <div class="pd-teams">
+        <div class="pd-team">
+          ${crestHtml(esLocal, "Santa Ponça")}
+          <span class="pd-team__name">${esLocal ? "Santa Ponça" : (bandera ? `<span class="pd-team__flag">${bandera}</span>` : "") + escapeHtml(rivalName)}</span>
+        </div>
+        <div class="pd-score">
+          ${jugado
+            ? `<span class="pd-score__num">${golesEquipo != null ? golesEquipo : "-"}<span class="pd-score__sep">—</span>${golesRival != null ? golesRival : "-"}</span>`
+            : `<span class="pd-score__vs">VS</span>`}
+          ${countdownHtml(estado)}
+        </div>
+        <div class="pd-team">
+          ${crestHtml(!esLocal, esLocal ? rivalName : "Santa Ponça")}
+          <span class="pd-team__name">${esLocal ? (bandera ? `<span class="pd-team__flag">${bandera}</span>` : "") + escapeHtml(rivalName) : "Santa Ponça"}</span>
+        </div>
+      </div>
+      <p class="pd-meta">${metaBits.map((b) => `<span>${b}</span>`).join("")}</p>`;
+  }
+
+  renderHeader();
+  if (match.estado === "programado") {
+    // Repinta sola en cuanto llega la hora (pasa a "En directo") y mientras
+    // cuenta atrás — cada segundo si falta menos de un día (para que se vea
+    // moverse de verdad), cada minuto si falta más (no tiene sentido
+    // repintar 604800 veces una cuenta atrás que marca "7 días"). Se
+    // reprograma en cada tick según cuánto quede en ese momento.
+    (function tick() {
+      renderHeader();
+      if (match.estado !== "programado") return;
+      const target = match.hora ? new Date(match.fecha + "T" + match.hora).getTime() : null;
+      const diff = target ? target - Date.now() : Infinity;
+      const siguiente = diff > 86400000 ? 60000 : 1000;
+      countdownTimer = setTimeout(tick, siguiente);
+    })();
+  }
+
+  const resultLine = match.estado === "jugado"
     ? `${esLocal ? match.goles_equipo : match.goles_rival}-${esLocal ? match.goles_rival : match.goles_equipo}`
     : spfcFormatDate(match.fecha);
   document.title = `Santa Ponça vs ${rivalName} (${resultLine}) — Fútbol Femenino Santa Ponça`;
   setMeta('meta[property="og:title"]', `Santa Ponça vs ${rivalName}`);
-  setMeta('meta[property="og:description"]', jugado
+  setMeta('meta[property="og:description"]', match.estado === "jugado"
     ? `Resultado: ${esLocal ? match.goles_equipo : match.goles_rival} — ${esLocal ? match.goles_rival : match.goles_equipo}. ${match.competicion || ""}`
     : `Partido programado el ${spfcFormatDate(match.fecha)}. ${match.competicion || ""}`);
 
   bodyEl.style.display = "";
 
+  // -------------------------------------------------------------------------
+  // Resumen
+  // -------------------------------------------------------------------------
   const cronicaEl = document.getElementById("cronica-content");
   if (match.cronica && match.cronica.trim()) {
     cronicaEl.innerHTML = match.cronica.split(/\n+/).filter(Boolean).map((p) => `<p>${p}</p>`).join("");
+  } else if (match.estado === "jugado") {
+    cronicaEl.innerHTML = `<p class="empty-state">Todavía no se ha publicado la crónica de este partido.</p>`;
   } else {
-    cronicaEl.innerHTML = `<p class="empty-state">La crónica de este partido se publicará después de disputarse.</p>`;
+    cronicaEl.innerHTML = `<p class="empty-state">La crónica se publicará después de disputarse el partido.</p>`;
   }
 
-  const videoUrls = [match.video_url, match.video_url_2].filter(Boolean);
-  if (videoUrls.length) {
-    const videoSection = document.getElementById("video-section");
-    const videoWrap = document.getElementById("video-wrap");
-    const dentroVideo = await SPFC_SOCIOS.haySesion();
+  const tieneVideo = !!(match.video_url || match.video_url_2);
+  const hayDirectoTab = match.en_directo || tieneVideo;
+  if (match.en_directo) {
+    document.getElementById("pd-live-cta").innerHTML = `
+      <div class="pd-summary__live-cta">
+        <span><strong>● En directo ahora mismo</strong> — vs ${escapeHtml(rivalName)}</span>
+        <button type="button" class="btn btn-primary btn-sm" data-ir-directo>Ver directo</button>
+      </div>`;
+  }
 
-    if (!dentroVideo) {
-      videoWrap.style.display = "block";
-      const primerYtId = extractYouTubeId(videoUrls[0]);
-      const miniatura = primerYtId ? `https://img.youtube.com/vi/${primerYtId}/hqdefault.jpg` : null;
-      videoWrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo del partido.", miniatura);
-      SPFC_SOCIOS.mostrarModal("Inicia sesión para ver el vídeo del partido.");
-    } else {
-      videoWrap.style.display = videoUrls.length > 1 ? "grid" : "block";
-      if (videoUrls.length > 1) {
-        videoWrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
-        videoWrap.style.gap = "1.2rem";
+  // -------------------------------------------------------------------------
+  // Información
+  // -------------------------------------------------------------------------
+  const infoRows = [];
+  infoRows.push(["Competición", escapeHtml(match.competicion || "—")]);
+  if (match.jornada) infoRows.push(["Jornada", escapeHtml(match.jornada)]);
+  infoRows.push(["Fecha y hora", escapeHtml(spfcFormatDate(match.fecha, { weekday: "long", day: "2-digit", month: "long", year: "numeric" })) + (match.hora ? " · " + escapeHtml(match.hora.slice(0, 5)) + "h" : "")]);
+  if (match.campo) {
+    const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(match.campo);
+    infoRows.push(["Campo", `${escapeHtml(match.campo)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Cómo llegar →</a>`]);
+  }
+  infoRows.push(["Condición", esLocal ? "Local" : "Visitante"]);
+  if (match.rival_pais) infoRows.push(["País del rival", `${paisToFlag(match.rival_pais) ? paisToFlag(match.rival_pais) + " " : ""}${escapeHtml(match.rival_pais)}`]);
+  document.getElementById("info-grid").innerHTML = infoRows.map(([label, value]) => `
+    <div class="pd-info-row"><dt>${label}</dt><dd>${value}</dd></div>`).join("");
+
+  // -------------------------------------------------------------------------
+  // Alineaciones — solo si hay estadísticas reales cargadas
+  // -------------------------------------------------------------------------
+  let hayAlineaciones = false;
+  try {
+    const stats = await SPFC_DATA.matchPlayerStats(match.id);
+    if (stats && stats.length) {
+      hayAlineaciones = true;
+      const titulares = stats.filter((s) => s.titular === true);
+      const suplentes = stats.filter((s) => s.titular !== true);
+      function filaJugadora(s) {
+        const p = s.players || {};
+        const badges = [];
+        if (s.goles > 0) badges.push(`<span class="pd-lineup-row__badge" title="${s.goles} gol(es)">⚽${s.goles > 1 ? " ×" + s.goles : ""}</span>`);
+        if (s.tarjetas_amarillas > 0) badges.push(`<span class="pd-lineup-row__badge" title="Tarjeta amarilla">🟨</span>`);
+        if (s.tarjetas_rojas > 0) badges.push(`<span class="pd-lineup-row__badge" title="Tarjeta roja">🟥</span>`);
+        return `
+          <div class="pd-lineup-row">
+            <span class="pd-lineup-row__dorsal">${p.dorsal != null ? p.dorsal : "—"}</span>
+            <span class="pd-lineup-row__nombre">${escapeHtml(p.nombre || "")}</span>
+            <span class="pd-lineup-row__badges">${badges.join("")}</span>
+          </div>`;
       }
-      videoWrap.innerHTML = videoUrls.map((url) => {
+      let html = "";
+      if (titulares.length) {
+        html += `<div class="pd-lineup-group"><p class="pd-lineup-group__title">Titulares</p><div class="pd-lineup-list">${titulares.map(filaJugadora).join("")}</div></div>`;
+      }
+      if (suplentes.length) {
+        html += `<div class="pd-lineup-group"><p class="pd-lineup-group__title">${titulares.length ? "Suplentes" : "Convocadas"}</p><div class="pd-lineup-list">${suplentes.map(filaJugadora).join("")}</div></div>`;
+      }
+      document.getElementById("lineup-content").innerHTML = html;
+    }
+  } catch (err) {
+    console.warn("[partido] error cargando alineaciones:", err);
+  }
+
+  // -------------------------------------------------------------------------
+  // Directo — reutiliza exactamente la misma lógica/gate que el "en directo"
+  // de index.html (SPFC_SOCIOS, sin pago) y el vídeo post-partido de antes.
+  // -------------------------------------------------------------------------
+  async function renderDirecto() {
+    const wrap = document.getElementById("directo-content");
+    const dentro = await SPFC_SOCIOS.haySesion();
+
+    if (match.en_directo && match.video_url) {
+      if (!dentro) {
+        wrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el directo de este partido.");
+        SPFC_SOCIOS.mostrarModal("Inicia sesión para ver el directo.");
+        return;
+      }
+      const ytId = extractYouTubeId(match.video_url);
+      const src = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=0` : match.video_url;
+      wrap.innerHTML = `
+        <div class="pd-video-grid">
+          <div class="pd-video-frame"><iframe src="${src}" title="Partido en directo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+          <p class="form-note"><a href="${escapeHtml(match.video_url)}" target="_blank" rel="noopener">¿No se ve bien? Ábrelo directamente →</a></p>
+        </div>`;
+      return;
+    }
+
+    if (match.estado === "programado" && match.video_url) {
+      wrap.innerHTML = `
+        <div class="pd-wait">
+          <div class="pd-wait__icon">🎥</div>
+          <h3>La retransmisión aún no ha empezado</h3>
+          <p>Vuelve a esta pestaña cuando empiece el partido para ver el directo.</p>
+        </div>`;
+      return;
+    }
+
+    if (match.estado === "jugado" && (match.video_url || match.video_url_2)) {
+      const urls = [match.video_url, match.video_url_2].filter(Boolean);
+      if (!dentro) {
+        const primerYtId = extractYouTubeId(urls[0]);
+        const miniatura = primerYtId ? `https://img.youtube.com/vi/${primerYtId}/hqdefault.jpg` : null;
+        wrap.innerHTML = SPFC_SOCIOS.candado("Inicia sesión para ver el vídeo del partido.", miniatura);
+        SPFC_SOCIOS.mostrarModal("Inicia sesión para ver el vídeo del partido.");
+        return;
+      }
+      wrap.innerHTML = `<div class="pd-video-grid${urls.length > 1 ? " pd-video-grid--multi" : ""}">${urls.map((url) => {
         const ytId = extractYouTubeId(url);
         const src = ytId ? `https://www.youtube.com/embed/${ytId}` : url;
-        return `
-          <div style="position:relative;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#000;">
-            <iframe src="${src}" title="Vídeo del partido" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-          </div>`;
-      }).join("");
+        return `<div class="pd-video-frame"><iframe src="${src}" title="Vídeo del partido" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+      }).join("")}</div>`;
+      return;
     }
-    videoSection.style.display = "";
+
+    wrap.innerHTML = `
+      <div class="pd-wait">
+        <div class="pd-wait__icon">📡</div>
+        <h3>No hay retransmisión disponible</h3>
+        <p>Este partido no tiene vídeo asociado.</p>
+      </div>`;
   }
+  if (hayDirectoTab) await renderDirecto();
 
-  const stats = [];
-  stats.push({ value: match.competicion || "—", label: "Competición" });
-  if (match.jornada) stats.push({ value: "Jornada " + match.jornada, label: "Jornada" });
-  stats.push({ value: esLocal ? "Local" : "Visitante", label: "Condición" });
-  if (match.campo) stats.push({ value: match.campo, label: "Campo" });
-  if (jugado) {
-    stats.push({ value: `${match.goles_equipo != null ? match.goles_equipo : "-"} — ${match.goles_rival != null ? match.goles_rival : "-"}`, label: "Resultado (Santa Ponça — " + escapeHtml(rivalName) + ")" });
+  // -------------------------------------------------------------------------
+  // Pestañas — solo se listan las que tienen contenido real
+  // -------------------------------------------------------------------------
+  const tabs = [
+    { id: "resumen", label: "Resumen", siempre: true },
+    { id: "info", label: "Información", siempre: true },
+    { id: "alineaciones", label: "Alineaciones", visible: hayAlineaciones },
+    { id: "directo", label: "Directo", visible: hayDirectoTab },
+  ].filter((t) => t.siempre || t.visible);
+
+  const tabsNav = document.getElementById("pd-tabs");
+  tabsNav.innerHTML = tabs.map((t, i) => `
+    <button type="button" class="pd-tab" id="tab-${t.id}" role="tab" aria-selected="${i === 0}" aria-controls="panel-${t.id}" data-tab="${t.id}">${t.label}</button>`).join("");
+
+  function activarTab(tabId) {
+    tabs.forEach((t) => {
+      const btn = document.getElementById("tab-" + t.id);
+      const panel = document.getElementById("panel-" + t.id);
+      const activo = t.id === tabId;
+      if (btn) btn.setAttribute("aria-selected", String(activo));
+      if (panel) panel.hidden = !activo;
+    });
   }
+  tabsNav.querySelectorAll("[data-tab]").forEach((btn) => btn.addEventListener("click", () => activarTab(btn.dataset.tab)));
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-ir-directo]")) activarTab("directo");
+  });
+  if (tabs.length) activarTab(tabs[0].id);
 
-  document.getElementById("stats-strip").innerHTML = stats.map((s) => `
-    <div class="match-facts__row">
-      <dt>${s.label}</dt>
-      <dd>${escapeHtml(String(s.value))}</dd>
-    </div>`).join("");
-
+  // -------------------------------------------------------------------------
+  // Galería
+  // -------------------------------------------------------------------------
   try {
     const items = await SPFC_DATA.gallery(match.id);
     if (items && items.length) {

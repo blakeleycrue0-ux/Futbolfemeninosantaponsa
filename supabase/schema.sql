@@ -1574,3 +1574,42 @@ as $$
   where is_app_staff()
   order by o.creado_en desc;
 $$;
+
+-- ============================================================================
+-- FICHA DE PARTIDO REDISEÑADA + EAST MALLORCA GIRLS CUP
+-- rival_pais: para mostrar una bandera en la nueva cabecera del partido
+-- cuando se conozca el país del rival — nunca se inventa, se queda vacío
+-- si no se rellena.
+-- match_player_stats.titular: único dato nuevo para la pestaña
+-- "Alineaciones" (titular/suplente simple, sin formación táctica).
+-- competitions: la única tabla nueva de verdad — hoy no hay ningún sitio
+-- donde guardar "nombre del torneo + fechas oficiales + descripción breve"
+-- como su propia entidad (las competiciones son hoy solo texto libre en
+-- cada partido). Sirve tanto para "Liga" (fila opcional, informativa) como
+-- para cada torneo, empezando por la East Mallorca Girls Cup.
+-- ============================================================================
+
+alter table matches add column if not exists rival_pais text;
+
+alter table match_player_stats add column if not exists titular boolean;
+
+create table if not exists competitions (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  tipo text not null default 'torneo' check (tipo in ('liga', 'torneo')),
+  descripcion text,
+  fecha_inicio date,
+  fecha_fin date,
+  logo_url text,
+  activo boolean not null default true,
+  orden int not null default 0,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists competitions_activo_idx on competitions(activo);
+
+alter table competitions enable row level security;
+drop policy if exists "competitions_public_read" on competitions;
+create policy "competitions_public_read" on competitions for select using (activo = true);
+drop policy if exists "competitions_admin_write" on competitions;
+create policy "competitions_admin_write" on competitions for all using (is_app_admin()) with check (is_app_admin());

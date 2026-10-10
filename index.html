@@ -235,6 +235,7 @@
 // Módulo de carné en la home — independiente del script grande de abajo,
 // solo lectura/presentación, no toca nada de lo que ya hacía esta página.
 (async function () {
+  return; // OCULTO temporalmente (tarjeta de socio) — no borrar, quitar esta línea para reactivar
   if (!window.spfc || !window.SPFC_TICKETING) return;
   const sesion = await SPFC_TICKETING.sesionActual();
   if (!sesion) return;

@@ -26,6 +26,23 @@
     color: var(--accent-dark); margin: 0 0 1rem; padding-bottom: 0.6rem; border-bottom: 2px solid var(--accent-dark);
   }
   .section-dark .cal-group__title { color: var(--accent-light); border-bottom-color: var(--accent-light); }
+
+  /* Selector Liga/Torneo — solo aparece si hay al menos un torneo activo
+     configurado en el admin; si no, la vista es idéntica a como era antes. */
+  .comp-pills { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.4rem; }
+  .comp-pill {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.02em;
+    padding: 0.55em 1.1em; border-radius: var(--radius-pill); border: 1.5px solid rgba(10,10,10,0.14);
+    background: var(--paper); color: var(--text-on-cream-muted); cursor: pointer; transition: all 0.15s ease;
+  }
+  .comp-pill:hover { border-color: var(--accent); color: var(--ink); }
+  .comp-pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .torneo-banner { background: var(--dark); color: var(--text-on-dark); border-radius: var(--radius-lg); padding: 2rem clamp(1.4rem, 4vw, 2.6rem); margin-bottom: 2rem; }
+  .torneo-banner__eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-light); }
+  .torneo-banner__title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0.3rem 0 0.6rem; }
+  .torneo-banner__fechas { font-size: 0.86rem; color: var(--text-on-dark-muted); margin-bottom: 0.8rem; }
+  .torneo-banner__desc { font-size: 0.92rem; line-height: 1.6; color: var(--text-on-dark-muted); max-width: 60ch; }
 </style>
 </head>
 <body>
@@ -62,6 +79,9 @@
           <h2 id="proximos-heading">Todos los próximos partidos</h2>
         </div>
       </div>
+
+      <nav class="comp-pills" id="comp-pills" aria-label="Competición" style="display:none;"></nav>
+      <div class="torneo-banner" id="torneo-banner" style="display:none;"></div>
 
       <div class="filters-bar">
         <label for="filtro-equipo">Equipo</label>
@@ -115,8 +135,12 @@
   const protagonistaSection = document.getElementById("protagonista-section");
   const protagonistaMatch = document.getElementById("protagonista-match");
   const crestHtml = spfcMatchCrest;
+  const compPillsNav = document.getElementById("comp-pills");
+  const torneoBanner = document.getElementById("torneo-banner");
   let liveRefreshTimer = null;
   let teams = [];
+  let torneos = [];
+  let currentCompeticion = ""; // "" = Liga (todo lo que no sea un torneo activo); si no, el nombre exacto del torneo
 
   // Agrupa una lista de partidos por equipo, en el mismo orden que ya usan
   // "Equipos"/admin (teams.orden) — así nunca se ven mezclados partidos de
@@ -243,7 +267,15 @@
     resultadosGrid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Cargando resultados…</p>`;
     protagonistaMatch.innerHTML = "";
     const all = await SPFC_DATA.allMatches(teamId);
-    const list = Array.isArray(all) ? all : [];
+    const nombresTorneos = new Set(torneos.map((t) => t.nombre));
+    let list = Array.isArray(all) ? all : [];
+    if (currentCompeticion) {
+      list = list.filter((m) => m.competicion === currentCompeticion);
+    } else if (nombresTorneos.size) {
+      // Vista "Liga" por defecto: no mezcla los partidos de un torneo activo
+      // (p.ej. East Mallorca Girls Cup) — se ven aparte, al elegir su pestaña.
+      list = list.filter((m) => !nombresTorneos.has(m.competicion));
+    }
     const proximosTodos = list.filter((m) => m.estado === "programado").sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
     const jugados = list.filter((m) => m.estado === "jugado").sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
     const proximos = spfcProximoPorEquipo(proximosTodos);
@@ -267,8 +299,59 @@
     }, 60000);
   }
 
+  // "20–22 de noviembre de 2026" (o solo un día si empieza y acaba igual).
+  function fmtRangoFechas(ini, fin) {
+    if (!ini) return "";
+    const dIni = new Date(ini + "T00:00:00");
+    if (!fin || fin === ini) return spfcFormatDate(ini, { day: "2-digit", month: "long", year: "numeric" });
+    const dFin = new Date(fin + "T00:00:00");
+    const mismoMes = dIni.getMonth() === dFin.getMonth() && dIni.getFullYear() === dFin.getFullYear();
+    const inicio = mismoMes ? dIni.getDate() : spfcFormatDate(ini, { day: "2-digit", month: "short" });
+    return `${inicio}–${spfcFormatDate(fin, { day: "2-digit", month: "long", year: "numeric" })}`;
+  }
+
+  function mostrarTorneoBanner(torneo) {
+    if (!torneo) { torneoBanner.style.display = "none"; return; }
+    const rango = fmtRangoFechas(torneo.fecha_inicio, torneo.fecha_fin);
+    torneoBanner.innerHTML = `
+      <span class="torneo-banner__eyebrow">Competición</span>
+      <h2 class="torneo-banner__title">${torneo.nombre}</h2>
+      ${rango ? `<p class="torneo-banner__fechas">${rango}</p>` : ""}
+      ${torneo.descripcion ? `<p class="torneo-banner__desc">${torneo.descripcion}</p>` : ""}`;
+    torneoBanner.style.display = "block";
+  }
+
+  function renderCompPills() {
+    if (!torneos.length) { compPillsNav.style.display = "none"; return; }
+    const opciones = [{ nombre: "", label: "Liga" }].concat(torneos.map((t) => ({ nombre: t.nombre, label: t.nombre })));
+    compPillsNav.innerHTML = opciones.map((o) => `
+      <button type="button" class="comp-pill" data-comp="${escapeAttr(o.nombre)}" aria-pressed="${o.nombre === currentCompeticion}">${escapeAttr(o.label)}</button>`).join("");
+    compPillsNav.style.display = "flex";
+    compPillsNav.querySelectorAll("[data-comp]").forEach((btn) => btn.addEventListener("click", () => {
+      currentCompeticion = btn.dataset.comp;
+      compPillsNav.querySelectorAll("[data-comp]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.comp === currentCompeticion)));
+      const torneoActivo = torneos.find((t) => t.nombre === currentCompeticion);
+      mostrarTorneoBanner(torneoActivo);
+      const url = new URL(location.href);
+      if (currentCompeticion) url.searchParams.set("torneo", currentCompeticion);
+      else url.searchParams.delete("torneo");
+      history.replaceState(null, "", url);
+      loadAndRender(teamSelect.value);
+    }));
+  }
+
+  function escapeAttr(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
   try {
     teams = await SPFC_DATA.teams();
+    torneos = await SPFC_DATA.competiciones();
+    const paramTorneo = new URLSearchParams(location.search).get("torneo");
+    if (paramTorneo && torneos.some((t) => t.nombre === paramTorneo)) currentCompeticion = paramTorneo;
+    renderCompPills();
+    mostrarTorneoBanner(torneos.find((t) => t.nombre === currentCompeticion));
+
     const paramTeam = new URLSearchParams(location.search).get("team");
     let currentTeamId = "";
 

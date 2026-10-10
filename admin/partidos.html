@@ -59,6 +59,8 @@
           <div class="form-field"><label for="m-team">Equipo</label><select id="m-team" required></select></div>
           <div class="form-field"><label for="m-rival">Rival</label><input type="text" id="m-rival" required></div>
         </div>
+        <div class="form-field"><label for="m-rival-pais">País del rival</label><input type="text" id="m-rival-pais" placeholder="Opcional — p.ej. Francia, código ES/FR/GB…"></div>
+        <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Opcional. Si pones un código de 2 letras (ES, FR, GB…) se enseña su bandera en la ficha del partido.</p>
         <div class="form-row">
           <div class="form-field"><label for="m-fecha">Fecha</label><input type="date" id="m-fecha" required></div>
           <div class="form-field"><label for="m-hora">Hora</label><input type="time" id="m-hora"></div>
@@ -142,7 +144,7 @@
 
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Jugadora</th><th>Minutos</th><th>Goles</th><th>Amarillas</th><th>Rojas</th></tr></thead>
+          <thead><tr><th>Jugadora</th><th>Titular</th><th>Minutos</th><th>Goles</th><th>Amarillas</th><th>Rojas</th></tr></thead>
           <tbody id="stats-lista"></tbody>
         </table>
       </div>
@@ -164,6 +166,55 @@
         </table>
       </div>
     </div>
+
+    <div class="admin-card admin-form-toggle" id="comp-form-card" style="display:none;">
+      <h2 id="comp-form-title">Nueva competición</h2>
+      <form id="comp-form">
+        <input type="hidden" id="c-id">
+        <div class="form-row">
+          <div class="form-field"><label for="c-nombre">Nombre</label><input type="text" id="c-nombre" required placeholder="East Mallorca Girls Cup"></div>
+          <div class="form-field"><label for="c-tipo">Tipo</label>
+            <select id="c-tipo"><option value="torneo">Torneo</option><option value="liga">Liga</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label for="c-fecha-inicio">Fecha de inicio</label><input type="date" id="c-fecha-inicio"></div>
+          <div class="form-field"><label for="c-fecha-fin">Fecha de fin</label><input type="date" id="c-fecha-fin"></div>
+        </div>
+        <div class="form-field"><label for="c-descripcion">Descripción breve (se ve en la web)</label><textarea id="c-descripcion" rows="3"></textarea></div>
+        <div class="form-field">
+          <label for="c-logo">Logo</label>
+          <input type="url" id="c-logo" placeholder="https://…">
+          <div class="media-upload">
+            <input type="file" id="c-logo-file" accept="image/*">
+            <span class="media-upload-status" id="c-logo-status"></span>
+          </div>
+        </div>
+        <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="c-activo" checked> Visible en la web</label></div>
+        <div style="display:flex;gap:0.8rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          <button type="button" class="btn btn-outline btn-sm" id="comp-cancel-btn">Cancelar</button>
+        </div>
+        <p id="comp-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-topbar" style="margin:0 0 1rem;">
+        <h2 style="margin:0;font-size:1rem;">Competiciones y torneos</h2>
+        <button class="btn btn-primary btn-sm" id="comp-new-btn" type="button">Nueva competición</button>
+      </div>
+      <p style="font-size:0.84rem;color:var(--text-on-cream-muted);max-width:640px;">
+        Una competición aparece como una pestaña propia en el calendario público (p.ej. "East Mallorca Girls Cup")
+        en cuanto tenga algún partido con ese mismo nombre en "Competición" al crearlo arriba.
+      </p>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Nombre</th><th>Tipo</th><th>Fechas</th><th>Visible</th><th></th></tr></thead>
+          <tbody id="comp-body"><tr><td colspan="5">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -177,6 +228,7 @@
 (async function () {
   if (!window.spfc) return;
   wireMediaUpload({ fileInputId: "m-rival-escudo-file", urlInputId: "m-rival-escudo", statusId: "m-rival-escudo-status", folder: "escudos" });
+  wireMediaUpload({ fileInputId: "c-logo-file", urlInputId: "c-logo", statusId: "c-logo-status", folder: "competiciones" });
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -199,6 +251,7 @@
     document.getElementById("m-id").value = item ? item.id : "";
     if (item) document.getElementById("m-team").value = item.team_id;
     document.getElementById("m-rival").value = item ? item.rival : "";
+    document.getElementById("m-rival-pais").value = item ? (item.rival_pais || "") : "";
     document.getElementById("m-rival-escudo").value = item ? (item.rival_escudo_url || "") : "";
     document.getElementById("m-fecha").value = item ? item.fecha : "";
     document.getElementById("m-hora").value = item ? (item.hora || "") : "";
@@ -387,6 +440,7 @@
     const payload = {
       team_id: document.getElementById("m-team").value,
       rival: document.getElementById("m-rival").value.trim(),
+      rival_pais: document.getElementById("m-rival-pais").value.trim() || null,
       rival_escudo_url: document.getElementById("m-rival-escudo").value.trim() || null,
       fecha: document.getElementById("m-fecha").value,
       hora: document.getElementById("m-hora").value || null,
@@ -502,7 +556,7 @@
     statsRivalNombre = match.rival;
     document.getElementById("stats-sub").textContent =
       `${statsEquipoNombre} vs ${match.rival} — ${match.fecha}`;
-    statsLista.innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
+    statsLista.innerHTML = '<tr><td colspan="6">Cargando…</td></tr>';
     document.getElementById("stats-status").textContent = "";
     document.getElementById("ia-acta-status").textContent = "";
     document.getElementById("ia-acta-file").value = "";
@@ -517,13 +571,14 @@
     statsJugadoras = jugadoras || [];
 
     if (!jugadoras || !jugadoras.length) {
-      statsLista.innerHTML = '<tr><td colspan="5">Este equipo todavía no tiene jugadoras en Plantilla.</td></tr>';
+      statsLista.innerHTML = '<tr><td colspan="6">Este equipo todavía no tiene jugadoras en Plantilla.</td></tr>';
       return;
     }
     statsLista.innerHTML = jugadoras.map((j) => {
       const s = statsPorJugadora[j.id] || {};
       return `<tr data-player="${j.id}">
         <td>${escapeHtml(j.nombre)}</td>
+        <td><input type="checkbox" class="stat-titular" ${s.titular ? "checked" : ""}></td>
         <td><input type="number" min="0" max="120" class="stat-minutos" value="${s.minutos ?? ""}" style="width:70px;"></td>
         <td><input type="number" min="0" class="stat-goles" value="${s.goles ?? 0}" style="width:60px;"></td>
         <td><input type="number" min="0" class="stat-amarillas" value="${s.tarjetas_amarillas ?? 0}" style="width:60px;"></td>
@@ -605,6 +660,7 @@
       return {
         match_id: statsMatchId,
         player_id: tr.dataset.player,
+        titular: tr.querySelector(".stat-titular").checked,
         minutos: minutosVal === "" ? null : Number(minutosVal),
         goles: Number(tr.querySelector(".stat-goles").value || 0),
         tarjetas_amarillas: Number(tr.querySelector(".stat-amarillas").value || 0),
@@ -634,8 +690,88 @@
     btn.disabled = false;
   });
 
+  // ---- Competiciones y torneos ----
+  const compFormCard = document.getElementById("comp-form-card");
+  const compForm = document.getElementById("comp-form");
+  let competiciones = [];
+
+  function openCompForm(item) {
+    compForm.reset();
+    document.getElementById("comp-form-title").textContent = item ? "Editar competición" : "Nueva competición";
+    document.getElementById("c-id").value = item ? item.id : "";
+    document.getElementById("c-nombre").value = item ? item.nombre : "";
+    document.getElementById("c-tipo").value = item ? item.tipo : "torneo";
+    document.getElementById("c-fecha-inicio").value = item ? (item.fecha_inicio || "") : "";
+    document.getElementById("c-fecha-fin").value = item ? (item.fecha_fin || "") : "";
+    document.getElementById("c-descripcion").value = item ? (item.descripcion || "") : "";
+    document.getElementById("c-logo").value = item ? (item.logo_url || "") : "";
+    document.getElementById("c-activo").checked = item ? item.activo : true;
+    document.getElementById("comp-form-status").textContent = "";
+    compFormCard.style.display = "block";
+    compFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.getElementById("comp-new-btn").addEventListener("click", () => openCompForm(null));
+  document.getElementById("comp-cancel-btn").addEventListener("click", () => (compFormCard.style.display = "none"));
+
+  async function loadCompeticiones() {
+    const { data, error } = await window.spfc.from("competitions").select("*").order("orden");
+    const body = document.getElementById("comp-body");
+    if (error) { body.innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    competiciones = data || [];
+    if (!competiciones.length) {
+      body.innerHTML = '<tr><td colspan="5">Todavía no hay ninguna competición creada — solo hace falta si quieres que aparezca como pestaña propia en el calendario (p.ej. un torneo).</td></tr>';
+      return;
+    }
+    body.innerHTML = competiciones.map((c) => {
+      const fechas = c.fecha_inicio ? `${c.fecha_inicio}${c.fecha_fin && c.fecha_fin !== c.fecha_inicio ? " → " + c.fecha_fin : ""}` : "—";
+      return `<tr>
+        <td>${escapeHtml(c.nombre)}</td>
+        <td>${c.tipo === "torneo" ? "Torneo" : "Liga"}</td>
+        <td>${escapeHtml(fechas)}</td>
+        <td>${c.activo ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-warn">No</span>'}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit-comp="${c.id}" type="button">✎</button>
+          <button class="btn-icon danger" data-del-comp="${c.id}" type="button">✕</button>
+        </td>
+      </tr>`;
+    }).join("");
+
+    body.querySelectorAll("[data-edit-comp]").forEach((btn) =>
+      btn.addEventListener("click", () => openCompForm(competiciones.find((c) => c.id === btn.dataset.editComp))));
+    body.querySelectorAll("[data-del-comp]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        if (!confirm("¿Eliminar esta competición? Los partidos que ya tengan este nombre en \"Competición\" no se borran, pero dejará de verse como pestaña propia en el calendario.")) return;
+        await window.spfc.from("competitions").delete().eq("id", btn.dataset.delComp);
+        loadCompeticiones();
+      }));
+  }
+
+  compForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("c-id").value;
+    const payload = {
+      nombre: document.getElementById("c-nombre").value.trim(),
+      tipo: document.getElementById("c-tipo").value,
+      fecha_inicio: document.getElementById("c-fecha-inicio").value || null,
+      fecha_fin: document.getElementById("c-fecha-fin").value || null,
+      descripcion: document.getElementById("c-descripcion").value.trim() || null,
+      logo_url: document.getElementById("c-logo").value.trim() || null,
+      activo: document.getElementById("c-activo").checked,
+    };
+    const status = document.getElementById("comp-form-status");
+    status.textContent = "Guardando…";
+    const { error } = id
+      ? await window.spfc.from("competitions").update(payload).eq("id", id)
+      : await window.spfc.from("competitions").insert(payload);
+    if (error) { status.textContent = "Error al guardar: " + error.message; return; }
+    compFormCard.style.display = "none";
+    loadCompeticiones();
+  });
+
   await loadTeams();
   await loadMatches();
+  await loadCompeticiones();
 })();
 </script>
 </body>

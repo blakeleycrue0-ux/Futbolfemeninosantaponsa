@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title id="page-title">Producto — FFSP Official Store</title>
+<meta name="description" content="Tienda oficial del Fútbol Femenino Santa Ponça.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+<link rel="stylesheet" href="assets/css/shop.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<!--#include store-subnav-->
+
+<main id="main" class="shop-section">
+  <div class="container">
+    <div id="spd-loading" class="tk-empty">Cargando…</div>
+    <div id="spd-error" class="form-error" style="display:none;"></div>
+
+    <div id="spd-content" style="display:none;">
+      <div class="spd-layout">
+        <div class="spd-gallery">
+          <div class="spd-gallery__main" id="spd-gallery-main"></div>
+          <div class="spd-gallery__thumbs" id="spd-gallery-thumbs"></div>
+        </div>
+
+        <div class="spd-info">
+          <p class="spd-info__eyebrow">FFSP Official Store</p>
+          <h1 id="spd-nombre"></h1>
+          <p class="spd-info__precio" id="spd-precio"></p>
+
+          <div id="spd-colores-wrap" style="display:none;">
+            <p class="spd-option-label"><span>Color</span><span id="spd-color-elegido"></span></p>
+            <div class="spd-colors" id="spd-colores"></div>
+          </div>
+
+          <div id="spd-tallas-wrap">
+            <p class="spd-option-label">
+              <span>Talla</span>
+              <a href="#spd-guia-tallas" id="spd-guia-link" style="text-decoration:underline;">Guía de tallas</a>
+            </p>
+            <div class="spd-sizes" id="spd-tallas"></div>
+            <p class="spd-size-note" id="spd-size-note"></p>
+          </div>
+
+          <div class="spd-qty" id="spd-qty-wrap">
+            <button type="button" id="spd-qty-menos" aria-label="Menos">−</button>
+            <input type="number" id="spd-qty" value="1" min="1" max="10" readonly>
+            <button type="button" id="spd-qty-mas" aria-label="Más">+</button>
+          </div>
+
+          <button type="button" class="shop-btn shop-btn--dark shop-btn--block" id="spd-add-btn">Añadir al carrito</button>
+
+          <div id="spd-waitlist" style="display:none;margin-top:0.9rem;">
+            <p style="font-size:0.84rem;color:var(--text-on-cream-muted);margin:0;">Esta talla está agotada.</p>
+            <form class="spd-waitlist-form" id="spd-waitlist-form">
+              <input type="email" id="spd-waitlist-email" placeholder="tu@email.com" required>
+              <button type="submit" class="shop-btn shop-btn--dark">Avísame</button>
+            </form>
+            <p style="font-size:0.78rem;color:var(--text-on-cream-muted);margin-top:0.5rem;" id="spd-waitlist-status"></p>
+          </div>
+
+          <button type="button" class="shop-btn shop-btn--dark shop-btn--block" id="spd-fav-btn" style="margin-top:0.8rem;background:none;color:var(--ink);">♡ Añadir a favoritos</button>
+
+          <div class="spd-accordion" id="spd-guia-tallas">
+            <div class="spd-accordion__item" id="spd-acc-descripcion" style="display:none;">
+              <button type="button" class="spd-accordion__btn" data-acc>Descripción<span class="spd-accordion__icon">+</span></button>
+              <div class="spd-accordion__panel" id="spd-descripcion"></div>
+            </div>
+            <div class="spd-accordion__item" id="spd-acc-materiales" style="display:none;">
+              <button type="button" class="spd-accordion__btn" data-acc>Materiales y cuidado<span class="spd-accordion__icon">+</span></button>
+              <div class="spd-accordion__panel" id="spd-materiales"></div>
+            </div>
+            <div class="spd-accordion__item" id="spd-acc-tallas" style="display:none;">
+              <button type="button" class="spd-accordion__btn" data-acc>Guía de tallas<span class="spd-accordion__icon">+</span></button>
+              <div class="spd-accordion__panel" id="spd-guia-tallas-texto"></div>
+            </div>
+            <div class="spd-accordion__item">
+              <button type="button" class="spd-accordion__btn" data-acc>Entrega y devoluciones<span class="spd-accordion__icon">+</span></button>
+              <div class="spd-accordion__panel">Recogida gratuita en el club — te avisaremos por email en cuanto tu pedido esté listo. Si hay algún problema con tu pedido, escríbenos a ffsp2026@gmail.com y lo resolvemos contigo.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="spd-related" id="spd-related-section" style="display:none;">
+        <div class="shop-section-head"><div><h2 style="font-size:clamp(1.3rem,3vw,1.8rem);">También te puede gustar</h2></div></div>
+        <div class="shop-grid" id="spd-related-grid"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!--#include footer-->
+<!--#include cart-drawer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/shop-cart.js"></script>
+<script src="assets/js/shop-cart-ui.js"></script>
+<script src="assets/js/shop-ui.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const UI = window.SPFC_SHOP_UI;
+  const loadingEl = document.getElementById("spd-loading");
+  const errorEl = document.getElementById("spd-error");
+  const contentEl = document.getElementById("spd-content");
+
+  function mostrarError(msg) {
+    loadingEl.style.display = "none";
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+  }
+
+  if (!window.spfc) { mostrarError("La tienda no está disponible ahora mismo."); return; }
+  const productId = new URLSearchParams(location.search).get("id");
+  if (!productId) { mostrarError("Falta elegir un producto."); return; }
+
+  const p = await SPFC_SHOP.producto(productId);
+  if (!p) { mostrarError("Ese producto no existe o ya no está a la venta."); return; }
+
+  document.title = p.nombre + " — FFSP Official Store";
+  document.getElementById("spd-nombre").textContent = p.nombre;
+  document.getElementById("spd-precio").textContent = UI.fmtEuros(p.precio);
+
+  // --- Galería ---
+  const imagenes = p.imagenes.length ? p.imagenes : [];
+  const galMain = document.getElementById("spd-gallery-main");
+  const galThumbs = document.getElementById("spd-gallery-thumbs");
+  function pintarGaleria(indiceActivo) {
+    if (!imagenes.length) {
+      galMain.innerHTML = '<div class="shop-product__placeholder" style="height:100%;">Sin foto todavía</div>';
+      galThumbs.innerHTML = "";
+      return;
+    }
+    galMain.innerHTML = `<img src="${UI.escapeHtml(imagenes[indiceActivo])}" alt="${UI.escapeHtml(p.nombre)}">`;
+    galMain.classList.remove("is-zoomed");
+    if (imagenes.length > 1) {
+      galThumbs.innerHTML = imagenes.map((url, i) => `
+        <button type="button" class="${i === indiceActivo ? "is-active" : ""}" data-thumb="${i}"><img src="${UI.escapeHtml(url)}" alt=""></button>`).join("");
+      galThumbs.querySelectorAll("[data-thumb]").forEach((btn) => btn.addEventListener("click", () => pintarGaleria(Number(btn.dataset.thumb))));
+    } else {
+      galThumbs.innerHTML = "";
+    }
+  }
+  pintarGaleria(0);
+  galMain.addEventListener("click", () => galMain.classList.toggle("is-zoomed"));
+  // Deslizar con el dedo para cambiar de foto en móvil.
+  let touchStartX = null;
+  galMain.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  galMain.addEventListener("touchend", (e) => {
+    if (touchStartX === null || !imagenes.length) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const actual = Number(galThumbs.querySelector(".is-active")?.dataset.thumb || 0);
+    if (Math.abs(dx) > 40) {
+      const siguiente = dx < 0 ? Math.min(imagenes.length - 1, actual + 1) : Math.max(0, actual - 1);
+      pintarGaleria(siguiente);
+    }
+    touchStartX = null;
+  });
+
+  // --- Selector de color / talla ---
+  const colores = [...new Set(p.variantes.map((v) => v.color).filter(Boolean))];
+  let colorElegido = colores[0] || null;
+  let varianteElegida = null;
+
+  function variantesVisibles() {
+    return colorElegido ? p.variantes.filter((v) => v.color === colorElegido) : p.variantes;
+  }
+
+  function pintarColores() {
+    if (!colores.length) return;
+    document.getElementById("spd-colores-wrap").style.display = "block";
+    document.getElementById("spd-color-elegido").textContent = colorElegido || "";
+    document.getElementById("spd-colores").innerHTML = colores.map((c) => `
+      <button type="button" class="spd-color-swatch ${c === colorElegido ? "is-active" : ""}" data-color="${UI.escapeHtml(c)}" title="${UI.escapeHtml(c)}">${UI.escapeHtml(c.slice(0, 2))}</button>`).join("");
+    document.getElementById("spd-colores").querySelectorAll("[data-color]").forEach((btn) => btn.addEventListener("click", () => {
+      colorElegido = btn.dataset.color;
+      varianteElegida = null;
+      pintarColores();
+      pintarTallas();
+    }));
+  }
+
+  function pintarTallas() {
+    const visibles = variantesVisibles();
+    const wrap = document.getElementById("spd-tallas-wrap");
+    if (!visibles.length) { wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    if (!varianteElegida) varianteElegida = visibles.find((v) => v.stock > 0) || visibles[0];
+    document.getElementById("spd-tallas").innerHTML = visibles.map((v) => {
+      const est = SPFC_SHOP.estadoTalla(v);
+      return `<button type="button" class="spd-size-btn is-${est} ${varianteElegida && varianteElegida.id === v.id ? "is-active" : ""}" data-variant="${v.id}">${UI.escapeHtml(v.talla)}</button>`;
+    }).join("");
+    document.getElementById("spd-tallas").querySelectorAll("[data-variant]").forEach((btn) => btn.addEventListener("click", () => {
+      varianteElegida = visibles.find((v) => v.id === btn.dataset.variant);
+      actualizarSeleccion();
+    }));
+    actualizarSeleccion();
+  }
+
+  function actualizarSeleccion() {
+    document.querySelectorAll("#spd-tallas [data-variant]").forEach((btn) => btn.classList.toggle("is-active", varianteElegida && btn.dataset.variant === varianteElegida.id));
+    const note = document.getElementById("spd-size-note");
+    const addBtn = document.getElementById("spd-add-btn");
+    const waitlist = document.getElementById("spd-waitlist");
+    const qtyWrap = document.getElementById("spd-qty-wrap");
+    if (!varianteElegida) { note.textContent = ""; addBtn.style.display = "none"; waitlist.style.display = "none"; qtyWrap.style.display = "none"; return; }
+    const est = SPFC_SHOP.estadoTalla(varianteElegida);
+    const qtyInput = document.getElementById("spd-qty");
+    if (est === "agotada") {
+      note.textContent = "Agotada.";
+      addBtn.style.display = "none";
+      qtyWrap.style.display = "none";
+      waitlist.style.display = "block";
+    } else {
+      note.textContent = est === "ultimas" ? `Últimas unidades (${varianteElegida.stock}).` : "Disponible.";
+      addBtn.style.display = "block";
+      addBtn.disabled = false;
+      qtyWrap.style.display = "flex";
+      qtyInput.max = Math.min(10, varianteElegida.stock);
+      if (Number(qtyInput.value) > Number(qtyInput.max)) qtyInput.value = qtyInput.max;
+      waitlist.style.display = "none";
+    }
+  }
+
+  pintarColores();
+  pintarTallas();
+
+  document.getElementById("spd-qty-menos").addEventListener("click", () => {
+    const input = document.getElementById("spd-qty");
+    input.value = Math.max(1, Number(input.value) - 1);
+  });
+  document.getElementById("spd-qty-mas").addEventListener("click", () => {
+    const input = document.getElementById("spd-qty");
+    input.value = Math.min(Number(input.max) || 10, Number(input.value) + 1);
+  });
+
+  document.getElementById("spd-add-btn").addEventListener("click", () => {
+    if (!varianteElegida) return;
+    window.SPFC_CART.añadir({
+      variant_id: varianteElegida.id,
+      product_id: p.id,
+      nombre: p.nombre,
+      imagen_url: imagenes[0] || null,
+      precio: p.precio,
+      talla: varianteElegida.talla,
+      color: varianteElegida.color || null,
+      cantidad: Number(document.getElementById("spd-qty").value) || 1,
+    });
+    if (window.SPFC_CART_UI) window.SPFC_CART_UI.abrir();
+  });
+
+  document.getElementById("spd-waitlist-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("spd-waitlist-status");
+    const email = document.getElementById("spd-waitlist-email").value.trim();
+    status.textContent = "Guardando…";
+    try {
+      await SPFC_SHOP.unirseEspera(varianteElegida.id, email);
+      status.textContent = "Hecho — te escribiremos cuando vuelva esta talla.";
+      e.target.reset();
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+    }
+  });
+
+  // --- Favorito ---
+  const favBtn = document.getElementById("spd-fav-btn");
+  const esFav = await SPFC_SHOP.esFavorito(p.id);
+  function pintarFav(activo) {
+    favBtn.textContent = activo ? "♥ En tus favoritos" : "♡ Añadir a favoritos";
+  }
+  pintarFav(esFav);
+  favBtn.addEventListener("click", async () => {
+    const { data: { session } } = await window.spfc.auth.getSession();
+    if (!session) { location.href = "cuenta.html?volver=" + encodeURIComponent(location.pathname + location.search); return; }
+    const res = await SPFC_SHOP.alternarFavorito(p.id);
+    pintarFav(res.favorito);
+  });
+
+  // --- Acordeón (descripción / materiales / guía de tallas / entrega) ---
+  if (p.descripcion) {
+    document.getElementById("spd-acc-descripcion").style.display = "block";
+    document.getElementById("spd-descripcion").textContent = p.descripcion;
+  }
+  if (p.materiales || p.cuidado) {
+    document.getElementById("spd-acc-materiales").style.display = "block";
+    document.getElementById("spd-materiales").textContent = [p.materiales, p.cuidado].filter(Boolean).join("\n\n");
+  }
+  if (p.guia_tallas) {
+    document.getElementById("spd-acc-tallas").style.display = "block";
+    document.getElementById("spd-guia-tallas-texto").textContent = p.guia_tallas;
+  } else {
+    document.getElementById("spd-guia-link").style.display = "none";
+  }
+  document.querySelectorAll("[data-acc]").forEach((btn) => btn.addEventListener("click", () => btn.closest(".spd-accordion__item").classList.toggle("is-open")));
+
+  // --- Relacionados ---
+  if (p.category_id) {
+    const relacionados = await SPFC_SHOP.productosRelacionados(p.category_id, p.id);
+    if (relacionados.length) {
+      document.getElementById("spd-related-section").style.display = "block";
+      document.getElementById("spd-related-grid").innerHTML = relacionados.map((r) => UI.tarjetaProducto(r, {})).join("");
+      UI.wireFavoritos(document.getElementById("spd-related-grid"));
+    }
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+})();
+</script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

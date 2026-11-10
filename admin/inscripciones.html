@@ -77,6 +77,17 @@
         <option value="si">Solo aceptadas</option>
         <option value="no">Solo sin aceptar</option>
       </select>
+      <select id="filtro-cuota">
+        <option value="">Todas las cuotas</option>
+        <option value="1:pagado">1ª cuota — pagada</option>
+        <option value="1:pendiente">1ª cuota — pendiente</option>
+        <option value="2:pagado">2ª cuota — pagada</option>
+        <option value="2:pendiente">2ª cuota — pendiente</option>
+        <option value="3:pagado">3ª cuota — pagada</option>
+        <option value="3:pendiente">3ª cuota — pendiente</option>
+        <option value="4:pagado">4ª cuota — pagada</option>
+        <option value="4:pendiente">4ª cuota — pendiente</option>
+      </select>
       <button type="button" class="btn btn-outline btn-sm" id="export-csv-btn">Exportar CSV</button>
     </div>
 
@@ -108,8 +119,8 @@
     <div class="admin-card">
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Aceptada</th><th>WhatsApp</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="inscripciones-body"><tr><td colspan="9">Cargando…</td></tr></tbody>
+          <thead><tr id="thead-row"><th>Fecha</th><th>Jugadora</th><th>Equipo</th><th>Tutor/a</th><th>Plan</th><th>Aceptada</th><th>WhatsApp</th><th>Estado</th><th id="th-cuota" style="display:none;">Cuota</th><th></th></tr></thead>
+          <tbody id="inscripciones-body"><tr><td colspan="10">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -179,6 +190,7 @@
   let teams = [];
   let inscripciones = [];
   let filtradasActuales = [];
+  let pagosPorInscripcion = {}; // inscripcion_id -> [{numero_cuota, estado, importe, fecha_vencimiento}, ...]
 
   async function loadTeams() {
     const { data } = await window.spfc.from("teams").select("*");
@@ -462,16 +474,31 @@
     document.getElementById("stat-recaudado").textContent = recaudado.toLocaleString("es-ES") + " €";
   }
 
+  const cuotaEstadoLabels = { pendiente: "Pendiente", pagado: "Pagada", fallido: "Fallida" };
+  const cuotaEstadoPillClass = { pendiente: "pill-warn", pagado: "pill-ok", fallido: "pill-bad" };
+
   function renderTable() {
     const body = document.getElementById("inscripciones-body");
     const q = document.getElementById("buscador").value.trim().toLowerCase();
     const estadoFiltro = document.getElementById("filtro-estado").value;
     const confirmadaFiltro = document.getElementById("filtro-confirmada").value;
+    const cuotaFiltroRaw = document.getElementById("filtro-cuota").value;
+    const [cuotaNumeroFiltro, cuotaEstadoFiltro] = cuotaFiltroRaw ? cuotaFiltroRaw.split(":") : [null, null];
+    document.getElementById("th-cuota").style.display = cuotaFiltroRaw ? "" : "none";
+
+    function cuotaDe(inscripcionId, numero) {
+      const pagos = pagosPorInscripcion[inscripcionId] || [];
+      return pagos.find((p) => String(p.numero_cuota) === numero) || null;
+    }
 
     const filtradas = inscripciones.filter((i) => {
       if (estadoFiltro && i.estado !== estadoFiltro) return false;
       if (confirmadaFiltro === "si" && !i.confirmada_en) return false;
       if (confirmadaFiltro === "no" && i.confirmada_en) return false;
+      if (cuotaFiltroRaw) {
+        const cuota = cuotaDe(i.id, cuotaNumeroFiltro);
+        if (!cuota || cuota.estado !== cuotaEstadoFiltro) return false;
+      }
       if (q) {
         const haystack = [i.jugadora_nombre, i.tutor_nombre, teamName(i.team_id)].join(" ").toLowerCase();
         if (!haystack.includes(q)) return false;
@@ -481,11 +508,11 @@
     filtradasActuales = filtradas;
 
     if (!inscripciones.length) {
-      body.innerHTML = '<tr><td colspan="9">Todavía no hay formularios de interés.</td></tr>';
+      body.innerHTML = '<tr><td colspan="10">Todavía no hay formularios de interés.</td></tr>';
       return;
     }
     if (!filtradas.length) {
-      body.innerHTML = `<tr><td colspan="9" class="admin-search-empty">Ninguna inscripción coincide con la búsqueda.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" class="admin-search-empty">Ninguna inscripción coincide con la búsqueda.</td></tr>`;
       return;
     }
 
@@ -502,6 +529,14 @@
            <button class="btn-icon" data-copy-num="${escapeHtml(datosWa.numero)}" type="button" title="Copiar número — para pegarlo en el buscador de WhatsApp Business si el enlace abre tu WhatsApp personal">№</button>
            <button class="btn-icon" data-copy-msg="${escapeHtml(datosWa.mensaje)}" type="button" title="Copiar mensaje">✉</button>`
         : "";
+      let cuotaTd = "";
+      if (cuotaFiltroRaw) {
+        const cuota = cuotaDe(i.id, cuotaNumeroFiltro);
+        cuotaTd = cuota
+          ? `<td><span class="pill ${cuotaEstadoPillClass[cuota.estado] || ""}">${cuotaEstadoLabels[cuota.estado] || escapeHtml(cuota.estado)}</span>
+               <div style="font-size:0.8em;color:var(--text-on-cream-muted);margin-top:2px;">${cuota.importe} €${cuota.fecha_vencimiento ? " · " + escapeHtml(String(cuota.fecha_vencimiento).slice(0, 10)) : ""}</div></td>`
+          : `<td>—</td>`;
+      }
       return `
       <tr>
         <td>${escapeHtml((i.creado_en || "").slice(0, 10))}</td>
@@ -512,6 +547,7 @@
         <td>${i.confirmada_en ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-light" style="color:var(--text-on-cream-muted);background:var(--cream-deep);">No</span>'}</td>
         <td>${i.confirmada_en ? whatsappPill(i) : "—"}</td>
         <td><span class="pill ${estadoPillClass[i.estado] || ""}">${estadoLabels[i.estado] || escapeHtml(i.estado)}</span></td>
+        ${cuotaTd}
         <td class="actions">
           ${accionesWa}
           <button class="btn-icon" data-view="${i.id}" type="button">✎</button>
@@ -555,8 +591,20 @@
   async function loadInscripciones() {
     const { data, error } = await window.spfc.from("inscripciones").select("*").order("creado_en", { ascending: false });
     const body = document.getElementById("inscripciones-body");
-    if (error) { body.innerHTML = `<tr><td colspan="9">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="10">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     inscripciones = data || [];
+
+    // Se cargan todas las cuotas de golpe (no solo al abrir el detalle) para
+    // poder filtrar la lista por "1ª cuota pagada/pendiente", "2ª cuota..."
+    // — en la práctica, como casi todo el mundo empieza el plan a la vez al
+    // inicio de temporada, el número de cuota equivale a "el pago de tal mes".
+    pagosPorInscripcion = {};
+    const { data: pagos } = await window.spfc.from("inscripcion_pagos").select("inscripcion_id, numero_cuota, estado, importe, fecha_vencimiento");
+    (pagos || []).forEach((p) => {
+      if (!pagosPorInscripcion[p.inscripcion_id]) pagosPorInscripcion[p.inscripcion_id] = [];
+      pagosPorInscripcion[p.inscripcion_id].push(p);
+    });
+
     updateStats();
     renderTable();
   }
@@ -606,6 +654,7 @@
   document.getElementById("buscador").addEventListener("input", renderTable);
   document.getElementById("filtro-estado").addEventListener("change", renderTable);
   document.getElementById("filtro-confirmada").addEventListener("change", renderTable);
+  document.getElementById("filtro-cuota").addEventListener("change", renderTable);
 
   await loadTeams();
   await loadInscripciones();

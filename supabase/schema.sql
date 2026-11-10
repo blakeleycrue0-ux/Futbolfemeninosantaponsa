@@ -1613,3 +1613,192 @@ drop policy if exists "competitions_public_read" on competitions;
 create policy "competitions_public_read" on competitions for select using (activo = true);
 drop policy if exists "competitions_admin_write" on competitions;
 create policy "competitions_admin_write" on competitions for all using (is_app_admin()) with check (is_app_admin());
+
+-- ============================================================================
+-- FFSP OFFICIAL STORE — rediseño completo de la tienda
+-- Modelo de stock elegido: "stock real simple por talla" — cada variante
+-- (talla x color) tiene un número de unidades que baja al confirmarse el
+-- pago. Sin sistema de reservas durante el checkout ni lista de espera con
+-- avisos automáticos (eso queda para una fase posterior si se pide); el
+-- descuento de stock es atómico (shop_descontar_stock), igual que
+-- reservar_aforo más arriba, para que nunca pueda quedar en negativo.
+-- ============================================================================
+
+create table if not exists shop_categories (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  slug text not null unique,
+  orden int not null default 0,
+  activo boolean not null default true,
+  creado_en timestamptz not null default now()
+);
+
+alter table shop_categories enable row level security;
+drop policy if exists "shop_categories_public_read" on shop_categories;
+create policy "shop_categories_public_read" on shop_categories for select using (activo = true);
+drop policy if exists "shop_categories_admin_write" on shop_categories;
+create policy "shop_categories_admin_write" on shop_categories for all using (is_app_admin()) with check (is_app_admin());
+
+alter table shop_products add column if not exists category_id uuid references shop_categories(id);
+alter table shop_products add column if not exists materiales text;
+alter table shop_products add column if not exists cuidado text;
+alter table shop_products add column if not exists guia_tallas text;
+alter table shop_products add column if not exists edicion_limitada boolean not null default false;
+-- nuevo_hasta: el admin decide hasta cuándo se ve la etiqueta "NUEVO" — nunca
+-- se calcula solo ni se inventa a partir de la fecha de creación.
+alter table shop_products add column if not exists nuevo_hasta date;
+
+create index if not exists shop_products_category_idx on shop_products(category_id);
+
+-- Galería de fotos — shop_products.imagen_url se mantiene como portada de
+-- compatibilidad (la usan ya tarjetas antiguas); esta tabla es la galería
+-- completa de la ficha de producto nueva.
+create table if not exists shop_product_images (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references shop_products(id) on delete cascade,
+  url text not null,
+  orden int not null default 0,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists shop_product_images_product_idx on shop_product_images(product_id);
+
+alter table shop_product_images enable row level security;
+drop policy if exists "shop_product_images_public_read" on shop_product_images;
+create policy "shop_product_images_public_read" on shop_product_images for select using (true);
+drop policy if exists "shop_product_images_admin_write" on shop_product_images;
+create policy "shop_product_images_admin_write" on shop_product_images for all using (is_app_admin()) with check (is_app_admin());
+
+-- Variantes (talla x color) con stock real. Sustituye a shop_products.tallas
+-- (que se deja tal cual, sin usarse, por si algo antiguo todavía la lee).
+create table if not exists shop_product_variants (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references shop_products(id) on delete cascade,
+  talla text not null,
+  color text,
+  sku text,
+  stock int not null default 0 check (stock >= 0),
+  orden int not null default 0,
+  creado_en timestamptz not null default now(),
+  actualizado_en timestamptz
+);
+
+create unique index if not exists shop_product_variants_unica_idx
+  on shop_product_variants(product_id, talla, coalesce(color, ''));
+create index if not exists shop_product_variants_product_idx on shop_product_variants(product_id);
+
+alter table shop_product_variants enable row level security;
+drop policy if exists "shop_product_variants_public_read" on shop_product_variants;
+-- Lectura pública total (incluido stock=0): la ficha de producto necesita
+-- saber que una talla existe para mostrarla como "Agotada" en vez de
+-- ocultarla sin más.
+create policy "shop_product_variants_public_read" on shop_product_variants for select using (true);
+drop policy if exists "shop_product_variants_admin_write" on shop_product_variants;
+create policy "shop_product_variants_admin_write" on shop_product_variants for all using (is_app_admin()) with check (is_app_admin());
+
+create table if not exists shop_favorites (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id uuid not null references shop_products(id) on delete cascade,
+  creado_en timestamptz not null default now(),
+  unique (user_id, product_id)
+);
+
+alter table shop_favorites enable row level security;
+drop policy if exists "shop_favorites_owner_all" on shop_favorites;
+create policy "shop_favorites_owner_all" on shop_favorites for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create table if not exists shop_newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  consentimiento_en timestamptz not null default now(),
+  baja_en timestamptz
+);
+
+alter table shop_newsletter_subscribers enable row level security;
+-- Sin policy pública de ningún tipo: el alta la hace
+-- subscribe-newsletter.js con la service role (así se valida el email en
+-- servidor); solo el admin puede leer la lista desde el panel.
+drop policy if exists "shop_newsletter_admin_read" on shop_newsletter_subscribers;
+create policy "shop_newsletter_admin_read" on shop_newsletter_subscribers for select using (is_app_admin());
+
+-- shop_orders: ahora puede haber varias filas por sesión de Stripe (carrito
+-- con varios artículos), todas compartiendo stripe_checkout_session_id.
+alter table shop_orders add column if not exists variant_id uuid references shop_product_variants(id);
+alter table shop_orders add column if not exists color text;
+-- stock_incidencia: el pago de Stripe ya se ha cobrado cuando llega el
+-- webhook, así que el pedido SIEMPRE se marca pagado — pero si para
+-- entonces esa variante ya no tenía stock (dos compras casi a la vez, sin
+-- sistema de reservas), se marca esta incidencia para que el club lo
+-- revise a mano en vez de prometer stock que no hay.
+alter table shop_orders add column if not exists stock_incidencia boolean not null default false;
+
+-- shop_descontar_stock: descuento atómico de stock, mismo patrón que
+-- reservar_aforo (ver arriba) — el UPDATE con la condición stock >= cantidad
+-- es una sola instrucción SQL, así que es imposible que dos webhooks casi
+-- simultáneos dejen el stock en negativo. Devuelve false (sin tocar nada)
+-- si no había unidades suficientes.
+create or replace function shop_descontar_stock(p_variant_id uuid, p_cantidad int)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ok boolean;
+begin
+  update shop_product_variants
+  set stock = stock - p_cantidad, actualizado_en = now()
+  where id = p_variant_id and stock >= p_cantidad
+  returning true into v_ok;
+  return coalesce(v_ok, false);
+end;
+$$;
+
+-- admin_listar_pedidos_tienda: se reescribe para incluir talla/color reales
+-- de la variante (antes solo leía o.talla) y la incidencia de stock. Cambia
+-- la forma de la fila devuelta, así que hace falta borrar la versión
+-- anterior primero (create or replace no permite cambiar columnas OUT).
+drop function if exists admin_listar_pedidos_tienda();
+create or replace function admin_listar_pedidos_tienda()
+returns table (
+  id uuid, estado text, talla text, color text, cantidad int, importe numeric, creado_en timestamptz,
+  recogido_en timestamptz, recogido_por text, stock_incidencia boolean,
+  user_id uuid, user_email text, user_nombre text,
+  producto_id uuid, producto_nombre text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select o.id, o.estado, o.talla, o.color, o.cantidad, o.importe, o.creado_en,
+         o.recogido_en, o.recogido_por, o.stock_incidencia,
+         u.id, u.email, coalesce(u.raw_user_meta_data->>'nombre', u.email),
+         p.id, p.nombre
+  from shop_orders o
+  join shop_products p on p.id = o.product_id
+  join auth.users u on u.id = o.user_id
+  where is_app_staff()
+  order by o.creado_en desc;
+$$;
+
+-- admin_listar_espera_variante: cuántas personas tiene cada variante
+-- agotada en lista de espera manual — hoy es solo una tabla de contacto
+-- (sin avisos automáticos); el club escribe a mano cuando repone stock.
+create table if not exists shop_waitlist (
+  id uuid primary key default gen_random_uuid(),
+  variant_id uuid not null references shop_product_variants(id) on delete cascade,
+  email text not null,
+  creado_en timestamptz not null default now()
+);
+
+create index if not exists shop_waitlist_variant_idx on shop_waitlist(variant_id);
+
+alter table shop_waitlist enable row level security;
+-- Alta pública (sin sesión) para quien solo quiere dejar su email, pero
+-- solo pueden LEER el admin/staff.
+drop policy if exists "shop_waitlist_public_insert" on shop_waitlist;
+create policy "shop_waitlist_public_insert" on shop_waitlist for insert with check (true);
+drop policy if exists "shop_waitlist_staff_read" on shop_waitlist;
+create policy "shop_waitlist_staff_read" on shop_waitlist for select using (is_app_staff());

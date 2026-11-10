@@ -3,89 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tienda — Fútbol Femenino Santa Ponça</title>
-<meta name="description" content="Tienda oficial del Fútbol Femenino Santa Ponça: camisetas, pantalones y más. Recogida en el club.">
-<meta name="theme-color" content="#ffffff">
+<title>FFSP Official Store — Fútbol Femenino Santa Ponça</title>
+<meta name="description" content="La tienda oficial del Fútbol Femenino Santa Ponça: equipación, ropa de entrenamiento y accesorios. Recogida en el club, sin gastos de envío.">
+<meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
 <link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<meta property="og:title" content="FFSP Official Store">
+<meta property="og:description" content="La tienda oficial del Fútbol Femenino Santa Ponça.">
+<link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/tienda.html">
 <script src="assets/js/ga4.js"></script>
 <link rel="stylesheet" href="assets/css/variables.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/ticketing.css">
+<link rel="stylesheet" href="assets/css/shop.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Saltar al contenido</a>
 
 <!--#include header-->
-<main id="main" class="tk-page">
-  <div class="container">
-    <div class="tk-pagehead">
-      <span class="tk-eyebrow">Tienda</span>
-      <h1>Equipación y merchandising.</h1>
-      <p class="tk-lede">Compra online y recoge tu pedido en el club — sin gastos de envío.</p>
-    </div>
+<!--#include store-subnav-->
 
-    <div id="tk-shop-list">
-      <p class="tk-empty" style="margin-top:1.3rem;">Cargando…</p>
+<main id="main">
+  <section class="shop-hero shop-hero--sin-foto" id="shop-hero">
+    <div class="shop-hero__media" id="shop-hero-media"></div>
+    <div class="shop-hero__inner">
+      <span class="shop-hero__eyebrow">FFSP Official Store</span>
+      <h1>More than<br>a club.</h1>
+      <a href="catalogo.html" class="shop-btn shop-btn--light shop-hero__cta">Explorar colección</a>
+    </div>
+  </section>
+
+  <div class="container">
+    <section class="shop-section" id="seccion-nueva-coleccion" style="display:none;">
+      <div class="shop-section-head">
+        <div><span class="eyebrow">Recién llegado</span><h2>Nueva colección</h2></div>
+        <a href="catalogo.html">Ver todo →</a>
+      </div>
+      <div class="shop-grid" id="grid-nueva-coleccion"></div>
+    </section>
+
+    <section class="shop-section" id="seccion-categorias" style="display:none;">
+      <div class="shop-section-head"><div><span class="eyebrow">Explora</span><h2>Categorías</h2></div></div>
+      <div class="shop-cat-grid" id="grid-categorias"></div>
+    </section>
+  </div>
+
+  <section class="shop-editorial">
+    <h2>We are FFSP.</h2>
+    <p>Cada prenda lleva el escudo de un club que juega, crece y compite en femenino en Santa Ponça. Vestirla es parte del equipo.</p>
+  </section>
+
+  <div class="container">
+    <section class="shop-section" id="seccion-mas-vendidos" style="display:none;">
+      <div class="shop-section-head"><div><span class="eyebrow">Lo más querido</span><h2>Más vendidos</h2></div></div>
+      <div class="shop-grid" id="grid-mas-vendidos"></div>
+    </section>
+
+    <div id="shop-vacio" class="shop-empty-state" style="display:none;">
+      <p>Todavía no hay ningún producto a la venta. Vuelve a mirar pronto — estamos preparando la colección.</p>
     </div>
   </div>
+
+  <section class="shop-newsletter">
+    <div class="container">
+      <h3>No te pierdas nada</h3>
+      <p>Lanzamientos, reposiciones y novedades de la tienda, directas a tu correo.</p>
+      <form id="newsletter-form">
+        <input type="email" id="newsletter-email" placeholder="tu@email.com" required>
+        <button type="submit" class="shop-btn shop-btn--dark">Suscribirme</button>
+      </form>
+      <label class="shop-newsletter__consent">
+        <input type="checkbox" id="newsletter-consent" required style="margin-top:0.2em;">
+        <span>Acepto recibir comunicaciones comerciales de la tienda FFSP. Puedes darte de baja cuando quieras.</span>
+      </label>
+      <p class="shop-newsletter__status" id="newsletter-status"></p>
+    </div>
+  </section>
 </main>
 
 <!--#include footer-->
+<!--#include cart-drawer-->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/mantenimiento-check.js"></script>
-<script src="assets/js/ticketing-data.js"></script>
 <script src="assets/js/shop-data.js"></script>
+<script src="assets/js/shop-cart.js"></script>
+<script src="assets/js/shop-cart-ui.js"></script>
+<script src="assets/js/shop-ui.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
-  const list = document.getElementById("tk-shop-list");
-  if (!window.spfc) { list.innerHTML = '<p class="tk-empty">La tienda no está disponible ahora mismo.</p>'; return; }
-  const productos = await SPFC_SHOP.productosActivos();
-  if (!productos.length) {
-    list.innerHTML = '<p class="tk-empty">Todavía no hay ningún producto a la venta. Vuelve a mirar pronto.</p>';
-    return;
-  }
-  const esc = SPFC_TICKETING.escapeHtml;
-  const contador = `<p class="shop-count">${productos.length} producto${productos.length === 1 ? "" : "s"}</p>`;
-  list.innerHTML = `${contador}<div class="shop-grid">${productos.map((p) => {
-    const tieneTallas = p.tallas && p.tallas.length;
-    return `
-    <div class="shop-product" data-producto="${p.id}">
-      ${p.imagen_url
-        ? `<img class="shop-product__img" src="${esc(p.imagen_url)}" alt="${esc(p.nombre)}">`
-        : `<div class="shop-product__img"></div>`}
-      <div class="shop-product__body">
-        <p class="shop-product__precio">${SPFC_TICKETING.fmtEuros(p.precio)}</p>
-        <h2 class="shop-product__nombre">${esc(p.nombre)}</h2>
-        ${p.descripcion ? `<p class="shop-product__desc">${esc(p.descripcion)}</p>` : ""}
-        ${tieneTallas ? `
-          <div class="shop-product__row">
-            <select data-talla aria-label="Talla">
-              ${p.tallas.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")}
-            </select>
-          </div>` : ""}
-        <div class="shop-product__row">
-          <input type="number" data-cantidad value="1" min="1" max="10" aria-label="Cantidad">
-        </div>
-        <button type="button" class="tk-btn tk-btn--dark tk-btn--block" data-comprar>Comprar</button>
-      </div>
-    </div>`;
-  }).join("")}</div>`;
+  if (!window.spfc) return;
+  const UI = window.SPFC_SHOP_UI;
 
-  list.querySelectorAll("[data-producto]").forEach((card) => {
-    card.querySelector("[data-comprar]").addEventListener("click", () => {
-      const productoId = card.dataset.producto;
-      const tallaEl = card.querySelector("[data-talla]");
-      const cantidadEl = card.querySelector("[data-cantidad]");
-      const params = new URLSearchParams({ producto: productoId });
-      if (tallaEl) params.set("talla", tallaEl.value);
-      if (cantidadEl) params.set("cantidad", cantidadEl.value || "1");
-      location.href = `tienda-checkout.html?${params.toString()}`;
-    });
+  const [categorias, productos, masVendidos] = await Promise.all([
+    SPFC_SHOP.categoriasConProductos(),
+    SPFC_SHOP.productosActivos(),
+    SPFC_SHOP.masVendidos(4),
+  ]);
+
+  const { data: { session } } = await window.spfc.auth.getSession();
+  let favoritoIds = new Set();
+  if (session) {
+    const { data: favs } = await window.spfc.from("shop_favorites").select("product_id");
+    favoritoIds = new Set((favs || []).map((f) => f.product_id));
+  }
+
+  if (!productos.length) {
+    document.getElementById("shop-vacio").style.display = "block";
+  }
+
+  const nuevos = productos.filter((p) => p.esNuevo || !p.agotado).slice(0, 8);
+  if (nuevos.length) {
+    document.getElementById("seccion-nueva-coleccion").style.display = "block";
+    document.getElementById("grid-nueva-coleccion").innerHTML = nuevos.map((p) => UI.tarjetaProducto(p, { favoritoIds })).join("");
+    const grid = document.getElementById("grid-nueva-coleccion");
+    UI.wireFavoritos(grid);
+    const porId = {}; nuevos.forEach((p) => { porId[p.id] = p; });
+    UI.wireQuickView(grid, porId);
+  }
+
+  if (categorias.length) {
+    document.getElementById("seccion-categorias").style.display = "block";
+    document.getElementById("grid-categorias").innerHTML = categorias.map((c) => `
+      <a class="shop-cat-tile" href="catalogo.html?categoria=${c.id}"><span>${UI.escapeHtml(c.nombre)}</span></a>`).join("");
+  }
+
+  if (masVendidos.length) {
+    document.getElementById("seccion-mas-vendidos").style.display = "block";
+    document.getElementById("grid-mas-vendidos").innerHTML = masVendidos.map((p) => UI.tarjetaProducto(p, { favoritoIds })).join("");
+    const grid = document.getElementById("grid-mas-vendidos");
+    UI.wireFavoritos(grid);
+    const porId = {}; masVendidos.forEach((p) => { porId[p.id] = p; });
+    UI.wireQuickView(grid, porId);
+  }
+
+  document.getElementById("newsletter-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("newsletter-status");
+    const email = document.getElementById("newsletter-email").value.trim();
+    status.textContent = "Enviando…";
+    try {
+      await SPFC_SHOP.suscribirNewsletter(email);
+      status.textContent = "¡Listo! Ya estás suscrita.";
+      e.target.reset();
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+    }
   });
 })();
 </script>

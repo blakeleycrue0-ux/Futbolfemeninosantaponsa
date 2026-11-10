@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu carrito — FFSP Official Store</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+<link rel="stylesheet" href="assets/css/shop.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<!--#include store-subnav-->
+
+<main id="main" class="shop-section">
+  <div class="container">
+    <h1 style="font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 1.4rem;">Tu carrito</h1>
+
+    <div id="carrito-cancelado" style="display:none;background:rgba(239,68,68,0.08);border-radius:8px;padding:0.8rem 1rem;font-size:0.84rem;margin-bottom:1.3rem;">
+      El pago anterior se canceló — no se te ha cobrado nada. Puedes intentarlo otra vez.
+    </div>
+
+    <div id="carrito-vacio" class="shop-empty-state" style="display:none;">
+      <p>Tu carrito está vacío. <a href="catalogo.html">Ver catálogo</a>.</p>
+    </div>
+
+    <div class="shop-cart-page" id="carrito-contenido" style="display:none;">
+      <div id="carrito-lineas"></div>
+      <div class="shop-cart-summary">
+        <div class="cart-drawer__total"><span>Subtotal</span><span id="carrito-total"></span></div>
+        <p style="font-size:0.82rem;color:var(--text-on-cream-muted);margin:0 0 1.1rem;">Recogida en el club — sin gastos de envío.</p>
+        <button type="button" class="shop-btn shop-btn--dark shop-btn--block" id="carrito-pagar-btn">Pagar con Stripe</button>
+        <p id="carrito-status" style="margin-top:0.8rem;font-size:0.84rem;text-align:center;"></p>
+        <p class="checkout-trust">Pago seguro gestionado por Stripe · no guardamos tu tarjeta</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!--#include footer-->
+<!--#include cart-drawer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/shop-cart.js"></script>
+<script src="assets/js/shop-cart-ui.js"></script>
+<script src="assets/js/shop-ui.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  const UI = window.SPFC_SHOP_UI;
+  if (new URLSearchParams(location.search).get("cancelado")) {
+    document.getElementById("carrito-cancelado").style.display = "block";
+  }
+
+  if (!window.spfc) return;
+
+  async function revalidar() {
+    const items = window.SPFC_CART.obtener();
+    if (!items.length) return [];
+    const ids = items.map((i) => i.variant_id);
+    const { data: variantes } = await window.spfc
+      .from("shop_product_variants")
+      .select("id, talla, color, stock, shop_products(id, nombre, precio, activo)")
+      .in("id", ids);
+    const porId = {}; (variantes || []).forEach((v) => { porId[v.id] = v; });
+
+    const avisos = [];
+    items.forEach((item) => {
+      const v = porId[item.variant_id];
+      if (!v || !v.shop_products || !v.shop_products.activo) {
+        window.SPFC_CART.quitar(item.variant_id);
+        avisos.push(`"${item.nombre}" ya no está disponible y se ha quitado del carrito.`);
+        return;
+      }
+      if (Number(item.precio) !== Number(v.shop_products.precio)) {
+        item.precio = v.shop_products.precio;
+      }
+      if (v.stock < item.cantidad) {
+        if (v.stock <= 0) {
+          window.SPFC_CART.quitar(item.variant_id);
+          avisos.push(`"${item.nombre}" (talla ${item.talla}) se ha agotado y se ha quitado del carrito.`);
+        } else {
+          window.SPFC_CART.actualizarCantidad(item.variant_id, v.stock);
+          avisos.push(`Solo quedan ${v.stock} unidades de "${item.nombre}" (talla ${item.talla}) — hemos ajustado la cantidad.`);
+        }
+      }
+    });
+    return avisos;
+  }
+
+  function render() {
+    const items = window.SPFC_CART.obtener();
+    if (!items.length) {
+      document.getElementById("carrito-vacio").style.display = "block";
+      document.getElementById("carrito-contenido").style.display = "none";
+      return;
+    }
+    document.getElementById("carrito-vacio").style.display = "none";
+    document.getElementById("carrito-contenido").style.display = "grid";
+    document.getElementById("carrito-lineas").innerHTML = items.map((i) => `
+      <div class="cart-item" data-variant="${i.variant_id}" style="padding:1.2rem 0;">
+        ${i.imagen_url ? `<img class="cart-item__img" style="width:88px;height:108px;" src="${UI.escapeHtml(i.imagen_url)}" alt="">` : `<div class="cart-item__img" style="width:88px;height:108px;"></div>`}
+        <div class="cart-item__body">
+          <p class="cart-item__nombre" style="font-size:0.95rem;">${UI.escapeHtml(i.nombre)}</p>
+          <p class="cart-item__meta">${UI.escapeHtml(i.talla)}${i.color ? " · " + UI.escapeHtml(i.color) : ""}</p>
+          <div class="cart-item__row">
+            <div class="cart-item__qty">
+              <button type="button" data-menos>−</button><span>${i.cantidad}</span><button type="button" data-mas>+</button>
+            </div>
+            <span class="cart-item__precio">${UI.fmtEuros(i.precio * i.cantidad)}</span>
+          </div>
+          <button type="button" class="cart-item__del" data-quitar>Quitar</button>
+        </div>
+      </div>`).join("");
+    document.getElementById("carrito-total").textContent = UI.fmtEuros(window.SPFC_CART.total());
+
+    document.querySelectorAll("[data-menos]").forEach((b) => b.addEventListener("click", (e) => {
+      const id = e.target.closest("[data-variant]").dataset.variant;
+      const it = window.SPFC_CART.obtener().find((x) => x.variant_id === id);
+      if (it) window.SPFC_CART.actualizarCantidad(id, it.cantidad - 1);
+    }));
+    document.querySelectorAll("[data-mas]").forEach((b) => b.addEventListener("click", (e) => {
+      const id = e.target.closest("[data-variant]").dataset.variant;
+      const it = window.SPFC_CART.obtener().find((x) => x.variant_id === id);
+      if (it) window.SPFC_CART.actualizarCantidad(id, it.cantidad + 1);
+    }));
+    document.querySelectorAll("[data-quitar]").forEach((b) => b.addEventListener("click", (e) => {
+      window.SPFC_CART.quitar(e.target.closest("[data-variant]").dataset.variant);
+    }));
+  }
+
+  window.SPFC_CART.onChange(render);
+
+  const avisos = await revalidar();
+  if (avisos.length) {
+    const status = document.getElementById("carrito-status");
+    status.textContent = avisos.join(" ");
+  }
+  render();
+
+  document.getElementById("carrito-pagar-btn").addEventListener("click", async (e) => {
+    const items = window.SPFC_CART.obtener();
+    if (!items.length) return;
+    const { data: { session } } = await window.spfc.auth.getSession();
+    if (!session) {
+      location.href = "cuenta.html?volver=" + encodeURIComponent(location.pathname);
+      return;
+    }
+    const btn = e.currentTarget;
+    const status = document.getElementById("carrito-status");
+    btn.disabled = true;
+    status.textContent = "Conectando con Stripe…";
+    try {
+      const { url } = await SPFC_SHOP.iniciarCheckoutCarrito(items.map((i) => ({ variant_id: i.variant_id, cantidad: i.cantidad })));
+      window.SPFC_CART.vaciar();
+      location.href = url;
+    } catch (err) {
+      status.textContent = "Error: " + err.message;
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

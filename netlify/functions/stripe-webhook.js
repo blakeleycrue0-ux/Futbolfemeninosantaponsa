@@ -54,21 +54,49 @@ exports.handler = async function (event) {
 
   if (stripeEvent.type === "checkout.session.completed") {
     const session = stripeEvent.data.object;
-    const shopOrderId = session.metadata && session.metadata.shop_order_id;
-    if (shopOrderId) {
-      // Pedido de la tienda (merchandising) — rama totalmente aparte de la
-      // de socios/entradas de abajo: aquí solo se marca "pagado", no se
+    // shop_order_ids: una o varias (carrito con varios artículos), separadas
+    // por comas. shop_order_id (singular) se mantiene como compatibilidad
+    // con sesiones ya creadas antes de pasar al carrito multi-artículo.
+    const idsRaw = (session.metadata && (session.metadata.shop_order_ids || session.metadata.shop_order_id)) || "";
+    const shopOrderIds = idsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (shopOrderIds.length) {
+      // Pedido(s) de la tienda (merchandising) — rama totalmente aparte de
+      // la de socios/entradas de abajo: aquí solo se marca "pagado", no se
       // emite ninguna credencial (la recogida es en persona en el club,
-      // sin QR ni control de acceso).
-      await supabase
-        .from("shop_orders")
-        .update({
-          estado: "pagado",
-          stripe_payment_intent_id: session.payment_intent || null,
-          actualizado_en: new Date().toISOString(),
-        })
-        .eq("id", shopOrderId)
-        .eq("estado", "pendiente");
+      // sin QR ni control de acceso). El pago ya está cobrado por Stripe
+      // en este punto, así que SIEMPRE se marca pagado — si para entonces
+      // ya no quedaba stock de esa variante (sin sistema de reservas, dos
+      // compras casi a la vez), se marca stock_incidencia para que el club
+      // lo revise a mano, en vez de prometer stock que no hay o dejar a
+      // alguien que ya ha pagado sin su pedido.
+      for (const shopOrderId of shopOrderIds) {
+        const { data: order } = await supabase
+          .from("shop_orders")
+          .select("id, estado, variant_id, cantidad")
+          .eq("id", shopOrderId)
+          .single();
+        if (!order || order.estado !== "pendiente") continue;
+
+        let stockOk = true;
+        if (order.variant_id) {
+          const { data: descontado } = await supabase.rpc("shop_descontar_stock", {
+            p_variant_id: order.variant_id,
+            p_cantidad: order.cantidad,
+          });
+          stockOk = !!descontado;
+        }
+
+        await supabase
+          .from("shop_orders")
+          .update({
+            estado: "pagado",
+            stock_incidencia: !stockOk,
+            stripe_payment_intent_id: session.payment_intent || null,
+            actualizado_en: new Date().toISOString(),
+          })
+          .eq("id", shopOrderId)
+          .eq("estado", "pendiente");
+      }
       return { statusCode: 200, body: "ok" };
     }
 
@@ -170,9 +198,10 @@ exports.handler = async function (event) {
     }
   } else if (stripeEvent.type === "checkout.session.expired") {
     const session = stripeEvent.data.object;
-    const shopOrderId = session.metadata && session.metadata.shop_order_id;
-    if (shopOrderId) {
-      await supabase.from("shop_orders").update({ estado: "cancelado" }).eq("id", shopOrderId).eq("estado", "pendiente");
+    const idsRaw = (session.metadata && (session.metadata.shop_order_ids || session.metadata.shop_order_id)) || "";
+    const shopOrderIds = idsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (shopOrderIds.length) {
+      await supabase.from("shop_orders").update({ estado: "cancelado" }).in("id", shopOrderIds).eq("estado", "pendiente");
     }
     const orderId = session.metadata && session.metadata.order_id;
     if (orderId) {

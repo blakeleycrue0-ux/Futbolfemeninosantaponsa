@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo — FFSP Official Store</title>
+<meta name="description" content="Todo el catálogo de la tienda oficial del Fútbol Femenino Santa Ponça: filtra por categoría, talla, color y precio.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="assets/img/escudo-santa-ponsa.png?v=2">
+<link rel="apple-touch-icon" href="/assets/img/icons/apple-touch-icon.png?v=2">
+<link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/catalogo.html">
+<script src="assets/js/ga4.js"></script>
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/ticketing.css">
+<link rel="stylesheet" href="assets/css/shop.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Saltar al contenido</a>
+
+<!--#include header-->
+<!--#include store-subnav-->
+
+<main id="main" class="shop-section">
+  <div class="container">
+    <div class="shop-pagehead" style="margin-bottom:1.6rem;">
+      <span class="eyebrow">FFSP Official Store</span>
+      <h1 style="font-size:clamp(1.8rem,5vw,3.2rem);margin:0.3rem 0 0;">Catálogo</h1>
+    </div>
+
+    <div class="shop-catalog-head">
+      <div class="shop-search">
+        <input type="search" id="buscador" placeholder="Buscar productos…">
+      </div>
+      <select class="shop-filter-select" id="orden-select">
+        <option value="novedades">Novedades</option>
+        <option value="precio-asc">Precio: menor a mayor</option>
+        <option value="precio-desc">Precio: mayor a menor</option>
+        <option value="populares">Más vendidos</option>
+      </select>
+    </div>
+
+    <div class="shop-filters-bar" id="filtros-categoria"></div>
+    <div class="shop-filters-bar" id="filtros-talla"></div>
+    <div class="shop-filters-bar" id="filtros-color"></div>
+    <div class="shop-filters-bar">
+      <label class="shop-filter-chip" style="display:flex;align-items:center;gap:0.4em;cursor:pointer;">
+        <input type="checkbox" id="filtro-disponible" style="margin:0;"> Solo disponibles
+      </label>
+    </div>
+
+    <p class="shop-results-count" id="contador-resultados"></p>
+    <div class="shop-grid" id="catalogo-grid"></div>
+    <div class="shop-empty-state" id="catalogo-vacio" style="display:none;">
+      <p>Ningún producto coincide con estos filtros.</p>
+    </div>
+  </div>
+</main>
+
+<!--#include footer-->
+<!--#include cart-drawer-->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/mantenimiento-check.js"></script>
+<script src="assets/js/shop-data.js"></script>
+<script src="assets/js/shop-cart.js"></script>
+<script src="assets/js/shop-cart-ui.js"></script>
+<script src="assets/js/shop-ui.js"></script>
+<script src="assets/js/nav.js"></script>
+<script>
+(async function () {
+  if (!window.spfc) return;
+  const UI = window.SPFC_SHOP_UI;
+  const params = new URLSearchParams(location.search);
+
+  const estado = {
+    categoria: params.get("categoria") || "",
+    talla: params.get("talla") || "",
+    color: params.get("color") || "",
+    disponible: params.get("disponible") === "1",
+    orden: params.get("orden") || "novedades",
+    q: params.get("q") || "",
+  };
+
+  const [categorias, productos, pedidosParaVentas] = await Promise.all([
+    SPFC_SHOP.categoriasConProductos(),
+    SPFC_SHOP.productosActivos(),
+    window.spfc.from("shop_orders").select("product_id, cantidad").in("estado", ["pagado", "recogido"]),
+  ]);
+
+  const ventasPorProducto = {};
+  (pedidosParaVentas.data || []).forEach((o) => { ventasPorProducto[o.product_id] = (ventasPorProducto[o.product_id] || 0) + o.cantidad; });
+
+  const { data: { session } } = await window.spfc.auth.getSession();
+  let favoritoIds = new Set();
+  if (session) {
+    const { data: favs } = await window.spfc.from("shop_favorites").select("product_id");
+    favoritoIds = new Set((favs || []).map((f) => f.product_id));
+  }
+
+  const categoriaPorId = {}; categorias.forEach((c) => { categoriaPorId[c.id] = c; });
+  const tallas = [...new Set(productos.flatMap((p) => p.variantes.map((v) => v.talla)))];
+  const colores = [...new Set(productos.flatMap((p) => p.variantes.map((v) => v.color).filter(Boolean)))];
+
+  function actualizarUrl() {
+    const sp = new URLSearchParams();
+    if (estado.categoria) sp.set("categoria", estado.categoria);
+    if (estado.talla) sp.set("talla", estado.talla);
+    if (estado.color) sp.set("color", estado.color);
+    if (estado.disponible) sp.set("disponible", "1");
+    if (estado.orden !== "novedades") sp.set("orden", estado.orden);
+    if (estado.q) sp.set("q", estado.q);
+    const qs = sp.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+  }
+
+  function renderChips(containerId, valores, campo, formatear) {
+    const el = document.getElementById(containerId);
+    if (!valores.length) { el.innerHTML = ""; return; }
+    el.innerHTML = valores.map((v) => `
+      <button type="button" class="shop-filter-chip ${estado[campo] === v ? "is-active" : ""}" data-chip="${campo}" data-valor="${UI.escapeHtml(v)}">${formatear ? formatear(v) : UI.escapeHtml(v)}</button>`).join("");
+    el.querySelectorAll("[data-chip]").forEach((btn) => btn.addEventListener("click", () => {
+      estado[campo] = estado[campo] === btn.dataset.valor ? "" : btn.dataset.valor;
+      actualizarUrl();
+      renderTodo();
+    }));
+  }
+
+  function render() {
+    renderChips("filtros-categoria", categorias.map((c) => c.id), "categoria", (id) => categoriaPorId[id].nombre);
+    renderChips("filtros-talla", tallas, "talla");
+    renderChips("filtros-color", colores, "color");
+    document.getElementById("filtro-disponible").checked = estado.disponible;
+    document.getElementById("orden-select").value = estado.orden;
+    document.getElementById("buscador").value = estado.q;
+  }
+
+  function renderTodo() {
+    render();
+    let lista = productos.filter((p) => {
+      if (estado.categoria && p.category_id !== estado.categoria) return false;
+      if (estado.talla && !p.variantes.some((v) => v.talla === estado.talla)) return false;
+      if (estado.color && !p.variantes.some((v) => v.color === estado.color)) return false;
+      if (estado.disponible && p.agotado) return false;
+      if (estado.q && !p.nombre.toLowerCase().includes(estado.q.toLowerCase())) return false;
+      return true;
+    });
+
+    if (estado.orden === "precio-asc") lista = lista.slice().sort((a, b) => a.precio - b.precio);
+    else if (estado.orden === "precio-desc") lista = lista.slice().sort((a, b) => b.precio - a.precio);
+    else if (estado.orden === "populares") lista = lista.slice().sort((a, b) => (ventasPorProducto[b.id] || 0) - (ventasPorProducto[a.id] || 0));
+    else lista = lista.slice().sort((a, b) => (b.esNuevo === a.esNuevo ? 0 : b.esNuevo ? 1 : -1));
+
+    const grid = document.getElementById("catalogo-grid");
+    const contador = document.getElementById("contador-resultados");
+    contador.textContent = `${lista.length} producto${lista.length === 1 ? "" : "s"}`;
+    document.getElementById("catalogo-vacio").style.display = lista.length ? "none" : "block";
+    grid.innerHTML = lista.map((p) => UI.tarjetaProducto(p, { favoritoIds })).join("");
+    UI.wireFavoritos(grid);
+    const porId = {}; lista.forEach((p) => { porId[p.id] = p; });
+    UI.wireQuickView(grid, porId);
+  }
+
+  document.getElementById("buscador").addEventListener("input", (e) => { estado.q = e.target.value; actualizarUrl(); renderTodo(); });
+  document.getElementById("orden-select").addEventListener("change", (e) => { estado.orden = e.target.value; actualizarUrl(); renderTodo(); });
+  document.getElementById("filtro-disponible").addEventListener("change", (e) => { estado.disponible = e.target.checked; actualizarUrl(); renderTodo(); });
+
+  renderTodo();
+})();
+</script>
+<script src="assets/js/search.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+</body>
+</html>

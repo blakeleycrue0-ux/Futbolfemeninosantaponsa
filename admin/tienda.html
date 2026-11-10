@@ -48,12 +48,59 @@
       <div class="hub-grid">
         <button type="button" class="hub-tile hub-tile--primary" data-view="productos">
           <span class="hub-tile__icon">👕</span>
-          <span><p class="hub-tile__title">Productos</p><p class="hub-tile__sub">Camisetas, pantalones... precio, tallas y foto</p></span>
+          <span><p class="hub-tile__title">Productos</p><p class="hub-tile__sub">Fotos, tallas, colores, stock y precio</p></span>
+        </button>
+        <button type="button" class="hub-tile" data-view="categorias">
+          <span class="hub-tile__icon">🗂️</span>
+          <span><p class="hub-tile__title">Categorías</p><p class="hub-tile__sub">Camisetas, sudaderas, accesorios…</p></span>
         </button>
         <button type="button" class="hub-tile" data-view="pedidos">
           <span class="hub-tile__icon">📦</span>
           <span><p class="hub-tile__title">Pedidos</p><p class="hub-tile__sub">Quién ha comprado y marcar como recogido</p></span>
         </button>
+        <button type="button" class="hub-tile" data-view="newsletter">
+          <span class="hub-tile__icon">✉️</span>
+          <span><p class="hub-tile__title">Newsletter</p><p class="hub-tile__sub">Quién se ha suscrito a novedades</p></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================= CATEGORÍAS ======================= -->
+    <div class="view" id="view-categorias">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar"><h1>Categorías</h1></div>
+      <p style="font-size:0.84rem;color:var(--text-on-cream-muted);max-width:640px;">
+        Una categoría solo aparece en la web pública cuando tiene al menos un producto activo dentro.
+      </p>
+
+      <div class="admin-card admin-form-toggle" id="cat-form-card" style="display:none;">
+        <h2 id="cat-form-title">Nueva categoría</h2>
+        <form id="cat-form">
+          <input type="hidden" id="cat-id">
+          <div class="form-row">
+            <div class="form-field"><label for="cat-nombre">Nombre</label><input type="text" id="cat-nombre" required placeholder="Camisetas"></div>
+            <div class="form-field"><label for="cat-orden">Orden (menor = antes)</label><input type="number" id="cat-orden" value="0"></div>
+          </div>
+          <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="cat-activo" checked> Activa</label></div>
+          <div style="display:flex;gap:0.8rem;">
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-outline btn-sm" id="cat-cancel-btn">Cancelar</button>
+          </div>
+          <p id="cat-form-status" style="margin-top:0.8rem;font-size:0.86rem;"></p>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-topbar" style="margin:0 0 1rem;">
+          <h2 style="margin:0;font-size:1rem;">Categorías</h2>
+          <button class="btn btn-primary btn-sm" id="cat-new-btn" type="button">Nueva categoría</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Nombre</th><th>Orden</th><th>Activa</th><th></th></tr></thead>
+            <tbody id="categorias-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -63,6 +110,8 @@
       <div class="admin-topbar"><h1>Productos</h1></div>
       <p style="font-size:0.84rem;color:var(--text-on-cream-muted);max-width:640px;">
         La recogida de los pedidos es siempre en el club — no hace falta pedir dirección de envío a nadie.
+        El stock se descuenta solo cuando se confirma un pago; si dos personas compran casi a la vez la
+        última unidad, el pedido que se queda sin stock se marca con ⚠ en Pedidos para revisarlo a mano.
       </p>
 
       <div class="admin-card admin-form-toggle" id="producto-form-card" style="display:none;">
@@ -72,19 +121,36 @@
           <div class="form-grid">
             <div class="form-field"><label for="pr-nombre">Nombre</label><input type="text" id="pr-nombre" required placeholder="Camiseta oficial 2026/27"></div>
             <div class="form-field"><label for="pr-precio">Precio (€)</label><input type="number" id="pr-precio" min="0" step="0.01" required></div>
-            <div class="form-field"><label for="pr-tallas">Tallas (separadas por coma)</label><input type="text" id="pr-tallas" placeholder="S, M, L, XL"></div>
+            <div class="form-field"><label for="pr-categoria">Categoría</label><select id="pr-categoria"><option value="">Sin categoría</option></select></div>
             <div class="form-field"><label for="pr-orden">Orden (menor = antes)</label><input type="number" id="pr-orden" value="0"></div>
           </div>
-          <p class="form-note" style="margin:-0.8rem 0 1.2rem;">Déjalo en blanco si el producto tiene talla única.</p>
-          <div class="form-field">
-            <label for="pr-imagen">Foto</label>
-            <input type="url" id="pr-imagen" placeholder="https://…">
-            <div class="media-upload">
-              <input type="file" id="pr-imagen-file" accept="image/*">
-              <span class="media-upload-status" id="pr-imagen-status"></span>
-            </div>
+          <div class="form-row">
+            <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="pr-edicion-limitada"> Edición limitada</label></div>
+            <div class="form-field"><label for="pr-nuevo-hasta">Etiqueta "Nuevo" hasta</label><input type="date" id="pr-nuevo-hasta"></div>
           </div>
+
+          <div class="form-field">
+            <label>Fotos</label>
+            <div id="pr-fotos-lista" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:0.6rem;"></div>
+            <div class="media-upload">
+              <input type="file" id="pr-foto-file" accept="image/*">
+              <span class="media-upload-status" id="pr-foto-status"></span>
+            </div>
+            <p class="form-note" style="margin:0.3rem 0 0;">La primera foto de la lista es la que se usa como portada en el catálogo.</p>
+          </div>
+
+          <div class="form-field">
+            <label>Tallas, colores y stock</label>
+            <div id="pr-variantes-lista"></div>
+            <button type="button" class="btn btn-outline btn-sm" id="pr-variante-add-btn" style="margin-top:0.5rem;">+ Añadir talla</button>
+            <p class="form-note" style="margin:0.4rem 0 0;">Deja el color en blanco si el producto no tiene colores distintos.</p>
+          </div>
+
           <div class="form-field"><label for="pr-descripcion">Descripción (se ve en la web)</label><textarea id="pr-descripcion" rows="2"></textarea></div>
+          <div class="form-field"><label for="pr-materiales">Materiales</label><textarea id="pr-materiales" rows="2" placeholder="100% algodón…"></textarea></div>
+          <div class="form-field"><label for="pr-cuidado">Cuidado / lavado</label><textarea id="pr-cuidado" rows="2" placeholder="Lavar a máquina a 30°…"></textarea></div>
+          <div class="form-field"><label for="pr-guia-tallas">Guía de tallas</label><textarea id="pr-guia-tallas" rows="3" placeholder="S: 86-92 cm de pecho…"></textarea></div>
+
           <div class="form-field"><label style="font-weight:400;"><input type="checkbox" id="pr-activo" checked> Venta online activada</label></div>
           <div style="display:flex;gap:0.8rem;">
             <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
@@ -101,8 +167,8 @@
         </div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th></th><th>Nombre</th><th>Precio</th><th>Tallas</th><th>Venta online</th><th></th></tr></thead>
-            <tbody id="productos-body"><tr><td colspan="6">Cargando…</td></tr></tbody>
+            <thead><tr><th></th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Venta online</th><th></th></tr></thead>
+            <tbody id="productos-body"><tr><td colspan="7">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -115,8 +181,28 @@
       <div class="admin-card">
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>Fecha</th><th>Nombre</th><th>Producto</th><th>Talla</th><th>Cant.</th><th>Importe</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="pedidos-tienda-body"><tr><td colspan="8">Cargando…</td></tr></tbody>
+            <thead><tr><th>Fecha</th><th>Nombre</th><th>Producto</th><th>Talla</th><th>Color</th><th>Cant.</th><th>Importe</th><th>Estado</th><th></th><th></th></tr></thead>
+            <tbody id="pedidos-tienda-body"><tr><td colspan="10">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= NEWSLETTER ======================= -->
+    <div class="view" id="view-newsletter">
+      <button type="button" class="hub-back" data-view="hub">← Menú principal</button>
+      <div class="admin-topbar">
+        <h1>Newsletter</h1>
+        <button class="btn btn-outline btn-sm" id="newsletter-csv-btn" type="button">Exportar CSV</button>
+      </div>
+      <p style="font-size:0.84rem;color:var(--text-on-cream-muted);max-width:640px;">
+        Altas desde el formulario de la tienda. No se envía ningún email automático todavía — esto es solo la lista para que la uses desde donde mandéis vuestros correos habituales.
+      </p>
+      <div class="admin-card">
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Email</th><th>Alta</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="newsletter-body"><tr><td colspan="4">Cargando…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -134,7 +220,6 @@
 <script>
 (async function () {
   if (!window.spfc) return;
-  wireMediaUpload({ fileInputId: "pr-imagen-file", urlInputId: "pr-imagen", statusId: "pr-imagen-status", folder: "tienda" });
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
@@ -151,23 +236,177 @@
   }
   document.querySelectorAll("[data-view]").forEach((btn) => btn.addEventListener("click", () => mostrarVista(btn.dataset.view)));
 
+  // ======================= CATEGORÍAS =======================
+  let categorias = [];
+  const catFormCard = document.getElementById("cat-form-card");
+  const catForm = document.getElementById("cat-form");
+
+  function slugify(s) {
+    return String(s || "").trim().toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+
+  function openCatForm(item) {
+    catForm.reset();
+    document.getElementById("cat-form-title").textContent = item ? "Editar categoría" : "Nueva categoría";
+    document.getElementById("cat-id").value = item ? item.id : "";
+    document.getElementById("cat-nombre").value = item ? item.nombre : "";
+    document.getElementById("cat-orden").value = item ? item.orden : 0;
+    document.getElementById("cat-activo").checked = item ? item.activo : true;
+    document.getElementById("cat-form-status").textContent = "";
+    catFormCard.style.display = "block";
+    catFormCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  document.getElementById("cat-new-btn").addEventListener("click", () => openCatForm(null));
+  document.getElementById("cat-cancel-btn").addEventListener("click", () => (catFormCard.style.display = "none"));
+
+  async function loadCategorias() {
+    const { data, error } = await window.spfc.from("shop_categories").select("*").order("orden");
+    const body = document.getElementById("categorias-body");
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    categorias = data || [];
+    body.innerHTML = categorias.length ? categorias.map((c) => `
+      <tr>
+        <td>${escapeHtml(c.nombre)}</td>
+        <td>${c.orden}</td>
+        <td>${c.activo ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-warn">No</span>'}</td>
+        <td class="actions">
+          <button class="btn-icon" data-edit-cat="${c.id}" type="button" title="Editar">✎</button>
+          <button class="btn-icon danger" data-del-cat="${c.id}" type="button" title="Eliminar">✕</button>
+        </td>
+      </tr>`).join("") : '<tr><td colspan="4">Todavía no hay ninguna categoría.</td></tr>';
+    body.querySelectorAll("[data-edit-cat]").forEach((btn) => btn.addEventListener("click", () => openCatForm(categorias.find((c) => c.id === btn.dataset.editCat))));
+    body.querySelectorAll("[data-del-cat]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar esta categoría? Los productos que la tengan se quedan sin categoría.")) return;
+      await window.spfc.from("shop_categories").delete().eq("id", btn.dataset.delCat);
+      loadCategorias();
+      loadCategoriasEnSelect();
+    }));
+
+    document.getElementById("pr-categoria").dataset.loaded = "0";
+  }
+
+  async function loadCategoriasEnSelect() {
+    const sel = document.getElementById("pr-categoria");
+    const valorActual = sel.value;
+    sel.innerHTML = '<option value="">Sin categoría</option>' + categorias.map((c) => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join("");
+    sel.value = valorActual;
+  }
+
+  catForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("cat-id").value;
+    const nombre = document.getElementById("cat-nombre").value.trim();
+    const payload = {
+      nombre,
+      slug: slugify(nombre) + "-" + Math.random().toString(36).slice(2, 6),
+      orden: Number(document.getElementById("cat-orden").value) || 0,
+      activo: document.getElementById("cat-activo").checked,
+    };
+    // El slug real solo importa para que sea único — no se muestra en
+    // ningún sitio todavía, así que llevar un sufijo aleatorio es
+    // suficiente en vez de pedir al admin que invente uno él mismo.
+    const status = document.getElementById("cat-form-status");
+    status.textContent = "Guardando…";
+    const { error } = id
+      ? await window.spfc.from("shop_categories").update({ nombre: payload.nombre, orden: payload.orden, activo: payload.activo }).eq("id", id)
+      : await window.spfc.from("shop_categories").insert(payload);
+    if (error) { status.textContent = "Error al guardar: " + error.message; return; }
+    catFormCard.style.display = "none";
+    loadCategorias();
+    loadCategoriasEnSelect();
+  });
+
+  // ======================= PRODUCTOS =======================
   let productos = [];
+  let imagenesActuales = []; // [{id|null, url}]
+  let variantesActuales = []; // [{id|null, talla, color, stock}]
+  wireMediaUpload({ fileInputId: "pr-foto-file", urlInputId: "pr-foto-url-oculto", statusId: "pr-foto-status", folder: "tienda" });
+  // Input oculto de apoyo para wireMediaUpload (no se ve, no se envía):
+  // cada vez que sube una foto, rellena este input y disparamos el resto a mano.
+  const fotoUrlOculto = document.createElement("input");
+  fotoUrlOculto.type = "hidden";
+  fotoUrlOculto.id = "pr-foto-url-oculto";
+  document.getElementById("producto-form").appendChild(fotoUrlOculto);
+  fotoUrlOculto.addEventListener("input", () => {
+    if (fotoUrlOculto.value) {
+      imagenesActuales.push({ id: null, url: fotoUrlOculto.value });
+      fotoUrlOculto.value = "";
+      pintarFotos();
+    }
+  });
+
+  function pintarFotos() {
+    const cont = document.getElementById("pr-fotos-lista");
+    cont.innerHTML = imagenesActuales.map((img, i) => `
+      <div style="position:relative;" data-foto-idx="${i}">
+        <img src="${escapeHtml(img.url)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:6px;display:block;">
+        <button type="button" data-quitar-foto="${i}" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#000;color:#fff;border:none;font-size:0.7rem;cursor:pointer;">✕</button>
+      </div>`).join("");
+    cont.querySelectorAll("[data-quitar-foto]").forEach((btn) => btn.addEventListener("click", () => {
+      imagenesActuales.splice(Number(btn.dataset.quitarFoto), 1);
+      pintarFotos();
+    }));
+  }
+
+  function pintarVariantes() {
+    const cont = document.getElementById("pr-variantes-lista");
+    cont.innerHTML = variantesActuales.map((v, i) => `
+      <div class="form-row" data-variante-idx="${i}" style="align-items:flex-end;margin-bottom:0.5rem;">
+        <div class="form-field" style="flex:1;"><label style="font-size:0.72rem;">Talla</label><input type="text" data-v-talla value="${escapeHtml(v.talla)}" placeholder="M" required></div>
+        <div class="form-field" style="flex:1;"><label style="font-size:0.72rem;">Color (opcional)</label><input type="text" data-v-color value="${escapeHtml(v.color || "")}" placeholder="Blanco"></div>
+        <div class="form-field" style="flex:1;"><label style="font-size:0.72rem;">Stock</label><input type="number" data-v-stock value="${v.stock}" min="0" required></div>
+        <button type="button" class="btn-icon danger" data-quitar-variante="${i}" title="Quitar">✕</button>
+      </div>`).join("");
+    cont.querySelectorAll("[data-v-talla]").forEach((input, i) => input.addEventListener("input", () => { variantesActuales[i].talla = input.value; }));
+    cont.querySelectorAll("[data-v-color]").forEach((input, i) => input.addEventListener("input", () => { variantesActuales[i].color = input.value; }));
+    cont.querySelectorAll("[data-v-stock]").forEach((input, i) => input.addEventListener("input", () => { variantesActuales[i].stock = Number(input.value) || 0; }));
+    cont.querySelectorAll("[data-quitar-variante]").forEach((btn) => btn.addEventListener("click", () => {
+      variantesActuales.splice(Number(btn.dataset.quitarVariante), 1);
+      pintarVariantes();
+    }));
+  }
+  document.getElementById("pr-variante-add-btn").addEventListener("click", () => {
+    variantesActuales.push({ id: null, talla: "", color: "", stock: 0 });
+    pintarVariantes();
+  });
 
   const formCard = document.getElementById("producto-form-card");
   const form = document.getElementById("producto-form");
 
-  function openForm(item) {
+  async function openForm(item) {
     form.reset();
+    await loadCategoriasEnSelect();
     document.getElementById("producto-form-title").textContent = item ? "Editar producto" : "Nuevo producto";
     document.getElementById("pr-id").value = item ? item.id : "";
     document.getElementById("pr-nombre").value = item ? item.nombre : "";
     document.getElementById("pr-precio").value = item ? item.precio : "";
-    document.getElementById("pr-tallas").value = item && item.tallas ? item.tallas.join(", ") : "";
+    document.getElementById("pr-categoria").value = item && item.category_id ? item.category_id : "";
     document.getElementById("pr-orden").value = item ? item.orden : 0;
-    document.getElementById("pr-imagen").value = item ? (item.imagen_url || "") : "";
+    document.getElementById("pr-edicion-limitada").checked = item ? item.edicion_limitada : false;
+    document.getElementById("pr-nuevo-hasta").value = item && item.nuevo_hasta ? item.nuevo_hasta : "";
     document.getElementById("pr-descripcion").value = item ? (item.descripcion || "") : "";
+    document.getElementById("pr-materiales").value = item ? (item.materiales || "") : "";
+    document.getElementById("pr-cuidado").value = item ? (item.cuidado || "") : "";
+    document.getElementById("pr-guia-tallas").value = item ? (item.guia_tallas || "") : "";
     document.getElementById("pr-activo").checked = item ? item.activo : true;
     document.getElementById("producto-form-status").textContent = "";
+
+    if (item) {
+      const [{ data: imgs }, { data: vars }] = await Promise.all([
+        window.spfc.from("shop_product_images").select("*").eq("product_id", item.id).order("orden"),
+        window.spfc.from("shop_product_variants").select("*").eq("product_id", item.id).order("orden"),
+      ]);
+      imagenesActuales = (imgs && imgs.length ? imgs : (item.imagen_url ? [{ id: null, url: item.imagen_url }] : [])).map((i) => ({ id: i.id || null, url: i.url || i.imagen_url }));
+      variantesActuales = (vars || []).map((v) => ({ id: v.id, talla: v.talla, color: v.color || "", stock: v.stock }));
+    } else {
+      imagenesActuales = [];
+      variantesActuales = [];
+    }
+    pintarFotos();
+    pintarVariantes();
+
     formCard.style.display = "block";
     formCard.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -176,22 +415,30 @@
   document.getElementById("producto-cancel-btn").addEventListener("click", () => (formCard.style.display = "none"));
 
   async function loadProductos() {
-    const { data, error } = await window.spfc.from("shop_products").select("*").order("orden");
+    const { data, error } = await window.spfc
+      .from("shop_products")
+      .select("*, shop_product_variants(stock)")
+      .order("orden");
     const body = document.getElementById("productos-body");
-    if (error) { body.innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="7">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     productos = data || [];
-    body.innerHTML = productos.length ? productos.map((p) => `
+    const catPorId = {}; categorias.forEach((c) => { catPorId[c.id] = c.nombre; });
+    body.innerHTML = productos.length ? productos.map((p) => {
+      const stockTotal = (p.shop_product_variants || []).reduce((s, v) => s + (v.stock || 0), 0);
+      return `
       <tr>
         <td>${p.imagen_url ? `<img src="${escapeHtml(p.imagen_url)}" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;display:block;">` : `<span style="display:block;width:34px;height:34px;border-radius:8px;background:var(--cream-deep);"></span>`}</td>
         <td>${escapeHtml(p.nombre)}</td>
+        <td>${p.category_id && catPorId[p.category_id] ? escapeHtml(catPorId[p.category_id]) : "—"}</td>
         <td>${fmtEuros(p.precio)}</td>
-        <td>${p.tallas && p.tallas.length ? escapeHtml(p.tallas.join(", ")) : "Única"}</td>
+        <td>${stockTotal}</td>
         <td>${p.activo ? '<span class="pill pill-ok">Sí</span>' : '<span class="pill pill-warn">No</span>'}</td>
         <td class="actions">
           <button class="btn-icon" data-edit="${p.id}" type="button" title="Editar">✎</button>
           <button class="btn-icon danger" data-del="${p.id}" type="button" title="Eliminar">✕</button>
         </td>
-      </tr>`).join("") : '<tr><td colspan="6">Todavía no hay ningún producto.</td></tr>';
+      </tr>`;
+    }).join("") : '<tr><td colspan="7">Todavía no hay ningún producto.</td></tr>';
 
     body.querySelectorAll("[data-edit]").forEach((btn) =>
       btn.addEventListener("click", () => openForm(productos.find((p) => p.id === btn.dataset.edit))));
@@ -206,41 +453,97 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("pr-id").value;
-    const tallas = document.getElementById("pr-tallas").value.split(",").map((t) => t.trim()).filter(Boolean);
+    const status = document.getElementById("producto-form-status");
+    if (!variantesActuales.length || variantesActuales.some((v) => !v.talla.trim())) {
+      status.textContent = "Añade al menos una talla con su stock antes de guardar.";
+      return;
+    }
+    status.textContent = "Guardando…";
+
     const payload = {
       nombre: document.getElementById("pr-nombre").value.trim(),
       precio: Number(document.getElementById("pr-precio").value),
-      tallas,
+      category_id: document.getElementById("pr-categoria").value || null,
       orden: Number(document.getElementById("pr-orden").value) || 0,
-      imagen_url: document.getElementById("pr-imagen").value.trim() || null,
+      edicion_limitada: document.getElementById("pr-edicion-limitada").checked,
+      nuevo_hasta: document.getElementById("pr-nuevo-hasta").value || null,
+      imagen_url: imagenesActuales[0] ? imagenesActuales[0].url : null,
       descripcion: document.getElementById("pr-descripcion").value.trim(),
+      materiales: document.getElementById("pr-materiales").value.trim() || null,
+      cuidado: document.getElementById("pr-cuidado").value.trim() || null,
+      guia_tallas: document.getElementById("pr-guia-tallas").value.trim() || null,
       activo: document.getElementById("pr-activo").checked,
     };
-    const status = document.getElementById("producto-form-status");
-    status.textContent = "Guardando…";
-    const { error } = id
-      ? await window.spfc.from("shop_products").update(payload).eq("id", id)
-      : await window.spfc.from("shop_products").insert(payload);
-    if (error) { status.textContent = "Error al guardar: " + error.message; return; }
+
+    let productId = id;
+    if (id) {
+      const { error } = await window.spfc.from("shop_products").update(payload).eq("id", id);
+      if (error) { status.textContent = "Error al guardar: " + error.message; return; }
+    } else {
+      const { data, error } = await window.spfc.from("shop_products").insert(payload).select().single();
+      if (error) { status.textContent = "Error al guardar: " + error.message; return; }
+      productId = data.id;
+    }
+
+    // Fotos: se borran todas las de este producto y se reinsertan en el
+    // orden actual de la lista — es una tabla sin más relaciones (no hay
+    // pedidos que apunten a una foto concreta), así que no hace falta
+    // diferenciar altas/bajas una a una.
+    await window.spfc.from("shop_product_images").delete().eq("product_id", productId);
+    if (imagenesActuales.length) {
+      await window.spfc.from("shop_product_images").insert(
+        imagenesActuales.map((img, i) => ({ product_id: productId, url: img.url, orden: i }))
+      );
+    }
+
+    // Variantes: aquí SÍ hay que respetar los ids existentes (un pedido ya
+    // hecho puede apuntar a una variante concreta) — se actualizan las que
+    // ya existían, se insertan las nuevas, y solo se intenta borrar las que
+    // el admin ha quitado de la lista. Si una variante quitada ya tiene
+    // pedidos, la base de datos impide borrarla (clave foránea) y aquí se
+    // avisa en vez de fallar en silencio.
+    const idsOriginales = (variantesActuales.length ? await window.spfc.from("shop_product_variants").select("id").eq("product_id", productId) : { data: [] }).data || [];
+    const idsActuales = new Set(variantesActuales.filter((v) => v.id).map((v) => v.id));
+    const idsABorrar = idsOriginales.map((v) => v.id).filter((vid) => !idsActuales.has(vid));
+
+    let avisoVariantes = "";
+    for (const vid of idsABorrar) {
+      const { error: delErr } = await window.spfc.from("shop_product_variants").delete().eq("id", vid);
+      if (delErr) avisoVariantes = " Aviso: una talla no se ha podido quitar porque ya tiene pedidos — su stock se puede poner a 0 en su lugar.";
+    }
+    for (const v of variantesActuales) {
+      const fila = { product_id: productId, talla: v.talla.trim(), color: v.color.trim() || null, stock: Math.max(0, Number(v.stock) || 0) };
+      if (v.id) {
+        await window.spfc.from("shop_product_variants").update(fila).eq("id", v.id);
+      } else {
+        await window.spfc.from("shop_product_variants").insert(fila);
+      }
+    }
+
+    status.textContent = "";
     formCard.style.display = "none";
     loadProductos();
+    if (avisoVariantes) alert("Guardado." + avisoVariantes);
   });
 
+  // ======================= PEDIDOS =======================
   async function loadPedidos() {
     const body = document.getElementById("pedidos-tienda-body");
     const { data, error } = await window.spfc.rpc("admin_listar_pedidos_tienda");
-    if (error) { body.innerHTML = `<tr><td colspan="8">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    if (error) { body.innerHTML = `<tr><td colspan="10">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
     const pedidos = data || [];
-    if (!pedidos.length) { body.innerHTML = '<tr><td colspan="8">Todavía no hay ningún pedido.</td></tr>'; return; }
+    if (!pedidos.length) { body.innerHTML = '<tr><td colspan="10">Todavía no hay ningún pedido.</td></tr>'; return; }
     body.innerHTML = pedidos.map((o) => `
       <tr>
         <td>${new Date(o.creado_en).toLocaleDateString("es-ES")}</td>
         <td>${escapeHtml(o.user_nombre)}</td>
         <td>${escapeHtml(o.producto_nombre)}</td>
         <td>${o.talla ? escapeHtml(o.talla) : "—"}</td>
+        <td>${o.color ? escapeHtml(o.color) : "—"}</td>
         <td>${o.cantidad}</td>
         <td>${fmtEuros(o.importe)}</td>
         <td>${o.estado === "recogido" ? '<span class="pill pill-ok">Recogido</span>' : o.estado === "pagado" ? '<span class="pill pill-warn">Pagado</span>' : escapeHtml(o.estado)}</td>
+        <td>${o.stock_incidencia ? '<span class="pill pill-bad" title="Esta talla ya no tenía stock cuando se confirmó el pago">⚠</span>' : ""}</td>
         <td class="actions">
           ${o.estado === "pagado" ? `<button class="btn btn-outline btn-sm" data-recoger="${o.id}" type="button">Marcar recogido</button>` : ""}
         </td>
@@ -259,8 +562,43 @@
       }));
   }
 
+  // ======================= NEWSLETTER =======================
+  let suscriptores = [];
+  async function loadNewsletter() {
+    const { data, error } = await window.spfc.from("shop_newsletter_subscribers").select("*").order("consentimiento_en", { ascending: false });
+    const body = document.getElementById("newsletter-body");
+    if (error) { body.innerHTML = `<tr><td colspan="4">Error: ${escapeHtml(error.message)}</td></tr>`; return; }
+    suscriptores = data || [];
+    body.innerHTML = suscriptores.length ? suscriptores.map((s) => `
+      <tr>
+        <td>${escapeHtml(s.email)}</td>
+        <td>${new Date(s.consentimiento_en).toLocaleDateString("es-ES")}</td>
+        <td>${s.baja_en ? '<span class="pill pill-warn">De baja</span>' : '<span class="pill pill-ok">Activa</span>'}</td>
+        <td class="actions"><button class="btn-icon danger" data-del-sub="${s.id}" type="button" title="Eliminar">✕</button></td>
+      </tr>`).join("") : '<tr><td colspan="4">Todavía no hay ninguna suscripción.</td></tr>';
+    body.querySelectorAll("[data-del-sub]").forEach((btn) => btn.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar este email de la lista para siempre?")) return;
+      await window.spfc.from("shop_newsletter_subscribers").delete().eq("id", btn.dataset.delSub);
+      loadNewsletter();
+    }));
+  }
+  document.getElementById("newsletter-csv-btn").addEventListener("click", () => {
+    const filas = [["Email", "Alta", "Estado"]].concat(
+      suscriptores.map((s) => [s.email, s.consentimiento_en, s.baja_en ? "De baja" : "Activa"])
+    );
+    const csv = filas.map((f) => f.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "newsletter-tienda.csv";
+    a.click();
+  });
+
+  await loadCategorias();
+  await loadCategoriasEnSelect();
   await loadProductos();
   await loadPedidos();
+  await loadNewsletter();
 
   const vistaInicial = new URLSearchParams(location.search).get("view");
   if (vistaInicial) mostrarVista(vistaInicial);

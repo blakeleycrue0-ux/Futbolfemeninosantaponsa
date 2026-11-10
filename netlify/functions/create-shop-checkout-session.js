@@ -1,8 +1,19 @@
 /*
   Crea una sesión de Stripe Checkout para un pedido de la tienda (camisetas,
-  pantalones...). El precio y el nombre SIEMPRE se leen de la base de datos
-  aquí dentro — el navegador solo manda product_id/talla/cantidad, nunca el
-  precio, para que no se pueda manipular desde el cliente.
+  sudaderas...). Precio, nombre y disponibilidad SIEMPRE se leen de la base
+  de datos aquí dentro — el navegador solo manda variant_id/cantidad por
+  cada línea del carrito, nunca el precio, para que no se pueda manipular
+  desde el cliente.
+
+  Acepta un carrito con varias líneas (items: [{variant_id, cantidad}]), no
+  solo un producto — todas comparten una única sesión de Stripe y quedan
+  unidas por shop_order_ids (coma) en los metadatos, que es lo que lee
+  stripe-webhook.js al confirmarse el pago.
+
+  Esto NO reserva stock durante el checkout (no hay sistema de reservas):
+  aquí solo se comprueba que hay stock > 0 como aviso al cliente antes de
+  pagar. El descuento de stock real, atómico y a prueba de doble venta
+  ocurre en el webhook al confirmarse el pago (shop_descontar_stock).
 
   Sin envíos: la recogida es siempre en el club, así que no se pide
   dirección postal en ningún sitio de este flujo.
@@ -32,13 +43,18 @@ exports.handler = async function (event) {
   } catch (err) {
     return { statusCode: 400, body: "JSON inválido" };
   }
-  const { product_id, talla } = payload;
-  const cantidad = Number(payload.cantidad) || 1;
-  if (!product_id) {
-    return { statusCode: 400, body: "Falta product_id" };
+  const items = Array.isArray(payload.items) ? payload.items : null;
+  if (!items || !items.length) {
+    return { statusCode: 400, body: "El carrito está vacío." };
   }
-  if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 10) {
-    return { statusCode: 400, body: "Cantidad no válida." };
+  if (items.length > 20) {
+    return { statusCode: 400, body: "Demasiados artículos en el carrito." };
+  }
+  for (const it of items) {
+    const cantidad = Number(it.cantidad);
+    if (!it.variant_id || !Number.isInteger(cantidad) || cantidad < 1 || cantidad > 10) {
+      return { statusCode: 400, body: "Carrito no válido." };
+    }
   }
 
   const authHeader = event.headers.authorization || event.headers.Authorization || "";
@@ -54,42 +70,67 @@ exports.handler = async function (event) {
   }
   const user = userData.user;
 
-  const { data: product, error: productError } = await supabase
-    .from("shop_products")
-    .select("*")
-    .eq("id", product_id)
-    .eq("activo", true)
-    .single();
-  if (productError || !product) {
-    return { statusCode: 404, body: "Ese producto no existe o ya no está a la venta." };
-  }
+  const lineasStripe = [];
+  const pedidosCreados = [];
 
-  if (product.tallas && product.tallas.length) {
-    if (!talla || !product.tallas.includes(talla)) {
-      return { statusCode: 400, body: "Elige una talla válida." };
+  for (const it of items) {
+    const cantidad = Number(it.cantidad);
+
+    const { data: variant, error: variantError } = await supabase
+      .from("shop_product_variants")
+      .select("*, shop_products(*)")
+      .eq("id", it.variant_id)
+      .single();
+    if (variantError || !variant || !variant.shop_products || !variant.shop_products.activo) {
+      // Deshacemos los pedidos "pendiente" ya creados en este mismo carrito
+      // antes de devolver el error, para no dejar basura huérfana.
+      for (const o of pedidosCreados) await supabase.from("shop_orders").delete().eq("id", o.id);
+      return { statusCode: 404, body: "Uno de los productos del carrito ya no está disponible." };
     }
-  }
+    if (variant.stock < cantidad) {
+      for (const o of pedidosCreados) await supabase.from("shop_orders").delete().eq("id", o.id);
+      return { statusCode: 409, body: `No queda stock suficiente de "${variant.shop_products.nombre}" (talla ${variant.talla}).` };
+    }
 
-  const importe = Number(product.precio) * cantidad;
+    const producto = variant.shop_products;
+    const importe = Number(producto.precio) * cantidad;
 
-  const { data: order, error: orderError } = await supabase
-    .from("shop_orders")
-    .insert({
-      user_id: user.id,
-      product_id: product.id,
-      talla: product.tallas && product.tallas.length ? talla : null,
-      cantidad,
-      importe,
-      estado: "pendiente",
-    })
-    .select()
-    .single();
-  if (orderError || !order) {
-    return { statusCode: 500, body: "No se ha podido crear el pedido: " + (orderError ? orderError.message : "") };
+    const { data: order, error: orderError } = await supabase
+      .from("shop_orders")
+      .insert({
+        user_id: user.id,
+        product_id: producto.id,
+        variant_id: variant.id,
+        talla: variant.talla,
+        color: variant.color,
+        cantidad,
+        importe,
+        estado: "pendiente",
+      })
+      .select()
+      .single();
+    if (orderError || !order) {
+      for (const o of pedidosCreados) await supabase.from("shop_orders").delete().eq("id", o.id);
+      return { statusCode: 500, body: "No se ha podido crear el pedido: " + (orderError ? orderError.message : "") };
+    }
+    pedidosCreados.push(order);
+
+    lineasStripe.push({
+      price_data: {
+        currency: "eur",
+        product_data: {
+          name: producto.nombre + " — Talla " + variant.talla + (variant.color ? ` · ${variant.color}` : ""),
+          description: producto.descripcion || undefined,
+        },
+        unit_amount: Math.round(Number(producto.precio) * 100),
+      },
+      quantity: cantidad,
+    });
   }
 
   const baseUrl = (PUBLIC_SITE_URL || SITE_URL || "https://ffsp.info").replace(/\/$/, "");
   const stripe = Stripe(STRIPE_SECRET_KEY);
+  const idsPedidos = pedidosCreados.map((o) => o.id).join(",");
 
   let session;
   try {
@@ -97,31 +138,22 @@ exports.handler = async function (event) {
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: user.email,
-      line_items: [{
-        price_data: {
-          currency: "eur",
-          product_data: {
-            name: product.nombre + (order.talla ? ` (talla ${order.talla})` : ""),
-            description: product.descripcion || undefined,
-          },
-          unit_amount: Math.round(Number(product.precio) * 100),
-        },
-        quantity: cantidad,
-      }],
-      metadata: { shop_order_id: order.id, product_id: product.id, user_id: user.id },
-      success_url: `${baseUrl}/tienda-completada.html?order=${order.id}`,
-      cancel_url: `${baseUrl}/tienda-checkout.html?producto=${product.id}&cancelado=1`,
+      line_items: lineasStripe,
+      metadata: { shop_order_ids: idsPedidos, user_id: user.id },
+      success_url: `${baseUrl}/tienda-completada.html?orders=${idsPedidos}`,
+      cancel_url: `${baseUrl}/carrito.html?cancelado=1`,
       allow_promotion_codes: true,
     });
   } catch (err) {
-    await supabase.from("shop_orders").update({ estado: "fallido" }).eq("id", order.id);
+    for (const o of pedidosCreados) await supabase.from("shop_orders").update({ estado: "fallido" }).eq("id", o.id);
     return { statusCode: 502, body: "Stripe no ha podido crear el pago: " + err.message };
   }
 
+  const idsArray = pedidosCreados.map((o) => o.id);
   const { error: updateError } = await supabase
     .from("shop_orders")
     .update({ stripe_checkout_session_id: session.id })
-    .eq("id", order.id);
+    .in("id", idsArray);
   if (updateError) {
     return { statusCode: 500, body: "Pedido creado pero no se ha podido guardar la sesión de Stripe." };
   }

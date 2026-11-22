@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title id="page-title">Jugadora — Fútbol Femenino Santa Ponça</title>
 <meta name="description" id="page-description" content="Ficha de jugadora del Fútbol Femenino Santa Ponça: dorsal, posición, estadísticas y biografía.">
+<meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/jugadora.html">
 <meta property="og:type" content="profile">
 <meta property="og:title" id="og-title" content="Jugadora — Fútbol Femenino Santa Ponça">
@@ -76,6 +77,15 @@
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
+  // OCULTO (privacidad de menores): esta ficha mostraba nombre, foto,
+  // goles y tarjetas de una jugadora concreta sin ningún control de
+  // acceso. Se redirige antes de pedir ningún dato — no borrar el resto
+  // del fichero, solo quitar este return si se pide reactivarlo. La ficha
+  // de partido (partido.html) no se toca: ahí sí se puede ver la
+  // alineación.
+  location.replace("equipos.html");
+  return;
+
   const content = document.getElementById("jugadora-content");
   const id = new URLSearchParams(location.search).get("id");
 

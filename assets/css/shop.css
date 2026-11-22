@@ -154,6 +154,115 @@
 .shop-product__precio--agotado { color: var(--text-on-cream-muted); text-decoration: line-through; }
 
 /* ---------------------------------------------------------------------- */
+/* Percherón de "Nueva colección" — las prendas cuelgan de una barra y se  */
+/* pueden recorrer en horizontal, como mirando un perchero real. Mientras */
+/* no haya fotos reales recortadas, la silueta de camiseta (clip-path     */
+/* #camiseta-clip, definido en tienda.html) se aplica sobre la foto de    */
+/* portada si existe, o sobre un relleno plano si no — en cuanto se suban */
+/* fotos reales recortadas desde el admin, cuelgan solas sin cambiar nada */
+/* aquí.                                                                   */
+/* ---------------------------------------------------------------------- */
+.rail-section { padding: clamp(2.6rem, 6vw, 5rem) 0 0; overflow: hidden; }
+.rail { position: relative; padding: 2.6rem 0 2.2rem; }
+.rail__bar {
+  position: absolute; top: 2.6rem; left: var(--gutter); right: var(--gutter); height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(10,10,10,0.35) 6%, rgba(10,10,10,0.35) 94%, transparent);
+  border-radius: 2px;
+}
+.rail__items {
+  display: flex; gap: clamp(1.6rem, 4vw, 3rem); overflow-x: auto; scroll-snap-type: x proximity;
+  padding: 0 var(--gutter) 1rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.rail__items::-webkit-scrollbar { display: none; }
+.rail__item {
+  flex-shrink: 0; width: 148px; scroll-snap-align: start; text-align: center; cursor: pointer;
+  background: none; border: none; padding: 0; font: inherit; color: inherit;
+}
+.rail__hook {
+  width: 22px; height: 22px; margin: 0 auto; position: relative; z-index: 1;
+  border: 2.5px solid var(--ink); border-bottom: none; border-right: none;
+  border-radius: 60% 0 0 0; transform: rotate(45deg) translate(2px, 2px);
+}
+.rail__garment {
+  width: 100%; aspect-ratio: 100/120; background: var(--cream-deep); margin-top: -4px;
+  clip-path: url(#camiseta-clip); transition: transform 0.3s var(--ease);
+  transform-origin: 8% top; animation: railSway 5s ease-in-out infinite;
+}
+.rail__garment img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rail__item:hover .rail__garment { transform: scale(1.04); }
+.rail__item:nth-child(odd) .rail__garment { animation-delay: -1.4s; animation-duration: 4.6s; }
+.rail__item:nth-child(3n) .rail__garment { animation-delay: -3s; animation-duration: 5.4s; }
+@keyframes railSway { 0%, 100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+.rail__shadow {
+  width: 70%; height: 10px; margin: 0.4rem auto 0; background: radial-gradient(ellipse, rgba(10,10,10,0.18), transparent 72%);
+}
+.rail__nombre { font-size: 0.82rem; font-weight: 600; margin: 0.6rem 0 0.15rem; }
+.rail__precio { font-family: var(--font-display); font-weight: 700; font-size: 0.86rem; margin: 0; }
+
+.rail__ticker {
+  background: var(--shop-lilac); overflow: hidden; padding: 0.7rem 0; white-space: nowrap;
+}
+.rail__ticker-track { display: inline-flex; gap: 2.5rem; animation: tickerScroll 22s linear infinite; }
+.rail__ticker-track span {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--ink);
+}
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rail__garment { animation: none; }
+  .rail__ticker-track { animation: none; }
+}
+
+/* Vista rápida del percherón (clic en una prenda) */
+.rail-qv-overlay {
+  position: fixed; inset: 0; background: rgba(10,10,10,0.6); z-index: 96; display: none;
+  align-items: center; justify-content: center; padding: 2rem 1rem;
+}
+.rail-qv-overlay.is-open { display: flex; }
+.rail-qv-modal {
+  position: relative; background: #fff; width: min(480px, 100%); padding: 3rem 1.6rem 2.2rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.rail-qv-close {
+  position: absolute; top: 0.8rem; right: 0.8rem; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  border: none; background: var(--cream-deep); cursor: pointer; font-size: 1rem;
+}
+.rail-qv-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  border: 1px solid rgba(10,10,10,0.15); background: #fff; cursor: pointer; font-size: 1.1rem;
+}
+.rail-qv-nav--prev { left: -1.3rem; }
+.rail-qv-nav--next { right: -1.3rem; }
+.rail-qv-hanger {
+  width: 30px; height: 30px; border: 3px solid var(--ink); border-bottom: none; border-right: none;
+  border-radius: 60% 0 0 0; transform: rotate(45deg) translate(3px, 3px); margin-bottom: -6px;
+}
+.rail-qv-garment {
+  width: 220px; aspect-ratio: 100/120; background: var(--cream-deep); clip-path: url(#camiseta-clip);
+}
+.rail-qv-garment img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rail-qv-tags { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.8rem; }
+.rail-qv-tag {
+  display: flex; align-items: center; justify-content: center;
+  width: 1.8rem; height: 2.2rem; border-radius: 3px 3px 10px 10px; border: 1px solid rgba(10,10,10,0.15);
+  background: var(--cream-deep); font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  color: var(--text-on-cream-muted); cursor: default;
+}
+.rail-qv-tag.is-active { outline: 2px solid var(--ink); outline-offset: 2px; }
+.rail-qv-nombre { font-weight: 700; font-size: 1rem; margin: 1rem 0 0.4rem; }
+.rail-qv-toggle { display: inline-flex; border: 1px solid rgba(10,10,10,0.2); margin-bottom: 0.8rem; }
+.rail-qv-toggle button {
+  border: none; background: none; padding: 0.4em 1em; font-size: 0.76rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer;
+}
+.rail-qv-toggle button.is-active { background: var(--ink); color: #fff; }
+.rail-qv-link {
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  border-bottom: 1px solid var(--ink); padding-bottom: 0.15em;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Categorías                                                              */
 /* ---------------------------------------------------------------------- */
 .shop-cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }

@@ -34,15 +34,48 @@
     </div>
   </section>
 
-  <div class="container">
-    <section class="shop-section" id="seccion-nueva-coleccion" style="display:none;">
+  <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+    <defs>
+      <clipPath id="camiseta-clip" clipPathUnits="objectBoundingBox">
+        <path d="M0.30,0.083 Q0.40,0 0.50,0.017 Q0.60,0 0.70,0.083 L0.90,0.167 L1.00,0.317 L0.80,0.233 L0.80,0.958 L0.20,0.958 L0.20,0.233 L0.00,0.317 L0.10,0.167 Z"></path>
+      </clipPath>
+    </defs>
+  </svg>
+
+  <section class="rail-section" id="seccion-nueva-coleccion" style="display:none;">
+    <div class="container">
       <div class="shop-section-head">
         <div><span class="eyebrow">Recién llegado</span><h2>Nueva colección</h2></div>
         <a href="catalogo.html">Ver todo →</a>
       </div>
-      <div class="shop-grid" id="grid-nueva-coleccion"></div>
-    </section>
+    </div>
+    <div class="rail">
+      <div class="rail__bar"></div>
+      <div class="rail__items" id="rail-items"></div>
+    </div>
+    <div class="rail__ticker">
+      <div class="rail__ticker-track" id="rail-ticker-track"></div>
+    </div>
+  </section>
 
+  <div class="rail-qv-overlay" id="rail-qv-overlay">
+    <div class="rail-qv-modal">
+      <button type="button" class="rail-qv-close" id="rail-qv-close" aria-label="Cerrar vista rápida">✕</button>
+      <button type="button" class="rail-qv-nav rail-qv-nav--prev" id="rail-qv-prev" aria-label="Producto anterior">←</button>
+      <button type="button" class="rail-qv-nav rail-qv-nav--next" id="rail-qv-next" aria-label="Producto siguiente">→</button>
+      <div class="rail-qv-hanger"></div>
+      <div class="rail-qv-garment" id="rail-qv-garment"></div>
+      <div class="rail-qv-tags" id="rail-qv-tags"></div>
+      <p class="rail-qv-nombre" id="rail-qv-nombre"></p>
+      <div class="rail-qv-toggle" id="rail-qv-toggle" style="display:none;">
+        <button type="button" data-cara="front" class="is-active">Delante</button>
+        <button type="button" data-cara="back">Detrás</button>
+      </div>
+      <a href="#" class="rail-qv-link" id="rail-qv-link">Ver disponibilidad →</a>
+    </div>
+  </div>
+
+  <div class="container">
     <section class="shop-section" id="seccion-categorias" style="display:none;">
       <div class="shop-section-head"><div><span class="eyebrow">Explora</span><h2>Categorías</h2></div></div>
       <div class="shop-cat-grid" id="grid-categorias"></div>
@@ -97,6 +130,9 @@
 (async function () {
   if (!window.spfc) return;
   const UI = window.SPFC_SHOP_UI;
+  let railItems = [];
+  let railIndex = 0;
+  let railCara = "front";
 
   const [categorias, productos, masVendidos] = await Promise.all([
     SPFC_SHOP.categoriasConProductos(),
@@ -118,11 +154,8 @@
   const nuevos = productos.filter((p) => p.esNuevo || !p.agotado).slice(0, 8);
   if (nuevos.length) {
     document.getElementById("seccion-nueva-coleccion").style.display = "block";
-    document.getElementById("grid-nueva-coleccion").innerHTML = nuevos.map((p) => UI.tarjetaProducto(p, { favoritoIds })).join("");
-    const grid = document.getElementById("grid-nueva-coleccion");
-    UI.wireFavoritos(grid);
-    const porId = {}; nuevos.forEach((p) => { porId[p.id] = p; });
-    UI.wireQuickView(grid, porId);
+    renderPercheron(nuevos);
+    renderTicker(categorias);
   }
 
   if (categorias.length) {
@@ -139,6 +172,86 @@
     const porId = {}; masVendidos.forEach((p) => { porId[p.id] = p; });
     UI.wireQuickView(grid, porId);
   }
+
+  // --- Percherón de "Nueva colección" ---
+  // Mientras no haya fotos reales recortadas (ver conversación con el
+  // club), cada prenda usa su foto de portada normal dentro de la silueta
+  // de camiseta (clip-path #camiseta-clip) — en cuanto suba fotos
+  // recortadas de verdad desde el admin, el efecto de "colgado" mejora
+  // solo, sin tocar este código.
+  function renderPercheron(items) {
+    railItems = items;
+    const cont = document.getElementById("rail-items");
+    cont.innerHTML = items.map((p, i) => `
+      <button type="button" class="rail__item" data-rail-idx="${i}">
+        <div class="rail__hook"></div>
+        <div class="rail__garment">${p.imagenes[0] ? `<img src="${UI.escapeHtml(p.imagenes[0])}" alt="${UI.escapeHtml(p.nombre)}">` : ""}</div>
+        <div class="rail__shadow"></div>
+        <p class="rail__nombre">${UI.escapeHtml(p.nombre)}</p>
+        <p class="rail__precio">${UI.fmtEuros(p.precio)}</p>
+      </button>`).join("");
+    cont.querySelectorAll("[data-rail-idx]").forEach((btn) =>
+      btn.addEventListener("click", () => abrirRailQV(Number(btn.dataset.railIdx))));
+  }
+
+  function renderTicker(categorias) {
+    const frases = categorias.length ? categorias.map((c) => c.nombre.toUpperCase()) : ["NUEVA COLECCIÓN"];
+    frases.unshift("NUEVA COLECCIÓN");
+    frases.push("FFSP OFFICIAL STORE");
+    const unaVuelta = frases.map((f) => `<span>${UI.escapeHtml(f)}</span>`).join("<span>·</span>");
+    document.getElementById("rail-ticker-track").innerHTML = unaVuelta + unaVuelta;
+  }
+
+  function abrirRailQV(idx) {
+    railIndex = idx;
+    railCara = "front";
+    pintarRailQV();
+    document.getElementById("rail-qv-overlay").classList.add("is-open");
+  }
+
+  function pintarRailQV() {
+    const p = railItems[railIndex];
+    const toggle = document.getElementById("rail-qv-toggle");
+    const tieneDosFotos = p.imagenes.length > 1;
+    toggle.style.display = tieneDosFotos ? "inline-flex" : "none";
+    toggle.querySelectorAll("button").forEach((b) => b.classList.toggle("is-active", b.dataset.cara === railCara));
+
+    const imgUrl = railCara === "back" && tieneDosFotos ? p.imagenes[1] : p.imagenes[0];
+    document.getElementById("rail-qv-garment").innerHTML = imgUrl ? `<img src="${UI.escapeHtml(imgUrl)}" alt="${UI.escapeHtml(p.nombre)}">` : "";
+    document.getElementById("rail-qv-nombre").textContent = p.nombre;
+    document.getElementById("rail-qv-link").href = `producto.html?id=${p.id}`;
+
+    const colores = [...new Set(p.variantes.map((v) => v.color).filter(Boolean))];
+    const tags = document.getElementById("rail-qv-tags");
+    tags.innerHTML = colores.map((c) => `<span class="rail-qv-tag" title="${UI.escapeHtml(c)}">${UI.escapeHtml(c.slice(0, 2))}</span>`).join("");
+  }
+
+  document.getElementById("rail-qv-toggle").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cara]");
+    if (!btn) return;
+    railCara = btn.dataset.cara;
+    pintarRailQV();
+  });
+  document.getElementById("rail-qv-prev").addEventListener("click", () => {
+    railIndex = (railIndex - 1 + railItems.length) % railItems.length;
+    railCara = "front";
+    pintarRailQV();
+  });
+  document.getElementById("rail-qv-next").addEventListener("click", () => {
+    railIndex = (railIndex + 1) % railItems.length;
+    railCara = "front";
+    pintarRailQV();
+  });
+  document.getElementById("rail-qv-close").addEventListener("click", () => document.getElementById("rail-qv-overlay").classList.remove("is-open"));
+  document.getElementById("rail-qv-overlay").addEventListener("click", (e) => {
+    if (e.target.id === "rail-qv-overlay") e.target.classList.remove("is-open");
+  });
+  document.addEventListener("keydown", (e) => {
+    if (!document.getElementById("rail-qv-overlay").classList.contains("is-open")) return;
+    if (e.key === "Escape") document.getElementById("rail-qv-overlay").classList.remove("is-open");
+    if (e.key === "ArrowLeft") document.getElementById("rail-qv-prev").click();
+    if (e.key === "ArrowRight") document.getElementById("rail-qv-next").click();
+  });
 
   document.getElementById("newsletter-form").addEventListener("submit", async (e) => {
     e.preventDefault();

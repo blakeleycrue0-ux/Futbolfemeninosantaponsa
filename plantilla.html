@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plantilla — Fútbol Femenino Santa Ponça</title>
 <meta name="description" content="Plantilla del Fútbol Femenino Santa Ponça: jugadoras, dorsales, posiciones y estadísticas de la temporada.">
+<meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://futbolfemeninosantaponsa.netlify.app/plantilla.html">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Plantilla — Fútbol Femenino Santa Ponça">
@@ -76,6 +77,14 @@
 <script src="assets/js/nav.js"></script>
 <script>
 (async function () {
+  // OCULTO (privacidad de menores): la plantilla pública mostraba nombre,
+  // foto, dorsal y goles de cada jugadora sin ningún control de acceso.
+  // Se redirige antes de pedir ningún dato — no borrar el resto del
+  // fichero, solo quitar este return si se pide reactivarlo. La ficha de
+  // partido (partido.html) no se toca: ahí sí se puede ver la alineación.
+  location.replace("equipos.html");
+  return;
+
   let players = [];
 
   function renderPlayers(list) {
